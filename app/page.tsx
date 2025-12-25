@@ -335,8 +335,8 @@ function Card({ title, text }: { title: string; text: string }) {
 
 function Bullet({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex gap-3 rounded-2xl border border-[var(--border-main)] bg-[var(--bg-card)] p-4 shadow-sm">
-      <span className="mt-1 inline-block h-2 w-2 shrink-0 rounded-full bg-[var(--button-bg)]" />
+    <div className="flex items-center gap-3 rounded-2xl border border-[var(--border-main)] bg-[var(--bg-card)] p-4 shadow-sm">
+      <span className="inline-block h-2 w-2 shrink-0 rounded-full bg-[var(--button-bg)]" />
       <p className="text-sm leading-relaxed text-[var(--text-muted)]">{children}</p>
     </div>
   );
