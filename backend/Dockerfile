@@ -7,8 +7,12 @@ RUN chmod +x mvnw && ./mvnw -DskipTests package
 
 # -------- run stage --------
 FROM eclipse-temurin:25-jre
-WORKDIR /app
 
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends curl \
+ && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
 COPY --from=build /app/target/*.jar /app/app.jar
 
 EXPOSE 8080
