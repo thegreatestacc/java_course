@@ -50,3 +50,56 @@ body {
   background-color: var(--bg-main);
   color: var(--text-main);
 }
+
+/* =========================
+   Скрытие индикатора разработки Next.js
+   ========================= */
+
+#__next-build-watcher,
+[data-nextjs-toast],
+[data-nextjs-dialog],
+.nextjs-toast-container {
+  display: none !important;
+}
+
+/* =========================
+   Стили для синтаксической подсветки Java
+   ========================= */
+
+/* Вызовы методов (после точки) - серые для светлой темы */
+:not(.dark) code[class*="language-"] .token.function:not(:first-child),
+:not(.dark) code[class*="language-"] .token.function + .token.function,
+:not(.dark) pre[class*="language-"] .token.function:not(:first-child),
+:not(.dark) pre[class*="language-"] .token.function + .token.function {
+  color: #808080 !important;
+}
+
+/* Вызовы методов после точки или скобки - серые */
+:not(.dark) code[class*="language-"] .token.punctuation + .token.function,
+:not(.dark) pre[class*="language-"] .token.punctuation + .token.function {
+  color: #808080 !important;
+}
+
+/* Типы параметров в методах - фиолетовые для светлой темы */
+:not(.dark) code[class*="language-"] .token.function ~ .token.class-name,
+:not(.dark) pre[class*="language-"] .token.function ~ .token.class-name {
+  color: #800080 !important;
+}
+
+/* Типы параметров в методах - фиолетовые для темной темы */
+.dark code[class*="language-"] .token.function ~ .token.class-name,
+.dark pre[class*="language-"] .token.function ~ .token.class-name {
+  color: #9876aa !important;
+}
+
+/* Типы в параметрах методов и объявлениях полей - фиолетовые для светлой темы */
+:not(.dark) code[class*="language-"] .token.type-in-param,
+:not(.dark) pre[class*="language-"] .token.type-in-param {
+  color: #800080 !important;
+}
+
+/* Типы в параметрах методов и объявлениях полей - фиолетовые для темной темы */
+.dark code[class*="language-"] .token.type-in-param,
+.dark pre[class*="language-"] .token.type-in-param {
+  color: #9876aa !important;
+}

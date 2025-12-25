@@ -4,6 +4,7 @@
 
 import { JetBrains_Mono } from "next/font/google";
 import { ThemeToggle } from "./ThemeToggle";
+import { CodeExample } from "./CodeExample";
 
 
 const mono = JetBrains_Mono({
@@ -35,7 +36,7 @@ export default function Page() {
 function Header() {
   return (
     <header className="sticky top-0 z-10 border-b border-[var(--border-main)]/70 bg-[var(--bg-card)]/80 backdrop-blur">
-      <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-5 py-3">
+      <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-5 py-3">
         <a
           href="#cta"
           className="rounded-xl border border-[var(--border-main)]
@@ -53,18 +54,22 @@ function Header() {
 
 function Hero() {
   return (
-    <section id="top" className="mx-auto max-w-5xl px-5 py-14 md:py-20">
-      <div className="grid gap-10 md:grid-cols-2 md:items-center">
+    <section id="top" className="mx-auto max-w-6xl px-5 py-14 md:py-20">
+      <div className="grid gap-10 md:grid-cols-[1.1fr_1.5fr] md:items-center md:grid-cols-[1fr_630px]">
         <div className="space-y-6">
           <p className="text-xs font-medium tracking-wide text-[var(--text-muted)]">
             курс для тех, кто только знакомится с программированием
           </p>
           <h1 className="text-3xl font-semibold tracking-tight text-[var(--text-main)] md:text-4xl">
-            Научишься писать на Java, понимать основы и соберёшь базу для роста до Middle.
+            Научишься писать на Java, понимать концепции языка и разработки.
           </h1>
           <p className="text-base leading-relaxed text-[var(--text-muted)]">
-            Я — Java-разработчик со стажем 5+ лет. Объясняю без «магии»: как работает код,
-            почему он работает именно так, и как мыслит разработчик на реальных задачах.
+            Я — Java-разработчик в Yandex со стажем 5+ лет. Прошёл весь путь с нуля самостоятельно:
+            набил множество шишек, сделал кучу ошибок и потратил много времени на поиск правильных решений.
+            Этот курс поможет сократить время от начала обучения до трудоустройства,
+            избежать тех ошибок, которые я встретил на своём пути, и упростить процесс трудоустройства. 
+            Обучение построено на максимально приближенных задачах к реальным, с которыми я работал на проектах.
+            Также помогу грамотно составить резюме, что бы HR'ы не выкидывали его в мусорное ведро посре прочтения первых строк, а приглашали тебя на собес.
           </p>
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -90,31 +95,7 @@ function Hero() {
           </div>
         </div>
 
-        <div className="rounded-2xl border border-[var(--border-main)] bg-[var(--bg-secondary)] p-5 shadow-sm">
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-[var(--text-muted)]">Пример того, как будем учиться</span>
-              <span className="text-[11px] text-[var(--text-secondary)]">IDE-style</span>
-            </div>
-            <pre className="overflow-x-auto rounded-xl border border-[var(--border-main)] bg-[var(--bg-card)] p-4 text-[12px] leading-relaxed text-[var(--text-main)]">
-{`// маленькие шаги → понятные результаты
-class Main {
-  public static void main(String[] args) {
-    var user = new User("Анна");
-    System.out.println(user.greet());
-  }
-}
-
-record User(String name) {
-  String greet() { return "Привет, " + name; }
-}`}
-            </pre>
-            <p className="text-xs leading-relaxed text-[var(--text-muted)]">
-              Сначала — фундамент: типы, условия, циклы, функции, ООП. Затем — практика,
-              архитектурные привычки и «как думать», чтобы расти.
-            </p>
-          </div>
-        </div>
+        <CodeExample />
       </div>
     </section>
   );
@@ -122,7 +103,7 @@ record User(String name) {
 
 function Proof() {
   return (
-    <section id="about" className="mx-auto max-w-5xl px-5 pb-6">
+    <section id="about" className="mx-auto max-w-6xl px-5 pb-6">
       <div className="grid gap-4 md:grid-cols-3">
         <Card
           title="С нуля — нормально"
@@ -143,7 +124,7 @@ function Proof() {
 
 function ForWho() {
   return (
-    <section className="mx-auto max-w-5xl px-5 py-14" aria-label="Для кого">
+    <section className="mx-auto max-w-6xl px-5 py-14" aria-label="Для кого">
       <div className="grid gap-8 md:grid-cols-2">
         <div className="space-y-3">
           <h2 className="text-xl font-semibold tracking-tight text-[var(--text-main)]">Для кого этот курс</h2>
@@ -165,7 +146,7 @@ function ForWho() {
 
 function WhatYouGet() {
   return (
-    <section className="mx-auto max-w-5xl px-5 pb-14" aria-label="Что будет на выходе">
+    <section className="mx-auto max-w-6xl px-5 pb-14" aria-label="Что будет на выходе">
       <div className="rounded-2xl border border-[var(--border-main)] bg-[var(--bg-card)] p-6 shadow-sm">
         <h2 className="text-xl font-semibold tracking-tight text-[var(--text-main)]">Что будет на выходе</h2>
         <div className="mt-5 grid gap-4 md:grid-cols-2">
@@ -193,7 +174,7 @@ function WhatYouGet() {
 
 function HowItWorks() {
   return (
-    <section id="program" className="mx-auto max-w-5xl px-5 pb-14" aria-label="Как устроено">
+    <section id="program" className="mx-auto max-w-6xl px-5 pb-14" aria-label="Как устроено">
       <div className="grid gap-6 md:grid-cols-2">
         <div className="space-y-3">
           <h2 className="text-xl font-semibold tracking-tight text-[var(--text-main)]">Как устроено обучение</h2>
@@ -237,7 +218,7 @@ function HowItWorks() {
 
 function FAQ() {
   return (
-    <section id="faq" className="mx-auto max-w-5xl px-5 pb-14" aria-label="Вопросы">
+    <section id="faq" className="mx-auto max-w-6xl px-5 pb-14" aria-label="Вопросы">
       <div className="rounded-2xl border border-[var(--border-main)] bg-[var(--bg-card)] p-6 shadow-sm">
         <h2 className="text-xl font-semibold tracking-tight text-[var(--text-main)]">FAQ</h2>
         <div className="mt-5 grid gap-4 md:grid-cols-2">
@@ -265,7 +246,7 @@ function FAQ() {
 
 function FinalCTA() {
   return (
-    <section id="cta" className="mx-auto max-w-5xl px-5 pb-20" aria-label="CTA">
+    <section id="cta" className="mx-auto max-w-6xl px-5 pb-20" aria-label="CTA">
       <div className="rounded-2xl border border-[var(--border-main)] bg-[var(--bg-secondary)] p-6">
         <div className="grid gap-6 md:grid-cols-[1.4fr_1fr] md:items-center">
           <div className="space-y-2">
@@ -304,7 +285,7 @@ function FinalCTA() {
 function Footer() {
   return (
     <footer className="border-t border-[var(--border-main)]">
-      <div className="mx-auto flex max-w-5xl flex-col gap-2 px-5 py-8 text-xs text-[var(--text-muted)] md:flex-row md:items-center md:justify-between">
+      <div className="mx-auto flex max-w-6xl flex-col gap-2 px-5 py-8 text-xs text-[var(--text-muted)] md:flex-row md:items-center md:justify-between">
         <p>© {new Date().getFullYear()} Java с нуля до Middle</p>
         <div className="flex gap-4">
           <a className="hover:text-[var(--text-main)]" href="#top">Наверх</a>
