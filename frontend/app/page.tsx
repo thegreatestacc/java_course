@@ -7,6 +7,8 @@
 import { JetBrains_Mono } from "next/font/google";
 import { ThemeToggle } from "./ThemeToggle";
 import { CodeExample } from "./CodeExample";
+import { MotivationalQuotes } from "./MotivationalQuotes";
+import { Header } from "./Header";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -79,15 +81,15 @@ export default function Page() {
               <div className="space-y-1">
                 <Link
                   href="/"
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors bg-[var(--bg-muted)] text-[var(--text-main)] font-medium"
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all duration-200 bg-[var(--bg-muted)] text-[var(--text-main)] font-medium"
                 >
-                  <span>Главная</span>
+                  <span className="transition-opacity duration-200 opacity-100">Главная</span>
                 </Link>
                 <Link
                   href="/gift"
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors text-[var(--text-muted)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-main)]"
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all duration-200 text-[var(--text-muted)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-main)]"
                 >
-                  <span>Подарок</span>
+                  <span className="transition-opacity duration-200 opacity-70 hover:opacity-100">Подарок</span>
                 </Link>
               </div>
             </div>
@@ -112,13 +114,17 @@ export default function Page() {
                           element.scrollIntoView({ behavior: "smooth", block: "start" });
                         }
                       }}
-                      className={`block px-3 py-1.5 rounded-lg text-sm transition-colors ${
+                      className={`block px-3 py-1.5 rounded-lg text-sm transition-all duration-200 ${
                         isActive
                           ? "bg-[var(--bg-muted)] text-[var(--text-main)] font-medium"
                           : "text-[var(--text-muted)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-main)]"
                       }`}
                     >
-                      {item.label}
+                      <span className={`inline-block transition-all duration-200 ${
+                        isActive ? "opacity-100" : "opacity-70"
+                      }`}>
+                        {item.label}
+                      </span>
                     </a>
                   );
                 })}
@@ -129,6 +135,7 @@ export default function Page() {
 
         {/* Основной контент без изменений */}
         <Header />
+        <MotivationalQuotes />
         <main>
           <Hero />
           <Proof />
@@ -144,24 +151,6 @@ export default function Page() {
   );
 }
 
-function Header() {
-  return (
-    <header className="sticky top-0 z-20 border-b border-[var(--border-main)]/70 bg-[var(--bg-card)]/80 backdrop-blur w-full">
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-5 py-3">
-        <a
-          href="#cta"
-          className="rounded-xl border border-[var(--border-main)]
-                     bg-[var(--bg-card)]
-                     px-3 py-2 text-sm font-medium text-[var(--text-main)]
-                     hover:bg-[var(--bg-muted)]"
-        >
-          Получить программу
-        </a>
-        <ThemeToggle />
-      </div>
-    </header>
-  );
-}
 
 function Hero() {
   return (

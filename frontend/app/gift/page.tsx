@@ -4,7 +4,8 @@
 // Страница с бесплатным курсом по Git
 
 import { JetBrains_Mono } from "next/font/google";
-import { ThemeToggle } from "../ThemeToggle";
+import { Header } from "../Header";
+import { MotivationalQuotes } from "../MotivationalQuotes";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -31,15 +32,15 @@ export default function GiftPage() {
               <div className="space-y-1">
                 <Link
                   href="/"
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors text-[var(--text-muted)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-main)]"
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all duration-200 text-[var(--text-muted)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-main)]"
                 >
-                  <span>Главная</span>
+                  <span className="transition-opacity duration-200 opacity-70 hover:opacity-100">Главная</span>
                 </Link>
                 <Link
                   href="/gift"
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors bg-[var(--bg-muted)] text-[var(--text-main)] font-medium"
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all duration-200 bg-[var(--bg-muted)] text-[var(--text-main)] font-medium"
                 >
-                  <span>Подарок</span>
+                  <span className="transition-opacity duration-200 opacity-100">Подарок</span>
                 </Link>
               </div>
             </div>
@@ -52,53 +53,73 @@ export default function GiftPage() {
               <div className="space-y-1">
                 <Link
                   href="/gift"
-                  className={`block px-3 py-1.5 rounded-lg text-sm transition-colors ${
+                  className={`block px-3 py-1.5 rounded-lg text-sm transition-all duration-200 ${
                     pathname === "/gift"
                       ? "bg-[var(--bg-muted)] text-[var(--text-main)] font-medium"
                       : "text-[var(--text-muted)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-main)]"
                   }`}
                 >
-                  Обзор курса
+                  <span className={`inline-block transition-opacity duration-200 ${
+                    pathname === "/gift" ? "opacity-100" : "opacity-70"
+                  }`}>
+                    Обзор курса
+                  </span>
                 </Link>
                 <Link
                   href="/gift/basics"
-                  className={`block px-3 py-1.5 rounded-lg text-sm transition-colors ${
+                  className={`block px-3 py-1.5 rounded-lg text-sm transition-all duration-200 ${
                     pathname === "/gift/basics"
                       ? "bg-[var(--bg-muted)] text-[var(--text-main)] font-medium"
                       : "text-[var(--text-muted)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-main)]"
                   }`}
                 >
-                  Основы Git
+                  <span className={`inline-block transition-opacity duration-200 ${
+                    pathname === "/gift/basics" ? "opacity-100" : "opacity-70"
+                  }`}>
+                    Основы Git
+                  </span>
                 </Link>
                 <Link
                   href="/gift/branches"
-                  className={`block px-3 py-1.5 rounded-lg text-sm transition-colors ${
+                  className={`block px-3 py-1.5 rounded-lg text-sm transition-all duration-200 ${
                     pathname === "/gift/branches"
                       ? "bg-[var(--bg-muted)] text-[var(--text-main)] font-medium"
                       : "text-[var(--text-muted)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-main)]"
                   }`}
                 >
-                  Работа с ветками
+                  <span className={`inline-block transition-opacity duration-200 ${
+                    pathname === "/gift/branches" ? "opacity-100" : "opacity-70"
+                  }`}>
+                    Работа с ветками
+                  </span>
                 </Link>
                 <Link
                   href="/gift/remote"
-                  className={`block px-3 py-1.5 rounded-lg text-sm transition-colors ${
+                  className={`block px-3 py-1.5 rounded-lg text-sm transition-all duration-200 ${
                     pathname === "/gift/remote"
                       ? "bg-[var(--bg-muted)] text-[var(--text-main)] font-medium"
                       : "text-[var(--text-muted)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-main)]"
                   }`}
                 >
-                  Удаленные репозитории
+                  <span className={`inline-block transition-opacity duration-200 ${
+                    pathname === "/gift/remote" ? "opacity-100" : "opacity-70"
+                  }`}>
+                    Удаленные репозитории
+                  </span>
                 </Link>
                 <Link
                   href="/gift/advanced"
-                  className={`block px-3 py-1.5 rounded-lg text-sm transition-colors ${
+                  className={`block px-3 py-1.5 rounded-lg text-sm transition-all duration-200 ${
                     pathname === "/gift/advanced"
                       ? "bg-[var(--bg-muted)] text-[var(--text-main)] font-medium"
                       : "text-[var(--text-muted)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-main)]"
                   }`}
                 >
-                  Продвинутые техники
+                  <span className={`inline-block transition-opacity duration-200 ${
+                    pathname === "/gift/advanced" ? "opacity-100" : "opacity-70"
+                  }`}>
+                    Продвинутые техники
+                  </span>
                 </Link>
               </div>
             </div>
@@ -106,7 +127,8 @@ export default function GiftPage() {
         </nav>
 
         {/* Основной контент без изменений */}
-        <Header />
+        <Header leftButton={{ href: "/", text: "На главную" }} />
+        <MotivationalQuotes />
         <main>
           <Hero />
           <CourseContent />
@@ -119,24 +141,6 @@ export default function GiftPage() {
   );
 }
 
-function Header() {
-  return (
-    <header className="sticky top-0 z-20 border-b border-[var(--border-main)]/70 bg-[var(--bg-card)]/80 backdrop-blur w-full">
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-5 py-3">
-        <Link
-          href="/"
-          className="rounded-xl border border-[var(--border-main)]
-                     bg-[var(--bg-card)]
-                     px-3 py-2 text-sm font-medium text-[var(--text-main)]
-                     hover:bg-[var(--bg-muted)]"
-        >
-          На главную
-        </Link>
-        <ThemeToggle />
-      </div>
-    </header>
-  );
-}
 
 function Hero() {
   return (
