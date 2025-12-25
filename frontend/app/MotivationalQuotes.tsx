@@ -51,25 +51,96 @@ const quotes: Quote[] = [
 ];
 
 export function MotivationalQuotes() {
+  // Начальные значения одинаковы для сервера и клиента (избегаем hydration mismatch)
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [progressKey, setProgressKey] = useState(0);
   const [isVisible, setIsVisible] = useState(true);
+  const [lastChangeTime, setLastChangeTime] = useState<number | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
+
+  // Загружаем состояние из localStorage только после монтирования на клиенте
+  useEffect(() => {
+    setIsMounted(true);
+    
+    const savedVisibility = localStorage.getItem("quotesVisible");
+    if (savedVisibility !== null) {
+      setIsVisible(savedVisibility === "true");
+    }
+
+    const savedIndex = localStorage.getItem("quotesCurrentIndex");
+    if (savedIndex !== null) {
+      const index = parseInt(savedIndex, 10);
+      if (index >= 0 && index < quotes.length) {
+        setCurrentIndex(index);
+      }
+    }
+
+    const savedLastChangeTime = localStorage.getItem("quotesLastChangeTime");
+    if (savedLastChangeTime !== null) {
+      setLastChangeTime(parseInt(savedLastChangeTime, 10));
+    }
+  }, []);
+
+  // Сохраняем состояние видимости и текущий индекс в localStorage при изменении
+  useEffect(() => {
+    localStorage.setItem("quotesVisible", isVisible.toString());
+  }, [isVisible]);
 
   useEffect(() => {
-    if (!isVisible) return; // Останавливаем смену фраз, если они скрыты
+    localStorage.setItem("quotesCurrentIndex", currentIndex.toString());
+  }, [currentIndex]);
+
+  useEffect(() => {
+    if (!isVisible || !isMounted) return; // Останавливаем смену фраз, если они скрыты или компонент еще не смонтирован
     
+    // Вычисляем время до следующей смены цитаты
+    const getTimeUntilNextChange = () => {
+      if (lastChangeTime === null) {
+        return 0;
+      }
+      const elapsed = Date.now() - lastChangeTime;
+      const remaining = 15000 - (elapsed % 15000);
+      return remaining;
+    };
+
+    const timeUntilNext = getTimeUntilNextChange();
+    
+    // Устанавливаем таймер на оставшееся время до следующей смены
+    const timeout = setTimeout(() => {
+      setIsTransitioning(true);
+      setTimeout(() => {
+        setCurrentIndex((prev) => {
+          const nextIndex = (prev + 1) % quotes.length;
+          setLastChangeTime(Date.now());
+          localStorage.setItem("quotesLastChangeTime", Date.now().toString());
+          return nextIndex;
+        });
+        setProgressKey((prev) => prev + 1); // Перезапуск анимации
+        setTimeout(() => setIsTransitioning(false), 50);
+      }, 200);
+    }, timeUntilNext);
+
+    // Затем устанавливаем интервал для регулярной смены
     const interval = setInterval(() => {
       setIsTransitioning(true);
       setTimeout(() => {
-        setCurrentIndex((prev) => (prev + 1) % quotes.length);
+        setCurrentIndex((prev) => {
+          const nextIndex = (prev + 1) % quotes.length;
+          setLastChangeTime(Date.now());
+          localStorage.setItem("quotesLastChangeTime", Date.now().toString());
+          return nextIndex;
+        });
         setProgressKey((prev) => prev + 1); // Перезапуск анимации
         setTimeout(() => setIsTransitioning(false), 50);
       }, 200);
     }, 15000); // 15 секунд
 
-    return () => clearInterval(interval);
-  }, [isVisible]);
+    return () => {
+      clearTimeout(timeout);
+      clearInterval(interval);
+    };
+  }, [isVisible, lastChangeTime, isMounted]);
 
   const currentQuote = quotes[currentIndex];
 
@@ -78,7 +149,7 @@ export function MotivationalQuotes() {
   };
 
   return (
-    <div className="fixed right-8 top-[20vh] w-64 max-w-sm z-10">
+    <div className="fixed right-8 top-[20vh] w-64 max-w-sm z-10" suppressHydrationWarning>
       <div className="rounded-lg p-6">
         <div className="space-y-4">
           <div className="mb-2">
@@ -91,7 +162,7 @@ export function MotivationalQuotes() {
           </div>
           
           {isVisible ? (
-            <>
+            <div suppressHydrationWarning>
               <blockquote className="space-y-3">
                 <p
                   className={`text-sm leading-relaxed text-[var(--text-main)] transition-opacity duration-200 ${
@@ -133,7 +204,7 @@ export function MotivationalQuotes() {
                   }
                 `}</style>
               </div>
-            </>
+            </div>
           ) : (
             <div className="text-sm text-[var(--text-muted)]">
               ...
