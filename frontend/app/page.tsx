@@ -61,7 +61,7 @@ function Hero() {
             курс для тех, кто только знакомится с программированием
           </p>
           <h1 className="text-3xl font-semibold tracking-tight text-[var(--text-main)] md:text-4xl">
-            Научишься писать на Java, понимать концепции языка и разработки.
+            писать на Java, понимать концепции языка и разработки.
           </h1>
           <p className="text-base leading-relaxed text-[var(--text-muted)]">
             Я — Java-разработчик в Yandex со стажем 5+ лет. Прошёл весь путь с нуля самостоятельно:
