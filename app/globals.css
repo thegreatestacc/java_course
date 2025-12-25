@@ -8,22 +8,38 @@
   --bg-main: #faf7f2;       /* песочный фон */
   --bg-card: #ffffff;
   --bg-muted: #f5f3ef;
+  --bg-secondary: #f5f5f5;
 
   --text-main: #111111;
   --text-muted: #555555;
+  --text-secondary: #737373;
+  --text-tertiary: #a3a3a3;
 
   --border-main: #e5e5e5;
+  --border-secondary: #d4d4d4;
+
+  --button-bg: #171717;
+  --button-text: #ffffff;
+  --button-hover: #404040;
 }
 
 .dark {
   --bg-main: #0f1115;       /* IDE dark */
   --bg-card: #16181d;
   --bg-muted: #1c1f26;
+  --bg-secondary: #1a1d23;
 
   --text-main: #e6e6e6;
   --text-muted: #a1a1a1;
+  --text-secondary: #737373;
+  --text-tertiary: #525252;
 
   --border-main: #2a2d34;
+  --border-secondary: #3a3d44;
+
+  --button-bg: #e6e6e6;
+  --button-text: #0f1115;
+  --button-hover: #d4d4d4;
 }
 
 /* =========================

@@ -15,7 +15,7 @@ const mono = JetBrains_Mono({
 export default function Page() {
   return (
     <div className={mono.className}>
-      <div className="min-h-dvh bg-[var(--bg-main)] text-neutral-900">
+      <div className="min-h-dvh bg-[var(--bg-main)] text-[var(--text-main)]">
         <Header />
         <main>
           <Hero />
@@ -34,18 +34,18 @@ export default function Page() {
 
 function Header() {
   return (
-    <header className="sticky top-0 z-10 border-b border-neutral-200/70 bg-[var(--bg-card)]/80 backdrop-blur">
-      <div className="flex items-center gap-3">
-        <ThemeToggle />
+    <header className="sticky top-0 z-10 border-b border-[var(--border-main)]/70 bg-[var(--bg-card)]/80 backdrop-blur">
+      <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-5 py-3">
         <a
           href="#cta"
           className="rounded-xl border border-[var(--border-main)]
                      bg-[var(--bg-card)]
-                     px-3 py-2 text-sm font-medium
+                     px-3 py-2 text-sm font-medium text-[var(--text-main)]
                      hover:bg-[var(--bg-muted)]"
         >
           Получить программу
         </a>
+        <ThemeToggle />
       </div>
     </header>
   );
@@ -56,13 +56,13 @@ function Hero() {
     <section id="top" className="mx-auto max-w-5xl px-5 py-14 md:py-20">
       <div className="grid gap-10 md:grid-cols-2 md:items-center">
         <div className="space-y-6">
-          <p className="text-xs font-medium tracking-wide text-neutral-600">
+          <p className="text-xs font-medium tracking-wide text-[var(--text-muted)]">
             курс для тех, кто только знакомится с программированием
           </p>
-          <h1 className="text-3xl font-semibold tracking-tight md:text-4xl">
+          <h1 className="text-3xl font-semibold tracking-tight text-[var(--text-main)] md:text-4xl">
             Научишься писать на Java, понимать основы и соберёшь базу для роста до Middle.
           </h1>
-          <p className="text-base leading-relaxed text-neutral-700">
+          <p className="text-base leading-relaxed text-[var(--text-muted)]">
             Я — Java-разработчик со стажем 5+ лет. Объясняю без «магии»: как работает код,
             почему он работает именно так, и как мыслит разработчик на реальных задачах.
           </p>
@@ -70,19 +70,19 @@ function Hero() {
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <a
               href="#cta"
-              className="inline-flex items-center justify-center rounded-xl bg-neutral-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-neutral-800"
+              className="inline-flex items-center justify-center rounded-xl bg-[var(--button-bg)] px-4 py-2.5 text-sm font-semibold text-[var(--button-text)] hover:bg-[var(--button-hover)]"
             >
               Хочу программу курса
             </a>
             <a
               href="#about"
-              className="inline-flex items-center justify-center rounded-xl border border-neutral-300 px-4 py-2.5 text-sm font-semibold text-neutral-900 hover:bg-neutral-50"
+              className="inline-flex items-center justify-center rounded-xl border border-[var(--border-secondary)] px-4 py-2.5 text-sm font-semibold text-[var(--text-main)] hover:bg-[var(--bg-muted)]"
             >
               Что внутри
             </a>
           </div>
 
-          <div className="flex flex-wrap gap-2 pt-2 text-xs text-neutral-600">
+          <div className="flex flex-wrap gap-2 pt-2 text-xs text-[var(--text-muted)]">
             <Pill>без воды</Pill>
             <Pill>много практики</Pill>
             <Pill>тестирование с первых шагов</Pill>
@@ -90,13 +90,13 @@ function Hero() {
           </div>
         </div>
 
-        <div className="rounded-2xl border border-neutral-200 bg-neutral-50 p-5 shadow-sm">
+        <div className="rounded-2xl border border-[var(--border-main)] bg-[var(--bg-secondary)] p-5 shadow-sm">
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-neutral-600">Пример того, как будем учиться</span>
-              <span className="text-[11px] text-neutral-500">IDE-style</span>
+              <span className="text-xs font-medium text-[var(--text-muted)]">Пример того, как будем учиться</span>
+              <span className="text-[11px] text-[var(--text-secondary)]">IDE-style</span>
             </div>
-            <pre className="overflow-x-auto rounded-xl border border-neutral-200 bg-[var(--bg-card)] p-4 text-[12px] leading-relaxed">
+            <pre className="overflow-x-auto rounded-xl border border-[var(--border-main)] bg-[var(--bg-card)] p-4 text-[12px] leading-relaxed text-[var(--text-main)]">
 {`// маленькие шаги → понятные результаты
 class Main {
   public static void main(String[] args) {
@@ -109,7 +109,7 @@ record User(String name) {
   String greet() { return "Привет, " + name; }
 }`}
             </pre>
-            <p className="text-xs leading-relaxed text-neutral-600">
+            <p className="text-xs leading-relaxed text-[var(--text-muted)]">
               Сначала — фундамент: типы, условия, циклы, функции, ООП. Затем — практика,
               архитектурные привычки и «как думать», чтобы расти.
             </p>
@@ -146,8 +146,8 @@ function ForWho() {
     <section className="mx-auto max-w-5xl px-5 py-14" aria-label="Для кого">
       <div className="grid gap-8 md:grid-cols-2">
         <div className="space-y-3">
-          <h2 className="text-xl font-semibold tracking-tight">Для кого этот курс</h2>
-          <p className="text-sm leading-relaxed text-neutral-700">
+          <h2 className="text-xl font-semibold tracking-tight text-[var(--text-main)]">Для кого этот курс</h2>
+          <p className="text-sm leading-relaxed text-[var(--text-muted)]">
             Для тех, кто только знакомится с программированием и хочет выстроить правильную базу,
             чтобы дальше уверенно идти в сторону Spring и коммерческой разработки.
           </p>
@@ -166,8 +166,8 @@ function ForWho() {
 function WhatYouGet() {
   return (
     <section className="mx-auto max-w-5xl px-5 pb-14" aria-label="Что будет на выходе">
-      <div className="rounded-2xl border border-neutral-200 bg-[var(--bg-card)] p-6 shadow-sm">
-        <h2 className="text-xl font-semibold tracking-tight">Что будет на выходе</h2>
+      <div className="rounded-2xl border border-[var(--border-main)] bg-[var(--bg-card)] p-6 shadow-sm">
+        <h2 className="text-xl font-semibold tracking-tight text-[var(--text-main)]">Что будет на выходе</h2>
         <div className="mt-5 grid gap-4 md:grid-cols-2">
           <Result
             title="Уверенная база Java"
@@ -196,12 +196,12 @@ function HowItWorks() {
     <section id="program" className="mx-auto max-w-5xl px-5 pb-14" aria-label="Как устроено">
       <div className="grid gap-6 md:grid-cols-2">
         <div className="space-y-3">
-          <h2 className="text-xl font-semibold tracking-tight">Как устроено обучение</h2>
-          <p className="text-sm leading-relaxed text-neutral-700">
+          <h2 className="text-xl font-semibold tracking-tight text-[var(--text-main)]">Как устроено обучение</h2>
+          <p className="text-sm leading-relaxed text-[var(--text-muted)]">
             Минимум лишнего: теория → практика → проверка (тесты/разбор) → закрепление.
             Будем двигаться маленькими шагами, чтобы мозг успевал «укладывать» фундамент.
           </p>
-          <div className="mt-4 flex flex-wrap gap-2 text-xs text-neutral-600">
+          <div className="mt-4 flex flex-wrap gap-2 text-xs text-[var(--text-muted)]">
             <Pill>короткие уроки</Pill>
             <Pill>чек-листы</Pill>
             <Pill>домашки</Pill>
@@ -209,9 +209,9 @@ function HowItWorks() {
           </div>
         </div>
 
-        <div className="rounded-2xl border border-neutral-200 bg-neutral-50 p-5">
-          <p className="text-sm font-semibold text-neutral-900">Пример логики этапов</p>
-          <ol className="mt-3 space-y-3 text-sm text-neutral-700">
+        <div className="rounded-2xl border border-[var(--border-main)] bg-[var(--bg-secondary)] p-5">
+          <p className="text-sm font-semibold text-[var(--text-main)]">Пример логики этапов</p>
+          <ol className="mt-3 space-y-3 text-sm text-[var(--text-muted)]">
             <Step
               title="Этап 1 — База и мышление"
               text="Переменные, типы, условия, циклы, функции, основы ООП + первые тесты."
@@ -238,8 +238,8 @@ function HowItWorks() {
 function FAQ() {
   return (
     <section id="faq" className="mx-auto max-w-5xl px-5 pb-14" aria-label="Вопросы">
-      <div className="rounded-2xl border border-neutral-200 bg-[var(--bg-card)] p-6 shadow-sm">
-        <h2 className="text-xl font-semibold tracking-tight">FAQ</h2>
+      <div className="rounded-2xl border border-[var(--border-main)] bg-[var(--bg-card)] p-6 shadow-sm">
+        <h2 className="text-xl font-semibold tracking-tight text-[var(--text-main)]">FAQ</h2>
         <div className="mt-5 grid gap-4 md:grid-cols-2">
           <QA
             q="Нужен ли опыт программирования?"
@@ -266,32 +266,32 @@ function FAQ() {
 function FinalCTA() {
   return (
     <section id="cta" className="mx-auto max-w-5xl px-5 pb-20" aria-label="CTA">
-      <div className="rounded-2xl border border-neutral-200 bg-neutral-50 p-6">
+      <div className="rounded-2xl border border-[var(--border-main)] bg-[var(--bg-secondary)] p-6">
         <div className="grid gap-6 md:grid-cols-[1.4fr_1fr] md:items-center">
           <div className="space-y-2">
-            <h2 className="text-xl font-semibold tracking-tight">Хочешь программу и структуру этапов?</h2>
-            <p className="text-sm leading-relaxed text-neutral-700">
+            <h2 className="text-xl font-semibold tracking-tight text-[var(--text-main)]">Хочешь программу и структуру этапов?</h2>
+            <p className="text-sm leading-relaxed text-[var(--text-muted)]">
               Оставь контакт — пришлю структуру курса и пример первых заданий.
             </p>
           </div>
 
           <form className="grid gap-3" action="#" method="post">
             <label className="grid gap-1">
-              <span className="text-xs font-medium text-neutral-700">Email</span>
+              <span className="text-xs font-medium text-[var(--text-muted)]">Email</span>
               <input
                 type="email"
                 required
                 placeholder="you@example.com"
-                className="h-11 rounded-xl border border-neutral-300 bg-[var(--bg-card)] px-3 text-sm outline-none focus:ring-2 focus:ring-neutral-300"
+                className="h-11 rounded-xl border border-[var(--border-secondary)] bg-[var(--bg-card)] px-3 text-sm text-[var(--text-main)] outline-none focus:ring-2 focus:ring-[var(--border-secondary)]"
               />
             </label>
             <button
               type="submit"
-              className="h-11 rounded-xl bg-neutral-900 text-sm font-semibold text-white hover:bg-neutral-800"
+              className="h-11 rounded-xl bg-[var(--button-bg)] text-sm font-semibold text-[var(--button-text)] hover:bg-[var(--button-hover)]"
             >
               Отправить
             </button>
-            <p className="text-[11px] text-neutral-600">
+            <p className="text-[11px] text-[var(--text-muted)]">
               Никакого спама. Только программа курса и обновления.
             </p>
           </form>
@@ -303,13 +303,13 @@ function FinalCTA() {
 
 function Footer() {
   return (
-    <footer className="border-t border-neutral-200">
-      <div className="mx-auto flex max-w-5xl flex-col gap-2 px-5 py-8 text-xs text-neutral-600 md:flex-row md:items-center md:justify-between">
+    <footer className="border-t border-[var(--border-main)]">
+      <div className="mx-auto flex max-w-5xl flex-col gap-2 px-5 py-8 text-xs text-[var(--text-muted)] md:flex-row md:items-center md:justify-between">
         <p>© {new Date().getFullYear()} Java с нуля до Middle</p>
         <div className="flex gap-4">
-          <a className="hover:text-neutral-900" href="#top">Наверх</a>
-          <a className="hover:text-neutral-900" href="#about">О курсе</a>
-          <a className="hover:text-neutral-900" href="#cta">Программа</a>
+          <a className="hover:text-[var(--text-main)]" href="#top">Наверх</a>
+          <a className="hover:text-[var(--text-main)]" href="#about">О курсе</a>
+          <a className="hover:text-[var(--text-main)]" href="#cta">Программа</a>
         </div>
       </div>
     </footer>
@@ -318,7 +318,7 @@ function Footer() {
 
 function Pill({ children }: { children: React.ReactNode }) {
   return (
-    <span className="rounded-full border border-neutral-200 bg-[var(--bg-card)] px-2.5 py-1">
+    <span className="rounded-full border border-[var(--border-main)] bg-[var(--bg-card)] px-2.5 py-1 text-[var(--text-muted)]">
       {children}
     </span>
   );
@@ -326,45 +326,45 @@ function Pill({ children }: { children: React.ReactNode }) {
 
 function Card({ title, text }: { title: string; text: string }) {
   return (
-    <div className="rounded-2xl border border-neutral-200 bg-[var(--bg-card)] p-5 shadow-sm">
-      <p className="text-sm font-semibold text-neutral-900">{title}</p>
-      <p className="mt-2 text-sm leading-relaxed text-neutral-700">{text}</p>
+    <div className="rounded-2xl border border-[var(--border-main)] bg-[var(--bg-card)] p-5 shadow-sm">
+      <p className="text-sm font-semibold text-[var(--text-main)]">{title}</p>
+      <p className="mt-2 text-sm leading-relaxed text-[var(--text-muted)]">{text}</p>
     </div>
   );
 }
 
 function Bullet({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex gap-3 rounded-2xl border border-neutral-200 bg-[var(--bg-card)] p-4 shadow-sm">
-      <span className="mt-1 inline-block h-2 w-2 shrink-0 rounded-full bg-neutral-900" />
-      <p className="text-sm leading-relaxed text-neutral-700">{children}</p>
+    <div className="flex gap-3 rounded-2xl border border-[var(--border-main)] bg-[var(--bg-card)] p-4 shadow-sm">
+      <span className="mt-1 inline-block h-2 w-2 shrink-0 rounded-full bg-[var(--button-bg)]" />
+      <p className="text-sm leading-relaxed text-[var(--text-muted)]">{children}</p>
     </div>
   );
 }
 
 function Result({ title, text }: { title: string; text: string }) {
   return (
-    <div className="rounded-2xl border border-neutral-200 bg-neutral-50 p-4">
-      <p className="text-sm font-semibold text-neutral-900">{title}</p>
-      <p className="mt-1 text-sm leading-relaxed text-neutral-700">{text}</p>
+    <div className="rounded-2xl border border-[var(--border-main)] bg-[var(--bg-secondary)] p-4">
+      <p className="text-sm font-semibold text-[var(--text-main)]">{title}</p>
+      <p className="mt-1 text-sm leading-relaxed text-[var(--text-muted)]">{text}</p>
     </div>
   );
 }
 
 function Step({ title, text }: { title: string; text: string }) {
   return (
-    <li className="rounded-2xl border border-neutral-200 bg-[var(--bg-card)] p-4">
-      <p className="text-sm font-semibold text-neutral-900">{title}</p>
-      <p className="mt-1 text-sm leading-relaxed text-neutral-700">{text}</p>
+    <li className="rounded-2xl border border-[var(--border-main)] bg-[var(--bg-card)] p-4">
+      <p className="text-sm font-semibold text-[var(--text-main)]">{title}</p>
+      <p className="mt-1 text-sm leading-relaxed text-[var(--text-muted)]">{text}</p>
     </li>
   );
 }
 
 function QA({ q, a }: { q: string; a: string }) {
   return (
-    <div className="rounded-2xl border border-neutral-200 bg-neutral-50 p-4">
-      <p className="text-sm font-semibold text-neutral-900">{q}</p>
-      <p className="mt-1 text-sm leading-relaxed text-neutral-700">{a}</p>
+    <div className="rounded-2xl border border-[var(--border-main)] bg-[var(--bg-secondary)] p-4">
+      <p className="text-sm font-semibold text-[var(--text-main)]">{q}</p>
+      <p className="mt-1 text-sm leading-relaxed text-[var(--text-muted)]">{a}</p>
     </div>
   );
 }
