@@ -66,11 +66,6 @@ function Hero() {
           <p className="text-base leading-relaxed text-[var(--text-muted)]">
             Я — Java-разработчик в Yandex со стажем 5+ лет. Прошёл весь путь с нуля самостоятельно:
             набил множество шишек, сделал кучу ошибок и потратил много времени на поиск правильных решений.
-            Этот курс поможет:
-            - сократить время от начала обучения до трудоустройства.
-            - избежать тех ошибок, которые я встретил на своём пути, 
-            - упростить процесс трудоустройства.
-            
             Обучение построено на максимально приближенных задачах к реальным, с которыми я работал на проектах.
             Также помогу грамотно составить резюме, что бы HR'ы не выкидывали его в мусорное ведро после прочтения первых строк, а приглашали тебя на собес.
           </p>
@@ -99,6 +94,16 @@ function Hero() {
         </div>
 
         <CodeExample />
+      </div>
+      <div className="mx-auto max-w-6xl px-5 mt-10 flex justify-center">
+        <div className="rounded-2xl border border-[var(--border-main)] bg-[var(--bg-card)] p-5 shadow-sm max-w-2xl w-full">
+          <p className="text-sm font-semibold text-[var(--text-main)] mb-2">Этот курс поможет:</p>
+          <ul className="text-sm leading-relaxed text-[var(--text-muted)] list-disc list-inside space-y-1 ml-4">
+            <li>сократить время от начала обучения до трудоустройства.</li>
+            <li>избежать тех ошибок, которые я встретил на своём пути.</li>
+            <li>упростить процесс трудоустройства.</li>
+          </ul>
+        </div>
       </div>
     </section>
   );
