@@ -1,26 +1,36 @@
 @import "tailwindcss";
 
+/* =========================
+   Цветовые переменные
+   ========================= */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg-main: #faf7f2;       /* песочный фон */
+  --bg-card: #ffffff;
+  --bg-muted: #f5f3ef;
+
+  --text-main: #111111;
+  --text-muted: #555555;
+
+  --border-main: #e5e5e5;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+.dark {
+  --bg-main: #0f1115;       /* IDE dark */
+  --bg-card: #16181d;
+  --bg-muted: #1c1f26;
+
+  --text-main: #e6e6e6;
+  --text-muted: #a1a1a1;
+
+  --border-main: #2a2d34;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+/* =========================
+   Базовые стили
+   ========================= */
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--bg-main);
+  color: var(--text-main);
 }
