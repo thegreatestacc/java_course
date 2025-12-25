@@ -251,10 +251,31 @@ export function CodeExample() {
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <span className="text-xs font-medium text-[var(--text-muted)]">Пример того, как будем учиться</span>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={goToPrevious}
+              disabled={isTransitioning}
+              className="flex h-6 w-6 items-center justify-center rounded border border-[var(--border-main)] bg-[var(--bg-card)] text-[10px] text-[var(--text-muted)] hover:bg-[var(--bg-muted)] transition disabled:opacity-50 disabled:cursor-not-allowed"
+              aria-label="Предыдущий пример"
+            >
+              ←
+            </button>
+            <span className="text-[10px] text-[var(--text-secondary)]">
+              {currentPage + 1} / {codeExamples.length}
+            </span>
+            <button
+              onClick={goToNext}
+              disabled={isTransitioning}
+              className="flex h-6 w-6 items-center justify-center rounded border border-[var(--border-main)] bg-[var(--bg-card)] text-[10px] text-[var(--text-muted)] hover:bg-[var(--bg-muted)] transition disabled:opacity-50 disabled:cursor-not-allowed"
+              aria-label="Следующий пример"
+            >
+              →
+            </button>
+          </div>
         </div>
         
         <div className="rounded-xl border border-[var(--border-main)] bg-[var(--bg-card)] p-4 w-full min-w-0">
-          <div className="mb-2 flex items-center justify-between">
+          <div className="mb-2">
             <span 
               className={`text-[11px] font-medium text-[var(--text-secondary)] transition-opacity duration-200 ${
                 isTransitioning ? "opacity-0" : "opacity-100"
@@ -262,27 +283,6 @@ export function CodeExample() {
             >
               {example.title}
             </span>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={goToPrevious}
-                disabled={isTransitioning}
-                className="flex h-6 w-6 items-center justify-center rounded border border-[var(--border-main)] bg-[var(--bg-card)] text-[10px] text-[var(--text-muted)] hover:bg-[var(--bg-muted)] transition disabled:opacity-50 disabled:cursor-not-allowed"
-                aria-label="Предыдущий пример"
-              >
-                ←
-              </button>
-              <span className="text-[10px] text-[var(--text-secondary)]">
-                {currentPage + 1} / {codeExamples.length}
-              </span>
-              <button
-                onClick={goToNext}
-                disabled={isTransitioning}
-                className="flex h-6 w-6 items-center justify-center rounded border border-[var(--border-main)] bg-[var(--bg-card)] text-[10px] text-[var(--text-muted)] hover:bg-[var(--bg-muted)] transition disabled:opacity-50 disabled:cursor-not-allowed"
-                aria-label="Следующий пример"
-              >
-                →
-              </button>
-            </div>
           </div>
           <div className="h-[380px] overflow-y-auto w-full min-w-0">
             <div
