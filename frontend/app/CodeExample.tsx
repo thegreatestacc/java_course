@@ -251,7 +251,6 @@ export function CodeExample() {
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <span className="text-xs font-medium text-[var(--text-muted)]">Пример того, как будем учиться</span>
-          <span className="text-[11px] text-[var(--text-secondary)]">IDE-style</span>
         </div>
         
         <div className="rounded-xl border border-[var(--border-main)] bg-[var(--bg-card)] p-4 w-full min-w-0">
