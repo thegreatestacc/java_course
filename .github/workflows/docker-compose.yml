@@ -63,7 +63,7 @@ jobs:
             set -euo pipefail
             cd "${{ secrets.DEPLOY_PATH }}"
 
-            echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u "${{ secrets.GHCR_USERNAME }}" --password-stdin
+            echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u "${{ github.repository_owner }}" --password-stdin
 
             if [ -f .env ]; then
               if grep -q '^TAG=' .env; then
