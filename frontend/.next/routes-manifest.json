@@ -14,18 +14,7 @@
       "regex": "^(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))/$"
     }
   ],
-  "headers": [
-    {
-      "source": "/:path*",
-      "headers": [
-        {
-          "key": "Access-Control-Allow-Origin",
-          "value": "*"
-        }
-      ],
-      "regex": "^(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))?(?:/)?$"
-    }
-  ],
+  "headers": [],
   "rewrites": {
     "beforeFiles": [],
     "afterFiles": [],
@@ -52,10 +41,46 @@
       "namedRegex": "^/_not\\-found(?:/)?$"
     },
     {
+      "page": "/compiler",
+      "regex": "^/compiler(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/compiler(?:/)?$"
+    },
+    {
       "page": "/favicon.ico",
       "regex": "^/favicon\\.ico(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/favicon\\.ico(?:/)?$"
+    },
+    {
+      "page": "/gift",
+      "regex": "^/gift(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/gift(?:/)?$"
+    },
+    {
+      "page": "/gift/advanced",
+      "regex": "^/gift/advanced(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/gift/advanced(?:/)?$"
+    },
+    {
+      "page": "/gift/basics",
+      "regex": "^/gift/basics(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/gift/basics(?:/)?$"
+    },
+    {
+      "page": "/gift/branches",
+      "regex": "^/gift/branches(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/gift/branches(?:/)?$"
+    },
+    {
+      "page": "/gift/remote",
+      "regex": "^/gift/remote(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/gift/remote(?:/)?$"
     }
   ],
   "dataRoutes": [],

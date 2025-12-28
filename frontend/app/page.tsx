@@ -91,6 +91,12 @@ export default function Page() {
                 >
                   <span className="transition-opacity duration-200 opacity-70 hover:opacity-100">Подарок</span>
                 </Link>
+                <Link
+                  href="/compiler"
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all duration-200 text-[var(--text-muted)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-main)]"
+                >
+                  <span className="transition-opacity duration-200 opacity-70 hover:opacity-100">Компилятор</span>
+                </Link>
               </div>
             </div>
 

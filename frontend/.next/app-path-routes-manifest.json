@@ -1,6 +1,12 @@
 {
   "/_global-error/page": "/_global-error",
   "/_not-found/page": "/_not-found",
+  "/compiler/page": "/compiler",
   "/favicon.ico/route": "/favicon.ico",
+  "/gift/advanced/page": "/gift/advanced",
+  "/gift/basics/page": "/gift/basics",
+  "/gift/branches/page": "/gift/branches",
+  "/gift/page": "/gift",
+  "/gift/remote/page": "/gift/remote",
   "/page": "/"
 }

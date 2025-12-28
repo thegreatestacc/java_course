@@ -42,6 +42,12 @@ export default function GiftPage() {
                 >
                   <span className="transition-opacity duration-200 opacity-100">Подарок</span>
                 </Link>
+                <Link
+                  href="/compiler"
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all duration-200 text-[var(--text-muted)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-main)]"
+                >
+                  <span className="transition-opacity duration-200 opacity-70 hover:opacity-100">Компилятор</span>
+                </Link>
               </div>
             </div>
 
@@ -218,6 +224,30 @@ function CourseContent() {
             />
           </div>
         </div>
+        
+        {/* Блок тестирования */}
+        <div className="rounded-2xl border border-[var(--border-main)] bg-[var(--bg-card)] p-6 shadow-sm">
+          <h2 className="text-xl font-semibold tracking-tight text-[var(--text-main)] mb-4">
+            Тестирование по пройденному материалу
+          </h2>
+          <p className="text-sm leading-relaxed text-[var(--text-muted)] mb-6">
+            Проверь свои знания по пройденным темам курса. Доступны два типа тестирования: теоретическое (с вариантами ответов) и практическое (нужно вписать правильный ответ).
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Link
+              href="/gift/quiz"
+              className="inline-flex items-center justify-center rounded-xl bg-[var(--button-bg)] px-6 py-3 text-sm font-semibold text-[var(--button-text)] hover:bg-[var(--button-hover)] transition-colors"
+            >
+              Теоретическое тестирование
+            </Link>
+            <Link
+              href="/gift/quiz-practical"
+              className="inline-flex items-center justify-center rounded-xl border border-[var(--border-main)] bg-[var(--bg-card)] px-6 py-3 text-sm font-semibold text-[var(--text-main)] hover:bg-[var(--bg-muted)] transition-colors"
+            >
+              Практическое тестирование
+            </Link>
+          </div>
+        </div>
       </div>
     </section>
   );
@@ -308,21 +338,31 @@ function Pill({ children }: { children: React.ReactNode }) {
 }
 
 function Lesson({ title, topics, href }: { title: string; topics: string[]; href: string }) {
+  const lastIndex = topics.length - 1;
+  
   return (
-    <Link
-      href={href}
-      className="block rounded-2xl border border-[var(--border-main)] bg-[var(--bg-secondary)] p-4 hover:bg-[var(--bg-muted)] transition-colors cursor-pointer"
-    >
+    <div className="rounded-2xl border border-[var(--border-main)] bg-[var(--bg-secondary)] p-4">
       <p className="text-sm font-semibold text-[var(--text-main)] mb-3">{title}</p>
       <ul className="space-y-2 text-sm text-[var(--text-muted)]">
         {topics.map((topic, index) => (
-          <li key={index} className="flex items-start gap-2">
+          <li 
+            key={index} 
+            className={`flex gap-2 ${index === lastIndex ? 'items-baseline' : 'items-start'}`}
+          >
             <span className="inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--button-bg)] mt-1.5" />
-            <span>{topic}</span>
+            <span className="flex-1">{topic}</span>
+            {index === lastIndex && (
+              <Link
+                href={href}
+                className="inline-flex items-baseline rounded-xl bg-[var(--button-bg)] px-4 py-2 text-xs font-semibold text-[var(--button-text)] hover:bg-[var(--button-hover)] transition-colors ml-auto shrink-0"
+              >
+                Читать
+              </Link>
+            )}
           </li>
         ))}
       </ul>
-    </Link>
+    </div>
   );
 }
 

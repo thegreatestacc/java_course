@@ -93,3 +93,108 @@ body {
 .dark pre[class*="language-"] .token.type-in-param {
   color: #9876aa !important;
 }
+
+/* =========================
+   Стили для редактора кода
+   ========================= */
+
+.editor-textarea {
+  background: transparent !important;
+  color: transparent !important;
+  caret-color: var(--text-main) !important;
+  border: none !important;
+  outline: none !important;
+  resize: none !important;
+  font-family: inherit !important;
+  font-size: 13px !important;
+  line-height: 1.6 !important;
+  padding: 16px !important;
+  margin: 0 !important;
+  width: 100% !important;
+  min-height: 100% !important;
+  white-space: pre !important;
+  tab-size: 4 !important;
+  letter-spacing: normal !important;
+  word-spacing: normal !important;
+  text-indent: 0 !important;
+  text-align: left !important;
+  box-sizing: border-box !important;
+  overflow-wrap: normal !important;
+  word-wrap: normal !important;
+}
+
+.editor-textarea::selection {
+  background: rgba(0, 123, 255, 0.3) !important;
+}
+
+.editor-textarea::placeholder {
+  color: var(--text-muted) !important;
+  opacity: 0.5 !important;
+}
+
+/* Стили для контейнера react-simple-code-editor */
+div[contenteditable="false"] {
+  position: relative !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Стили для highlight overlay */
+div[contenteditable="false"] > pre {
+  margin: 0 !important;
+  padding: 16px !important;
+  text-align: left !important;
+  box-sizing: border-box !important;
+}
+
+/* Стили для внутренних элементов редактора */
+div[contenteditable="false"] > pre > code {
+  margin: 0 !important;
+  padding: 0 !important;
+  text-indent: 0 !important;
+}
+
+/* Стили для span внутри code (токены синтаксической подсветки) */
+div[contenteditable="false"] > pre > code > span {
+  margin: 0 !important;
+  padding: 0 !important;
+  text-indent: 0 !important;
+}
+
+/* Убеждаемся, что первая строка начинается с начала */
+div[contenteditable="false"] > pre > code > span:first-child {
+  margin-left: 0 !important;
+  padding-left: 0 !important;
+  text-indent: 0 !important;
+}
+
+/* Стили для первого символа в первой строке */
+div[contenteditable="false"] > pre > code::first-line {
+  text-indent: 0 !important;
+  margin-left: 0 !important;
+  padding-left: 0 !important;
+}
+
+/* =========================
+   Анимации для модального окна
+   ========================= */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
