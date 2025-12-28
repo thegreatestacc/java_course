@@ -133,7 +133,7 @@ export default function CompilerPage() {
     setError("");
 
     try {
-      const response = await fetch("http://localhost:8080/api/compile", {
+      const response = await fetch("/api/compile", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -11,6 +11,23 @@ const nextConfig: NextConfig = {
   // НЕ рекомендую отдавать Access-Control-Allow-Origin: *
   // из Next на все пути — это может ломать кэш/безопасность.
   // Лучше настроить CORS на бэкенде /api или на reverse-proxy (nginx).
+
+  // Проксирование API запросов на backend
+  async rewrites() {
+    // В Docker используем имя сервиса, локально - localhost
+    const backendUrl = 
+      process.env.BACKEND_URL || 
+      (process.env.NODE_ENV === "production" 
+        ? "http://backend:8080" 
+        : "http://localhost:8080");
+    
+    return [
+      {
+        source: "/api/:path*",
+        destination: `${backendUrl}/api/:path*`,
+      },
+    ];
+  },
 };
 
 export default nextConfig;
