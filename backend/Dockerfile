@@ -1,12 +1,12 @@
 # -------- build stage --------
-FROM eclipse-temurin:25-jdk AS build
+FROM eclipse-temurin:17-jdk AS build
 WORKDIR /app
 
 COPY . .
 RUN chmod +x mvnw && ./mvnw -DskipTests package
 
 # -------- run stage --------
-FROM eclipse-temurin:25-jdk
+FROM eclipse-temurin:17-jdk
 
 RUN apt-get update \
  && apt-get install -y --no-install-recommends curl \
