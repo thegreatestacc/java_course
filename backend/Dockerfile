@@ -6,7 +6,7 @@ COPY . .
 RUN chmod +x mvnw && ./mvnw -DskipTests package
 
 # -------- run stage --------
-FROM eclipse-temurin:25-jre
+FROM eclipse-temurin:25-jdk
 
 RUN apt-get update \
  && apt-get install -y --no-install-recommends curl \
