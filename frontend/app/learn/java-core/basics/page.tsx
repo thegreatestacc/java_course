@@ -358,13 +358,18 @@ function DetailedLesson({
   const isCodeLine = (line: string): boolean => {
     // Строки с отступами (4+ пробелов) считаются кодом
     if (line.match(/^\s{4,}/)) return true;
+    const trimmed = line.trim();
+    // Комментарии
+    if (trimmed.startsWith("//")) return true;
+    // Типы данных Java
+    const javaTypePattern = /^(int|String|double|boolean|char|byte|short|long|float)\s+\w+/;
+    if (javaTypePattern.test(trimmed)) return true;
     return line.startsWith("public ") || line.startsWith("private ") || line.startsWith("class ") || 
            line.startsWith("    ") || line.startsWith("}") || line.startsWith("{") ||
-           line.match(/^[a-zA-Z].*\(.*\)/) || line.includes("System.out") ||
-           line.match(/^(int|String|double|boolean|char|byte|short|long|float)\s+\w+/) ||
+           /^[a-zA-Z].*\(.*\)/.test(line) || line.includes("System.out") ||
            (line.includes("=") && (line.includes("int ") || line.includes("String ") || line.includes("double "))) ||
            line.includes("->") || line.includes("++") || line.includes("--") ||
-           line.startsWith("//") || line.trim().startsWith("@");
+           trimmed.startsWith("@");
   };
 
   const isCommandLine = (line: string): boolean => {
@@ -389,7 +394,7 @@ function DetailedLesson({
             <div className="rounded-xl border border-[var(--border-main)] bg-[var(--bg-secondary)] p-4">
               <div className="space-y-2.5 text-sm text-[var(--text-muted)] leading-relaxed">
                 {(() => {
-                  const elements: JSX.Element[] = [];
+                  const elements: React.ReactElement[] = [];
                   let currentParagraph: string[] = [];
                   let currentCodeBlock: string[] = [];
                   let keyIndex = 0;
