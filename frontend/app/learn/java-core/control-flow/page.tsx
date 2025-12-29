@@ -454,8 +454,8 @@ function DetailedLesson({
     if (trimmed.match(/^(break|continue|return)\s*;/)) return true;
     return line.startsWith("public ") || line.startsWith("private ") || line.startsWith("class ") || 
            line.startsWith("    ") || line.startsWith("}") || line.startsWith("{") ||
-           line.match(/^[a-zA-Z].*\(.*\)/) || line.includes("System.out") ||
-           line.match(/^(int|String|double|boolean|char|byte|short|long|float)\s+/) ||
+           !!line.match(/^[a-zA-Z].*\(.*\)/) || line.includes("System.out") ||
+           !!trimmed.match(/^(int|String|double|boolean|char|byte|short|long|float)\s+/) ||
            (line.includes("=") && (line.includes("int ") || line.includes("String ") || line.includes("double "))) ||
            line.includes("->") || line.includes("++") || line.includes("--") ||
            trimmed.startsWith("@") || trimmed.endsWith(";");
@@ -483,7 +483,7 @@ function DetailedLesson({
             <div className="rounded-xl border border-[var(--border-main)] bg-[var(--bg-secondary)] p-4">
               <div className="space-y-2.5 text-sm text-[var(--text-muted)] leading-relaxed">
                 {(() => {
-                  const elements: JSX.Element[] = [];
+                  const elements: React.ReactElement[] = [];
                   let currentParagraph: string[] = [];
                   let currentCodeBlock: string[] = [];
                   let keyIndex = 0;

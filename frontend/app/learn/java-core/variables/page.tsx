@@ -435,7 +435,7 @@ function DetailedLesson({
     }
     
     // Вызовы методов (System.out.println, name.length(), и т.д.)
-    if (trimmed.match(/^\w+\.\w+\(/) || trimmed.includes("System.out") || trimmed.includes(".length()") ||
+    if (!!trimmed.match(/^\w+\.\w+\(/) || trimmed.includes("System.out") || trimmed.includes(".length()") ||
         trimmed.includes(".equals(") || trimmed.includes(".substring(") || trimmed.includes(".toUpperCase()") ||
         trimmed.includes(".toLowerCase()") || trimmed.includes("Integer.parseInt") || 
         trimmed.includes("String.valueOf")) {
@@ -445,19 +445,19 @@ function DetailedLesson({
     // Операторы и синтаксис Java
     if (trimmed.includes("->") || trimmed.includes("++") || trimmed.includes("--") ||
         trimmed.startsWith("}") || trimmed.startsWith("{") || trimmed.endsWith(";") ||
-        trimmed.match(/^\w+\s*=\s*[^=]/) || trimmed.match(/\(.*\)\s*->/) ||
-        trimmed.match(/^\w+\s*\(.*\)\s*\{/) || trimmed.match(/^\w+\s*\(.*\)\s*;/)) {
+        !!trimmed.match(/^\w+\s*=\s*[^=]/) || !!trimmed.match(/\(.*\)\s*->/) ||
+        !!trimmed.match(/^\w+\s*\(.*\)\s*\{/) || !!trimmed.match(/^\w+\s*\(.*\)\s*;/)) {
       return true;
     }
     
     // Строки с кавычками (строковые литералы)
-    if (trimmed.match(/["']/) && (trimmed.includes("=") || trimmed.includes("String"))) {
+    if (!!trimmed.match(/["']/) && (trimmed.includes("=") || trimmed.includes("String"))) {
       return true;
     }
     
     // Синтаксис объявления переменных (тип имя_переменной; или тип имя_переменной = значение;)
     // Это общий паттерн, который может быть кодом
-    if (trimmed.match(/^\w+\s+\w+\s*[=;]/) && !trimmed.startsWith("•")) {
+    if (!!trimmed.match(/^\w+\s+\w+\s*[=;]/) && !trimmed.startsWith("•")) {
       return true;
     }
     
@@ -486,7 +486,7 @@ function DetailedLesson({
             <div className="rounded-xl border border-[var(--border-main)] bg-[var(--bg-secondary)] p-4">
               <div className="space-y-2.5 text-sm text-[var(--text-muted)] leading-relaxed">
                 {(() => {
-                  const elements: JSX.Element[] = [];
+                  const elements: React.ReactElement[] = [];
                   let currentParagraph: string[] = [];
                   let currentCodeBlock: string[] = [];
                   let keyIndex = 0;
