@@ -59,7 +59,7 @@ export default function Page() {
   }, []);
 
   const homePageSections = [
-    { label: "О курсе", href: "#about" },
+    { label: "О материале", href: "#about" },
     { label: "Для кого", href: "#for-who" },
     { label: "Что получишь", href: "#what-you-get" },
     { label: "Как устроено", href: "#program" },
@@ -86,10 +86,10 @@ export default function Page() {
                   <span className="transition-opacity duration-200 opacity-100">Главная</span>
                 </Link>
                 <Link
-                  href="/gift"
+                  href="/learn"
                   className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all duration-200 text-[var(--text-muted)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-main)]"
                 >
-                  <span className="transition-opacity duration-200 opacity-70 hover:opacity-100">Подарок</span>
+                  <span className="transition-opacity duration-200 opacity-70 hover:opacity-100">Начать учиться</span>
                 </Link>
                 <Link
                   href="/compiler"
@@ -164,7 +164,7 @@ function Hero() {
       <div className="grid gap-10 md:grid-cols-[1.1fr_1.5fr] md:items-center md:grid-cols-[1fr_630px]">
         <div className="space-y-6">
           <p className="text-xs font-medium tracking-wide text-[var(--text-muted)]">
-            курс для тех, кто только знакомится с программированием
+            обучающий материал для тех, кто только знакомится с программированием
           </p>
           <h1 className="text-3xl font-semibold tracking-tight text-[var(--text-main)] md:text-4xl">
             Научишься писать на Java, понимать концепции языка и разработки.
@@ -177,17 +177,12 @@ function Hero() {
           </p>
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <RoadmapModal />
             <a
-              href="#cta"
-              className="inline-flex items-center justify-center rounded-xl bg-[var(--button-bg)] px-4 py-2.5 text-sm font-semibold text-[var(--button-text)] hover:bg-[var(--button-hover)]"
-            >
-              Хочу программу курса
-            </a>
-            <a
-              href="/gift"
+              href="/learn"
               className="inline-flex items-center justify-center rounded-xl border border-[var(--border-secondary)] px-4 py-2.5 text-sm font-semibold text-[var(--text-main)] hover:bg-[var(--bg-muted)]"
             >
-              Подарок
+              Начать учиться
             </a>
           </div>
 
@@ -203,7 +198,7 @@ function Hero() {
       </div>
       <div className="mx-auto max-w-6xl px-5 mt-10 flex justify-center">
         <div className="rounded-2xl border border-[var(--border-main)] bg-[var(--bg-card)] p-5 shadow-sm max-w-2xl w-full">
-          <p className="text-sm font-semibold text-[var(--text-main)] mb-2">Этот курс поможет:</p>
+          <p className="text-sm font-semibold text-[var(--text-main)] mb-2">Этот материал поможет:</p>
           <ul className="text-sm leading-relaxed text-[var(--text-muted)] list-disc list-inside space-y-1 ml-4">
             <li>сократить время от начала обучения до трудоустройства.</li>
             <li>избежать тех ошибок, которые я встретил на своём пути.</li>
@@ -220,15 +215,15 @@ function Proof() {
     <section id="about" className="mx-auto max-w-6xl px-5 pb-6">
       <div className="grid gap-4 md:grid-cols-3">
         <Card
-          title="С нуля — нормально"
-          text="Курс рассчитан на новичков: объясняю терминологию, логику, и даю понятные упражнения."
+          title="С нуля"
+          text="Материал рассчитан на новичков: объясняю терминологию, логику, и даю понятные упражнения."
         />
         <Card
           title="5+ лет коммерции"
           text="Опора на практику: как пишут код на проектах, как избегать типичных ошибок и хаоса."
         />
         <Card
-          title="Тесты сразу"
+          title="Покрытие кода тестами"
           text="С первых этапов прививаем привычку проверять код и мыслить в терминах поведения."
         />
       </div>
@@ -241,7 +236,7 @@ function ForWho() {
     <section id="for-who" className="mx-auto max-w-6xl px-5 py-14" aria-label="Для кого">
       <div className="grid gap-8 md:grid-cols-2">
         <div className="space-y-3">
-          <h2 className="text-xl font-semibold tracking-tight text-[var(--text-main)]">Для кого этот курс</h2>
+          <h2 className="text-xl font-semibold tracking-tight text-[var(--text-main)]">Для кого этот материал</h2>
           <p className="text-sm leading-relaxed text-[var(--text-muted)]">
             Для тех, кто только знакомится с программированием и хочет выстроить правильную базу,
             чтобы дальше уверенно идти в сторону Spring и коммерческой разработки.
@@ -338,7 +333,7 @@ function FAQ() {
         <div className="mt-5 grid gap-4 md:grid-cols-2">
           <QA
             q="Нужен ли опыт программирования?"
-            a="Нет. Курс рассчитан на новичков. Всё объясняю с понятными примерами и упражнениями."
+            a="Нет. Материал рассчитан на новичков. Всё объясняю с понятными примерами и упражнениями."
           />
           <QA
             q="Мы сразу используем Spring?"
@@ -366,7 +361,7 @@ function FinalCTA() {
           <div className="space-y-2">
             <h2 className="text-xl font-semibold tracking-tight text-[var(--text-main)]">Хочешь программу и структуру этапов?</h2>
             <p className="text-sm leading-relaxed text-[var(--text-muted)]">
-              Оставь контакт — пришлю структуру курса и пример первых заданий.
+              Оставь контакт — пришлю структуру материала и пример первых заданий.
             </p>
           </div>
 
@@ -387,7 +382,7 @@ function FinalCTA() {
               Отправить
             </button>
             <p className="text-[11px] text-[var(--text-muted)]">
-              Никакого спама. Только программа курса и обновления.
+              Никакого спама. Только программа материала и обновления.
             </p>
           </form>
         </div>
@@ -403,7 +398,7 @@ function Footer() {
         <p>© {new Date().getFullYear()} Java с нуля до Middle</p>
         <div className="flex gap-4">
           <a className="hover:text-[var(--text-main)]" href="#top">Наверх</a>
-          <a className="hover:text-[var(--text-main)]" href="#about">О курсе</a>
+          <a className="hover:text-[var(--text-main)]" href="#about">О материале</a>
           <a className="hover:text-[var(--text-main)]" href="#cta">Программа</a>
         </div>
       </div>
@@ -461,5 +456,210 @@ function QA({ q, a }: { q: string; a: string }) {
       <p className="text-sm font-semibold text-[var(--text-main)]">{q}</p>
       <p className="mt-1 text-sm leading-relaxed text-[var(--text-muted)]">{a}</p>
     </div>
+  );
+}
+
+function RoadmapModal() {
+  const [isOpen, setIsOpen] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
+
+  const handleClose = () => {
+    setIsAnimating(false);
+    setTimeout(() => setIsOpen(false), 300); // Ждем завершения анимации
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+      // Небольшая задержка для запуска анимации
+      setTimeout(() => setIsAnimating(true), 10);
+    } else {
+      document.body.style.overflow = 'unset';
+      setIsAnimating(false);
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
+
+  const roadmap = [
+    {
+      stage: "Этап 1 — Java Core (Основы)",
+      topics: [
+        "Переменные и типы данных (int, String, double, boolean, char)",
+        "Операторы и выражения",
+        "Условные операторы (if/else, switch)",
+        "Циклы (for, while, do-while)",
+        "Методы и функции",
+        "Массивы",
+        "Основы ООП: классы, объекты, конструкторы",
+        "Инкапсуляция, наследование, полиморфизм",
+        "Первый опыт с JUnit тестами"
+      ]
+    },
+    {
+      stage: "Этап 2 — Java Core (Продвинутый)",
+      topics: [
+        "Коллекции (List, Set, Map, ArrayList, HashMap)",
+        "Интерфейсы и абстрактные классы",
+        "Исключения (try-catch-finally, checked/unchecked)",
+        "Работа со строками (String, StringBuilder, StringBuffer)",
+        "Generics (обобщенные типы)",
+        "Лямбда-выражения и Stream API",
+        "Работа с датами (LocalDate, LocalDateTime)",
+        "Базовые паттерны проектирования (Singleton, Factory, Builder)",
+        "Рефакторинг и чистый код"
+      ]
+    },
+    {
+      stage: "Этап 3 — Практика и проекты",
+      topics: [
+        "Работа с файлами (File, Path, Files)",
+        "Чтение и запись файлов",
+        "Обработка JSON (Jackson/Gson)",
+        "Работа с базами данных (JDBC основы)",
+        "Многопоточность (Thread, ExecutorService)",
+        "Создание мини-проектов (To-Do приложение, Блог, Калькулятор)",
+        "Архитектура приложений (MVC, слоистая архитектура)",
+        "Логирование (SLF4J, Logback)",
+        "Продвинутое тестирование (Mockito, интеграционные тесты)"
+      ]
+    },
+    {
+      stage: "Этап 4 — Spring Framework (Основы)",
+      topics: [
+        "Введение в Spring Framework",
+        "Dependency Injection (DI) и Inversion of Control (IoC)",
+        "Spring Context и Bean'ы",
+        "Конфигурация Spring (@Configuration, @Component, @Service, @Repository)",
+        "Spring Boot: создание первого приложения",
+        "Spring Boot Starter и автоконфигурация",
+        "Properties и YAML конфигурация",
+        "Профили (Profiles)",
+        "Логирование в Spring Boot"
+      ]
+    },
+    {
+      stage: "Этап 5 — Spring Boot (Web разработка)",
+      topics: [
+        "REST API: создание контроллеров (@RestController, @RequestMapping)",
+        "HTTP методы (GET, POST, PUT, DELETE)",
+        "Обработка запросов и ответов (@RequestBody, @ResponseBody)",
+        "Валидация данных (@Valid, @NotNull, @Size)",
+        "Обработка ошибок (@ExceptionHandler, @ControllerAdvice)",
+        "Работа с базами данных через Spring Data JPA",
+        "Entity, Repository, Service слои",
+        "CRUD операции",
+        "Связи между сущностями (@OneToMany, @ManyToOne)"
+      ]
+    },
+    {
+      stage: "Этап 6 — Spring Boot (Продвинутый)",
+      topics: [
+        "Транзакции (@Transactional)",
+        "Миграции базы данных (Flyway/Liquibase)",
+        "Тестирование Spring приложений (@SpringBootTest, @WebMvcTest)",
+        "Безопасность (Spring Security основы)",
+        "Аутентификация и авторизация",
+        "JWT токены",
+        "Кэширование (@Cacheable)",
+        "Асинхронная обработка (@Async)",
+        "Scheduled задачи (@Scheduled)"
+      ]
+    },
+    {
+      stage: "Этап 7 — Production Ready",
+      topics: [
+        "Документация API (Swagger/OpenAPI)",
+        "Мониторинг и метрики (Actuator, Prometheus)",
+        "Docker и контейнеризация",
+        "Развертывание приложений",
+        "CI/CD основы",
+        "Оптимизация производительности",
+        "Best practices и паттерны",
+        "Подготовка к собеседованиям",
+        "Портфолио проектов"
+      ]
+    }
+  ];
+
+  return (
+    <>
+      <button
+        onClick={() => setIsOpen(true)}
+        className="inline-flex items-center justify-center rounded-xl bg-[var(--button-bg)] px-4 py-2.5 text-sm font-semibold text-[var(--button-text)] hover:bg-[var(--button-hover)]"
+      >
+        Программа материала
+      </button>
+
+      {isOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          onClick={handleClose}
+        >
+          {/* Overlay */}
+          <div 
+            className={`absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity duration-300 ${
+              isAnimating ? 'opacity-100' : 'opacity-0'
+            }`}
+          />
+          
+          {/* Modal */}
+          <div
+            className={`relative z-10 w-full max-w-4xl max-h-[90vh] overflow-hidden rounded-2xl border border-[var(--border-main)] bg-[var(--bg-card)] shadow-xl transition-all duration-300 ${
+              isAnimating 
+                ? 'opacity-100 translate-y-0 scale-100' 
+                : 'opacity-0 translate-y-4 scale-95'
+            }`}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[var(--border-main)] bg-[var(--bg-card)] px-6 py-4">
+              <h2 className="text-xl font-semibold text-[var(--text-main)]">
+                Roadmap: Java + Spring Boot
+              </h2>
+              <button
+                onClick={handleClose}
+                className="rounded-lg p-2 text-[var(--text-muted)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-main)] transition-colors"
+                aria-label="Закрыть"
+              >
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="overflow-y-auto max-h-[calc(90vh-80px)] px-6 py-6">
+              <div className="space-y-6">
+                {roadmap.map((stage, index) => (
+                  <div
+                    key={index}
+                    className="rounded-xl border border-[var(--border-main)] bg-[var(--bg-secondary)] p-5"
+                  >
+                    <div className="flex items-start gap-3 mb-4">
+                      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[var(--button-bg)] flex items-center justify-center text-sm font-semibold text-[var(--button-text)]">
+                        {index + 1}
+                      </div>
+                      <h3 className="text-base font-semibold text-[var(--text-main)] pt-1">
+                        {stage.stage}
+                      </h3>
+                    </div>
+                    <ul className="ml-11 space-y-2">
+                      {stage.topics.map((topic, topicIndex) => (
+                        <li key={topicIndex} className="flex items-start gap-2 text-sm text-[var(--text-muted)]">
+                          <span className="inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--button-bg)] mt-2" />
+                          <span>{topic}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
