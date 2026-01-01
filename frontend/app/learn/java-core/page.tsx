@@ -6,8 +6,10 @@
 import { JetBrains_Mono } from "next/font/google";
 import { Header } from "../../Header";
 import { MotivationalQuotes } from "../../MotivationalQuotes";
+import { useAuth } from "../../useAuth";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState, useEffect } from "react";
 
 const mono = JetBrains_Mono({
   subsets: ["latin", "cyrillic"],
@@ -140,6 +142,7 @@ export default function JavaCorePage() {
               </h2>
               <div className="grid gap-4 md:grid-cols-2">
                 <LessonCard
+                  materialId="learn/java-core/basics"
                   title="Основы Java"
                   href="/learn/java-core/basics"
                   topics={[
@@ -150,6 +153,7 @@ export default function JavaCorePage() {
                   ]}
                 />
                 <LessonCard
+                  materialId="learn/java-core/variables"
                   title="Переменные и типы"
                   href="/learn/java-core/variables"
                   topics={[
@@ -160,6 +164,7 @@ export default function JavaCorePage() {
                   ]}
                 />
                 <LessonCard
+                  materialId="learn/java-core/control-flow"
                   title="Условия и циклы"
                   href="/learn/java-core/control-flow"
                   topics={[
@@ -179,10 +184,52 @@ export default function JavaCorePage() {
   );
 }
 
-function LessonCard({ title, topics, href }: { title: string; topics: string[]; href: string }) {
+function LessonCard({ materialId, title, topics, href }: { materialId: string; title: string; topics: string[]; href: string }) {
+  const { user } = useAuth();
+  const [completed, setCompleted] = useState(false);
+  const [checking, setChecking] = useState(true);
+
+  useEffect(() => {
+    const checkStatus = async () => {
+      if (!user) {
+        setChecking(false);
+        return;
+      }
+
+      try {
+        const encodedMaterialId = encodeURIComponent(materialId);
+        const response = await fetch(`/api/statistics/materials/status?materialId=${encodedMaterialId}`, {
+          credentials: "include",
+        });
+
+        if (response.ok) {
+          const isCompleted = await response.json();
+          setCompleted(isCompleted);
+        }
+      } catch (err) {
+        console.error("Ошибка проверки статуса:", err);
+      } finally {
+        setChecking(false);
+      }
+    };
+
+    checkStatus();
+    
+    // Подписываемся на обновления через интервал
+    const interval = setInterval(checkStatus, 3000);
+    return () => clearInterval(interval);
+  }, [user, materialId]);
+
   return (
-    <div className="rounded-2xl border border-[var(--border-main)] bg-[var(--bg-secondary)] p-4">
-      <p className="text-sm font-semibold text-[var(--text-main)] mb-3">{title}</p>
+    <div className="rounded-2xl border border-[var(--border-main)] bg-[var(--bg-secondary)] p-4 relative">
+      {completed && (
+        <div className="absolute top-4 right-4 flex items-center justify-center w-8 h-8 rounded-full bg-green-500">
+          <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+      )}
+      <p className="text-sm font-semibold text-[var(--text-main)] mb-3 pr-10">{title}</p>
       <ul className="space-y-2 text-sm text-[var(--text-muted)] mb-4">
         {topics.map((topic, index) => (
           <li key={index} className="flex gap-2 items-start">

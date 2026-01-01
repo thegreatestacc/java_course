@@ -6,8 +6,10 @@
 import { JetBrains_Mono } from "next/font/google";
 import { Header } from "../Header";
 import { MotivationalQuotes } from "../MotivationalQuotes";
+import { useAuth } from "../useAuth";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState, useEffect } from "react";
 
 const mono = JetBrains_Mono({
   subsets: ["latin", "cyrillic"],
@@ -189,6 +191,7 @@ function MaterialContent() {
           </h2>
           <div className="grid gap-4 md:grid-cols-2">
             <Lesson
+              materialId="gift/basics"
               title="Основы Git"
               href="/gift/basics"
               topics={[
@@ -199,6 +202,7 @@ function MaterialContent() {
               ]}
             />
             <Lesson
+              materialId="gift/branches"
               title="Работа с ветками"
               href="/gift/branches"
               topics={[
@@ -209,6 +213,7 @@ function MaterialContent() {
               ]}
             />
             <Lesson
+              materialId="gift/remote"
               title="Удаленные репозитории"
               href="/gift/remote"
               topics={[
@@ -219,6 +224,7 @@ function MaterialContent() {
               ]}
             />
             <Lesson
+              materialId="gift/advanced"
               title="Продвинутые техники"
               href="/gift/advanced"
               topics={[
@@ -343,12 +349,53 @@ function Pill({ children }: { children: React.ReactNode }) {
   );
 }
 
-function Lesson({ title, topics, href }: { title: string; topics: string[]; href: string }) {
+function Lesson({ materialId, title, topics, href }: { materialId: string; title: string; topics: string[]; href: string }) {
+  const { user } = useAuth();
+  const [completed, setCompleted] = useState(false);
+  const [checking, setChecking] = useState(true);
   const lastIndex = topics.length - 1;
+
+  useEffect(() => {
+    const checkStatus = async () => {
+      if (!user) {
+        setChecking(false);
+        return;
+      }
+
+      try {
+        const encodedMaterialId = encodeURIComponent(materialId);
+        const response = await fetch(`/api/statistics/materials/status?materialId=${encodedMaterialId}`, {
+          credentials: "include",
+        });
+
+        if (response.ok) {
+          const isCompleted = await response.json();
+          setCompleted(isCompleted);
+        }
+      } catch (err) {
+        console.error("Ошибка проверки статуса:", err);
+      } finally {
+        setChecking(false);
+      }
+    };
+
+    checkStatus();
+    
+    // Подписываемся на обновления через интервал
+    const interval = setInterval(checkStatus, 2000);
+    return () => clearInterval(interval);
+  }, [user, materialId]);
   
   return (
-    <div className="rounded-2xl border border-[var(--border-main)] bg-[var(--bg-secondary)] p-4">
-      <p className="text-sm font-semibold text-[var(--text-main)] mb-3">{title}</p>
+    <div className="rounded-2xl border border-[var(--border-main)] bg-[var(--bg-secondary)] p-4 relative">
+      {completed && (
+        <div className="absolute top-4 right-4 flex items-center justify-center w-8 h-8 rounded-full bg-green-500">
+          <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+      )}
+      <p className="text-sm font-semibold text-[var(--text-main)] mb-3 pr-10">{title}</p>
       <ul className="space-y-2 text-sm text-[var(--text-muted)]">
         {topics.map((topic, index) => (
           <li 

@@ -1,6 +1,10 @@
 {
-  "/profile/page": "app/profile/page.js",
-  "/gift/quiz/page": "app/gift/quiz/page.js",
-  "/page": "app/page.js",
-  "/gift/page": "app/gift/page.js"
+  "/_not-found/page": "app/_not-found/page.js",
+  "/gift/page": "app/gift/page.js",
+  "/learn/java-core/page": "app/learn/java-core/page.js",
+  "/learn/page": "app/learn/page.js",
+  "/learn/java-core/basics/page": "app/learn/java-core/basics/page.js",
+  "/learn/java-core/variables/page": "app/learn/java-core/variables/page.js",
+  "/gift/basics/page": "app/gift/basics/page.js",
+  "/learn/git/page": "app/learn/git/page.js"
 }
