@@ -2,6 +2,7 @@
 
 import { useAuth } from "./useAuth";
 import { useState, useEffect } from "react";
+import { triggerActivityUpdate } from "./utils/activityTracker";
 
 interface DetailedLessonProps {
   materialId: string;
@@ -67,6 +68,16 @@ export function DetailedLesson({
 
       if (response.ok) {
         setCompleted(true);
+        // Обновляем трекер активности
+        triggerActivityUpdate();
+        // Перепроверяем статус для уверенности
+        const statusResponse = await fetch(`/api/statistics/materials/status?materialId=${encodedMaterialId}`, {
+          credentials: "include",
+        });
+        if (statusResponse.ok) {
+          const isCompleted = await statusResponse.json();
+          setCompleted(isCompleted);
+        }
       } else {
         const errorText = await response.text();
         console.error("Ошибка сохранения прогресса:", errorText);

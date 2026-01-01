@@ -22,6 +22,7 @@ public class StatisticsService {
     private final MaterialProgressRepository materialProgressRepository;
     private final TestResultRepository testResultRepository;
     private final UserRepository userRepository;
+    private final ActivityService activityService;
 
     // Список всех материалов для чтения
     private static final Set<String> ALL_MATERIALS = Set.of(
@@ -49,10 +50,12 @@ public class StatisticsService {
     @Autowired
     public StatisticsService(MaterialProgressRepository materialProgressRepository,
                             TestResultRepository testResultRepository,
-                            UserRepository userRepository) {
+                            UserRepository userRepository,
+                            ActivityService activityService) {
         this.materialProgressRepository = materialProgressRepository;
         this.testResultRepository = testResultRepository;
         this.userRepository = userRepository;
+        this.activityService = activityService;
     }
 
     public UserStatisticsResponse getUserStatistics(Long userId) {
@@ -124,6 +127,9 @@ public class StatisticsService {
             System.out.println("Сохраняем MaterialProgress: userId=" + userId + ", materialId=" + materialId);
             materialProgressRepository.save(progress);
             System.out.println("MaterialProgress успешно сохранен");
+            
+            // Записываем активность при завершении материала
+            activityService.recordActivity(userId, java.time.LocalDate.now(), 1);
         } catch (Exception e) {
             System.err.println("Ошибка при сохранении MaterialProgress: " + e.getMessage());
             e.printStackTrace();

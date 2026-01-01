@@ -5,7 +5,7 @@ import { JetBrains_Mono } from "next/font/google";
 import { Header } from "../../Header";
 import { MotivationalQuotes } from "../../MotivationalQuotes";
 import { useAuth } from "../../useAuth";
-import { recordActivity } from "../../utils/activityTracker";
+import { recordActivity, triggerActivityUpdate } from "../../utils/activityTracker";
 import Link from "next/link";
 
 const mono = JetBrains_Mono({
@@ -206,7 +206,10 @@ export default function PracticalQuizPage() {
             body: JSON.stringify(requestBody),
           });
 
-          if (!response.ok) {
+          if (response.ok) {
+            // Обновляем трекер активности после успешного сохранения
+            triggerActivityUpdate();
+          } else {
             const errorText = await response.text();
             console.error("Ошибка при сохранении результата теста:", response.status, errorText);
           }
