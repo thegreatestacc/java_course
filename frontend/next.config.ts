@@ -12,13 +12,10 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: false,
   },
 
-  // allowedDevOrigins — только для next dev (локальная разработка)
-  // В проде это не используется, но можно оставить как есть.
-  allowedDevOrigins: ["localhost", "127.0.0.1", "5.129.200.192", "devcours.ru"],
-
-  // НЕ рекомендую отдавать Access-Control-Allow-Origin: *
-  // из Next на все пути — это может ломать кэш/безопасность.
-  // Лучше настроить CORS на бэкенде /api или на reverse-proxy (nginx).
+  // Отключаем Turbopack для production build
+  experimental: {
+    turbo: undefined,
+  },
 
   // Проксирование API запросов на backend
   async rewrites() {
