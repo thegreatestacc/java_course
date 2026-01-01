@@ -193,7 +193,10 @@ export function ActivityTracker({ userId, refreshTrigger }: ActivityTrackerProps
   months.forEach(monthData => {
     if (monthData.days.length === 0) return;
 
-    const firstDay = new Date(monthData.days[0].date);
+    const firstDayData = monthData.days[0];
+    if (!firstDayData) return;
+    
+    const firstDay = new Date(firstDayData.date);
     const dayOfWeek = firstDay.getDay();
     const adjustedDayOfWeek = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Понедельник = 0
 
