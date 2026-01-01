@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { ThemeToggle } from "./ThemeToggle";
-import { Snowfall } from "./Snowfall";
 import { UserMenu } from "./UserMenu";
 import { AuthModal } from "./AuthModal";
 import { useAuth } from "./useAuth";
+import { useSnow } from "./SnowProvider";
 import Link from "next/link";
 
 interface HeaderProps {
@@ -16,23 +16,10 @@ interface HeaderProps {
 }
 
 export function Header({ leftButton }: HeaderProps) {
-  const [isSnowActive, setIsSnowActive] = useState(false);
+  const { isSnowActive, setIsSnowActive } = useSnow();
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState<"login" | "register">("login");
   const { user, setUser } = useAuth();
-
-  // Загружаем состояние снега из localStorage при монтировании
-  useEffect(() => {
-    const savedSnowState = localStorage.getItem("snowActive");
-    if (savedSnowState === "true") {
-      setIsSnowActive(true);
-    }
-  }, []);
-
-  // Сохраняем состояние снега в localStorage при изменении
-  useEffect(() => {
-    localStorage.setItem("snowActive", isSnowActive.toString());
-  }, [isSnowActive]);
 
   const handleAuthSuccess = (userData: { id: number; email: string; name: string }) => {
     setUser(userData);
@@ -55,7 +42,6 @@ export function Header({ leftButton }: HeaderProps) {
   return (
     <>
       <header className="sticky top-0 z-20 border-b border-[var(--border-main)]/70 bg-[var(--bg-card)]/80 backdrop-blur w-full relative">
-        <Snowfall isActive={isSnowActive} />
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-5 py-3 relative z-10">
           <div className="flex items-center gap-3">
             {leftButton ? (

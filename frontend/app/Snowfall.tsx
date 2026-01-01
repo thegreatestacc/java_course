@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 interface Snowflake {
   id: number;
@@ -12,13 +12,13 @@ interface Snowflake {
 
 const SNOWFLAKES_STORAGE_KEY = "snowflakesConfig";
 
-function generateSnowflakes(): Snowflake[] {
-  return Array.from({ length: 30 }, (_, i) => ({
-    id: i,
-    left: Math.random() * 100,
-    animationDuration: 3 + Math.random() * 4, // 3-7 секунд
+function generateSnowflakes(count: number = 50, baseId: number = 0): Snowflake[] {
+  return Array.from({ length: count }, (_, i) => ({
+    id: baseId + i,
+    left: Math.random() * 100, // По всей ширине экрана (0-100%)
+    animationDuration: 20 + Math.random() * 20, // 20-40 секунд
     animationDelay: Math.random() * 2,
-    size: 4 + Math.random() * 4, // 4-8px
+    size: 2 + Math.random() * 3, // 2-5px (уменьшено с 4-8px)
   }));
 }
 
@@ -48,6 +48,8 @@ export function Snowfall({ isActive }: { isActive: boolean }) {
   const [isDark, setIsDark] = useState(false);
   const [isStopping, setIsStopping] = useState(false);
   const [flakesToStop, setFlakesToStop] = useState<Set<number>>(new Set());
+  const nextIdRef = useRef(0);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     const checkTheme = () => {
@@ -65,15 +67,24 @@ export function Snowfall({ isActive }: { isActive: boolean }) {
   }, []);
 
   useEffect(() => {
+    // Очищаем предыдущий интервал, если он существует
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+
     if (!isActive) {
       // Останавливаем создание новых снежинок, но позволяем существующим завершить анимацию
       setIsStopping(true);
       // Помечаем все текущие снежинки для остановки после завершения текущего цикла
-      setFlakesToStop(new Set(snowflakes.map(f => f.id)));
+      setSnowflakes(prev => {
+        setFlakesToStop(new Set(prev.map(f => f.id)));
+        return prev;
+      });
       
       // Вычисляем максимальное время до завершения всех анимаций
-      // Максимальная длительность анимации (7 секунд) + максимальная задержка (2 секунды)
-      const maxAnimationTime = 7000 + 2000;
+      // Максимальная длительность анимации (40 секунд) + максимальная задержка (2 секунды)
+      const maxAnimationTime = 40000 + 2000;
       
       // Удаляем снежинки после того, как все анимации завершатся
       const timer = setTimeout(() => {
@@ -87,13 +98,27 @@ export function Snowfall({ isActive }: { isActive: boolean }) {
       // Сбрасываем состояние остановки при включении
       setIsStopping(false);
       setFlakesToStop(new Set());
-      // Генерируем новые снежинки, чтобы анимация начиналась сначала
-      const flakes = generateSnowflakes();
-      // Сохраняем новую конфигурацию
-      if (typeof window !== "undefined") {
-        localStorage.setItem(SNOWFLAKES_STORAGE_KEY, JSON.stringify(flakes));
-      }
-      setSnowflakes(flakes);
+      // Генерируем начальные снежинки
+      nextIdRef.current = 0;
+      const initialFlakes = generateSnowflakes(50, 0);
+      nextIdRef.current = 50;
+      setSnowflakes(initialFlakes);
+      
+      // Периодически добавляем новые снежинки для непрерывного эффекта
+      intervalRef.current = setInterval(() => {
+        setSnowflakes(prev => {
+          const newFlakes = generateSnowflakes(10, nextIdRef.current);
+          nextIdRef.current += 10;
+          return [...prev, ...newFlakes];
+        });
+      }, 2000); // Добавляем новые снежинки каждые 2 секунды
+      
+      return () => {
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current);
+          intervalRef.current = null;
+        }
+      };
     }
   }, [isActive]);
 
@@ -114,10 +139,14 @@ export function Snowfall({ isActive }: { isActive: boolean }) {
   }
 
   return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+    <div 
+      className="w-full h-screen overflow-hidden pointer-events-none relative"
+      style={{
+        maskImage: 'linear-gradient(to right, black 0%, black 18%, transparent 18%, transparent 82%, black 82%, black 100%)',
+        WebkitMaskImage: 'linear-gradient(to right, black 0%, black 18%, transparent 18%, transparent 82%, black 82%, black 100%)',
+      }}
+    >
       {snowflakes.map((flake) => {
-        // Если снег останавливается и эта снежинка уже завершила текущий цикл, используем forwards
-        // Иначе продолжаем infinite или forwards в зависимости от состояния
         const shouldUseForwards = isStopping && !flakesToStop.has(flake.id);
         const animationValue = shouldUseForwards
           ? `snowfall ${flake.animationDuration}s linear ${flake.animationDelay}s forwards`
@@ -126,12 +155,14 @@ export function Snowfall({ isActive }: { isActive: boolean }) {
         return (
           <div
             key={flake.id}
-            className={`absolute top-0 opacity-70 ${
-              isDark ? "text-white" : "text-gray-500"
-            }`}
+            className="absolute opacity-70"
             style={{
               left: `${flake.left}%`,
+              top: '-20px',
               fontSize: `${flake.size}px`,
+              color: '#ffffff',
+              filter: 'grayscale(100%) brightness(200%)',
+              WebkitFilter: 'grayscale(100%) brightness(200%)',
               animation: animationValue,
             }}
             onAnimationIteration={() => handleAnimationIteration(flake.id)}
@@ -140,6 +171,8 @@ export function Snowfall({ isActive }: { isActive: boolean }) {
           </div>
         );
       })}
+      
+      {/* Стили анимации */}
       <style jsx>{`
         @keyframes snowfall {
           0% {
@@ -153,7 +186,7 @@ export function Snowfall({ isActive }: { isActive: boolean }) {
             opacity: 0.7;
           }
           100% {
-            transform: translateY(80px) rotate(360deg);
+            transform: translateY(calc(100vh + 20px)) rotate(360deg);
             opacity: 0;
           }
         }
