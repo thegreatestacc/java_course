@@ -67,17 +67,12 @@ export function DetailedLesson({
       });
 
       if (response.ok) {
+        // Устанавливаем статус как завершенный
+        console.log("Материал успешно завершен, обновляем UI");
         setCompleted(true);
         // Обновляем трекер активности
         triggerActivityUpdate();
-        // Перепроверяем статус для уверенности
-        const statusResponse = await fetch(`/api/statistics/materials/status?materialId=${encodedMaterialId}`, {
-          credentials: "include",
-        });
-        if (statusResponse.ok) {
-          const isCompleted = await statusResponse.json();
-          setCompleted(isCompleted);
-        }
+        console.log("Статус completed установлен в:", true);
       } else {
         const errorText = await response.text();
         console.error("Ошибка сохранения прогресса:", errorText);
