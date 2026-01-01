@@ -1,12 +1,6 @@
 {
-  "/_global-error/page": "app/_global-error/page.js",
-  "/_not-found/page": "app/_not-found/page.js",
-  "/compiler/page": "app/compiler/page.js",
-  "/favicon.ico/route": "app/favicon.ico/route.js",
-  "/gift/advanced/page": "app/gift/advanced/page.js",
-  "/gift/basics/page": "app/gift/basics/page.js",
-  "/gift/branches/page": "app/gift/branches/page.js",
+  "/profile/page": "app/profile/page.js",
   "/gift/page": "app/gift/page.js",
-  "/gift/remote/page": "app/gift/remote/page.js",
+  "/gift/quiz/page": "app/gift/quiz/page.js",
   "/page": "app/page.js"
 }

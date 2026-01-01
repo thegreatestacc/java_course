@@ -6,6 +6,7 @@
 import { JetBrains_Mono } from "next/font/google";
 import { Header } from "../../Header";
 import { MotivationalQuotes } from "../../MotivationalQuotes";
+import { DetailedLesson } from "../../DetailedLesson";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -101,6 +102,7 @@ export default function AdvancedPage() {
         <main>
           <section className="mx-auto max-w-6xl px-5 py-14 md:py-20">
             <DetailedLesson
+              materialId="gift/advanced"
               title="Продвинутые техники"
               description="Освой продвинутые возможности Git для эффективной работы."
               sections={[
@@ -244,90 +246,6 @@ function Footer() {
         </div>
       </div>
     </footer>
-  );
-}
-
-function DetailedLesson({ 
-  title, 
-  description, 
-  sections 
-}: { 
-  title: string; 
-  description: string; 
-  sections: Array<{ subtitle: string; content: string[] }> 
-}) {
-  return (
-    <div className="rounded-2xl border border-[var(--border-main)] bg-[var(--bg-card)] p-6 shadow-sm">
-      <h3 className="text-lg font-semibold tracking-tight text-[var(--text-main)] mb-2">
-        {title}
-      </h3>
-      <p className="text-sm text-[var(--text-muted)] mb-6">
-        {description}
-      </p>
-      <div className="space-y-6">
-        {sections.map((section, sectionIndex) => (
-          <div key={sectionIndex} className="space-y-3">
-            <h4 className="text-sm font-semibold text-[var(--text-main)]">
-              {section.subtitle}
-            </h4>
-            <div className="rounded-xl border border-[var(--border-main)] bg-[var(--bg-secondary)] p-4">
-              <div className="space-y-2.5 text-sm text-[var(--text-muted)] leading-relaxed">
-                {section.content.map((line, lineIndex) => {
-                  if (line.trim() === "") {
-                    return <div key={lineIndex} className="h-2" />;
-                  }
-                  // Команды Git и другие команды терминала
-                  if (line.startsWith("git ") || line.startsWith("cd ") || line.startsWith("sudo ") || line.match(/^[a-z-]+\s+[a-z]/i)) {
-                    return (
-                      <div key={lineIndex} className="font-mono text-xs bg-[var(--bg-card)] border border-[var(--border-main)] rounded-lg px-3 py-2 text-[var(--text-main)]">
-                        <span className="text-[var(--text-muted)]">$</span> {line}
-                      </div>
-                    );
-                  }
-                  // Заголовки разделов (например, "Установка Git:")
-                  if (line.endsWith(":") && !line.includes("•") && line.length < 50) {
-                    return (
-                      <p key={lineIndex} className="font-semibold text-[var(--text-main)] mt-3 first:mt-0">
-                        {line}
-                      </p>
-                    );
-                  }
-                  // Маркированные списки
-                  if (line.startsWith("•")) {
-                    return (
-                      <div key={lineIndex} className="flex items-start gap-2 ml-2">
-                        <span className="inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--button-bg)] mt-1.5" />
-                        <span>{line.replace(/^•\s*/, "")}</span>
-                      </div>
-                    );
-                  }
-                  // Нумерованные списки
-                  if (line.match(/^\d+\.\s/)) {
-                    const match = line.match(/^(\d+)\.\s(.+)/);
-                    return (
-                      <div key={lineIndex} className="flex items-start gap-2 ml-2">
-                        <span className="font-semibold text-[var(--text-main)] shrink-0">{match?.[1]}.</span>
-                        <span>{match?.[2]}</span>
-                      </div>
-                    );
-                  }
-                  // Предупреждения
-                  if (line.includes("⚠️") || line.includes("ВНИМАНИЕ")) {
-                    return (
-                      <p key={lineIndex} className="text-xs font-medium text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg px-3 py-2">
-                        {line}
-                      </p>
-                    );
-                  }
-                  // Обычный текст
-                  return <p key={lineIndex}>{line}</p>;
-                })}
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
   );
 }
 
