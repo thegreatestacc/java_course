@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@types/react-syntax-highlighter": "^15.5.13",
-    "next": "^15.1.5",
+    "next": "15.1.5",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-simple-code-editor": "^0.14.1",
@@ -23,7 +23,7 @@
     "@types/react-dom": "^19",
     "autoprefixer": "^10.4.23",
     "eslint": "^9",
-    "eslint-config-next": "^15.1.5",
+    "eslint-config-next": "15.1.5",
     "postcss": "^8.5.6",
     "tailwindcss": "^4.1.18",
     "typescript": "^5"

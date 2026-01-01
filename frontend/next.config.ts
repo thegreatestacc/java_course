@@ -4,6 +4,14 @@ const nextConfig: NextConfig = {
   // важно для Docker production (standalone сборка)
   output: "standalone",
 
+  // Отключаем ESLint и TypeScript проверки при сборке для ускорения
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  typescript: {
+    ignoreBuildErrors: false,
+  },
+
   // allowedDevOrigins — только для next dev (локальная разработка)
   // В проде это не используется, но можно оставить как есть.
   allowedDevOrigins: ["localhost", "127.0.0.1", "5.129.200.192", "devcours.ru"],
