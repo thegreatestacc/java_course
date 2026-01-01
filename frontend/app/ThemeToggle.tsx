@@ -3,10 +3,10 @@
 import { useEffect, useState, useRef } from "react";
 
 export function ThemeToggle() {
-  const [theme, setTheme] = useState<"light" | "dark">("light");
+  const [theme, setTheme] = useState<"light" | "dark">("dark");
   const [isAnimating, setIsAnimating] = useState(false);
-  const [isOn, setIsOn] = useState(true); // true = светлая тема (лампочка горит)
-  const [borderColor, setBorderColor] = useState("#e5e5e5");
+  const [isOn, setIsOn] = useState(false); // false = темная тема (лампочка не горит)
+  const [borderColor, setBorderColor] = useState("#2a2d34");
   const buttonRef = useRef<HTMLButtonElement>(null);
   const moonSvgRef = useRef<SVGSVGElement>(null);
 
@@ -33,7 +33,7 @@ export function ThemeToggle() {
 
   useEffect(() => {
     const saved = localStorage.getItem("theme") as "light" | "dark" | null;
-    const initial = saved ?? "light";
+    const initial = saved ?? "dark";
 
     setTheme(initial);
     setIsOn(initial === "light");
