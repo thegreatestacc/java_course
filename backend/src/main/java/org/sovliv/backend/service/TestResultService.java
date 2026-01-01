@@ -9,6 +9,7 @@ import org.sovliv.backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -17,11 +18,15 @@ public class TestResultService {
 
     private final TestResultRepository testResultRepository;
     private final UserRepository userRepository;
+    private final ActivityService activityService;
 
     @Autowired
-    public TestResultService(TestResultRepository testResultRepository, UserRepository userRepository) {
+    public TestResultService(TestResultRepository testResultRepository, 
+                            UserRepository userRepository,
+                            ActivityService activityService) {
         this.testResultRepository = testResultRepository;
         this.userRepository = userRepository;
+        this.activityService = activityService;
     }
 
     public void saveTestResult(Long userId, TestResultRequest request) {
@@ -37,6 +42,12 @@ public class TestResultService {
         testResult.setPercentage(request.getPercentage());
 
         testResultRepository.save(testResult);
+
+        // Автоматически записываем активность, если тест пройден успешно (>= 80%)
+        if (request.getPercentage() != null && request.getPercentage() >= 80) {
+            LocalDate today = LocalDate.now();
+            activityService.recordActivity(userId, today, 1);
+        }
     }
 
     public TestResultResponse getUserTestResults(Long userId) {
