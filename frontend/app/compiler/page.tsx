@@ -179,16 +179,22 @@ export default function CompilerPage() {
                   <span className="transition-opacity duration-200 opacity-70 hover:opacity-100">Главная</span>
                 </Link>
                 <Link
-                  href="/gift"
+                  href="/learn"
                   className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all duration-200 text-[var(--text-muted)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-main)]"
                 >
-                  <span className="transition-opacity duration-200 opacity-70 hover:opacity-100">Подарок</span>
+                  <span className="transition-opacity duration-200 opacity-70 hover:opacity-100">Начать учиться</span>
                 </Link>
                 <Link
                   href="/compiler"
                   className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all duration-200 bg-[var(--bg-muted)] text-[var(--text-main)] font-medium"
                 >
                   <span className="transition-opacity duration-200 opacity-100">Компилятор</span>
+                </Link>
+                <Link
+                  href="/profile"
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all duration-200 text-[var(--text-muted)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-main)]"
+                >
+                  <span className="transition-opacity duration-200 opacity-70 hover:opacity-100">Личный кабинет</span>
                 </Link>
               </div>
             </div>

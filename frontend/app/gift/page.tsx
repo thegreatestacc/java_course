@@ -1,7 +1,7 @@
 "use client";
 
 // app/gift/page.tsx
-// Страница с бесплатным курсом по Git
+// Страница с бесплатным обучающим материалом по Git
 
 import { JetBrains_Mono } from "next/font/google";
 import { Header } from "../Header";
@@ -37,10 +37,10 @@ export default function GiftPage() {
                   <span className="transition-opacity duration-200 opacity-70 hover:opacity-100">Главная</span>
                 </Link>
                 <Link
-                  href="/gift"
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all duration-200 bg-[var(--bg-muted)] text-[var(--text-main)] font-medium"
+                  href="/learn"
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all duration-200 text-[var(--text-muted)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-main)]"
                 >
-                  <span className="transition-opacity duration-200 opacity-100">Подарок</span>
+                  <span className="transition-opacity duration-200 opacity-70 hover:opacity-100">Начать учиться</span>
                 </Link>
                 <Link
                   href="/compiler"
@@ -48,13 +48,19 @@ export default function GiftPage() {
                 >
                   <span className="transition-opacity duration-200 opacity-70 hover:opacity-100">Компилятор</span>
                 </Link>
+                <Link
+                  href="/profile"
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all duration-200 text-[var(--text-muted)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-main)]"
+                >
+                  <span className="transition-opacity duration-200 opacity-70 hover:opacity-100">Личный кабинет</span>
+                </Link>
               </div>
             </div>
 
             {/* Навигация по темам */}
             <div>
               <h3 className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-3 px-2">
-                Темы курса
+                Темы материала
               </h3>
               <div className="space-y-1">
                 <Link
@@ -68,7 +74,7 @@ export default function GiftPage() {
                   <span className={`inline-block transition-opacity duration-200 ${
                     pathname === "/gift" ? "opacity-100" : "opacity-70"
                   }`}>
-                    Обзор курса
+                    Обзор материала
                   </span>
                 </Link>
                 <Link
@@ -137,7 +143,7 @@ export default function GiftPage() {
         <MotivationalQuotes />
         <main>
           <Hero />
-          <CourseContent />
+          <MaterialContent />
           <Benefits />
           <HowToGet />
         </main>
@@ -153,14 +159,14 @@ function Hero() {
     <section className="mx-auto max-w-6xl px-5 py-14 md:py-20">
       <div className="space-y-6">
         <div className="inline-block rounded-full border border-[var(--border-main)] bg-[var(--bg-card)] px-3 py-1 text-xs font-medium text-[var(--text-muted)]">
-          Бесплатный курс
+          Бесплатный материал
         </div>
         <h1 className="text-3xl font-semibold tracking-tight text-[var(--text-main)] md:text-4xl">
-          Бесплатный курс по работе с Git
+          Бесплатный обучающий материал по работе с Git
         </h1>
         <p className="text-base leading-relaxed text-[var(--text-muted)] max-w-3xl">
           Git — это система контроля версий, которая используется практически в каждом проекте разработки.
-          Этот курс поможет тебе освоить Git с нуля и научиться эффективно работать с версиями кода.
+          Этот материал поможет тебе освоить Git с нуля и научиться эффективно работать с версиями кода.
         </p>
         <div className="flex flex-wrap gap-2 pt-2 text-xs text-[var(--text-muted)]">
           <Pill>для начинающих</Pill>
@@ -173,7 +179,7 @@ function Hero() {
   );
 }
 
-function CourseContent() {
+function MaterialContent() {
   return (
     <section className="mx-auto max-w-6xl px-5 pb-14">
       <div className="space-y-8">
@@ -231,7 +237,7 @@ function CourseContent() {
             Тестирование по пройденному материалу
           </h2>
           <p className="text-sm leading-relaxed text-[var(--text-muted)] mb-6">
-            Проверь свои знания по пройденным темам курса. Доступны два типа тестирования: теоретическое (с вариантами ответов) и практическое (нужно вписать правильный ответ).
+            Проверь свои знания по пройденным темам материала. Доступны два типа тестирования: теоретическое (с вариантами ответов) и практическое (нужно вписать правильный ответ).
           </p>
           <div className="flex flex-col sm:flex-row gap-3">
             <Link
@@ -267,7 +273,7 @@ function Benefits() {
         />
         <BenefitCard
           title="Готовность к работе"
-          text="После прохождения курса ты сможешь уверенно работать с Git в любом проекте."
+          text="После изучения материала ты сможешь уверенно работать с Git в любом проекте."
         />
       </div>
     </section>
@@ -281,10 +287,10 @@ function HowToGet() {
         <div className="grid gap-6 md:grid-cols-[1.4fr_1fr] md:items-center">
           <div className="space-y-2">
             <h2 className="text-xl font-semibold tracking-tight text-[var(--text-main)]">
-              Получить доступ к курсу
+              Получить доступ к материалу
             </h2>
             <p className="text-sm leading-relaxed text-[var(--text-muted)]">
-              Оставь свой email, и я пришлю тебе материалы курса и доступ к практическим заданиям.
+              Оставь свой email, и я пришлю тебе материалы и доступ к практическим заданиям.
             </p>
           </div>
 
@@ -302,10 +308,10 @@ function HowToGet() {
               type="submit"
               className="h-11 rounded-xl bg-[var(--button-bg)] text-sm font-semibold text-[var(--button-text)] hover:bg-[var(--button-hover)]"
             >
-              Получить курс
+              Получить материал
             </button>
             <p className="text-[11px] text-[var(--text-muted)]">
-              Никакого спама. Только материалы курса.
+              Никакого спама. Только материалы.
             </p>
           </form>
         </div>

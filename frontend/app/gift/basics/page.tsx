@@ -36,23 +36,35 @@ export default function BasicsPage() {
                   <span className="transition-opacity duration-200 opacity-70 hover:opacity-100">Главная</span>
                 </Link>
                 <Link
-                  href="/gift"
+                  href="/learn"
                   className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all duration-200 text-[var(--text-muted)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-main)]"
                 >
-                  <span className="transition-opacity duration-200 opacity-70 hover:opacity-100">Подарок</span>
+                  <span className="transition-opacity duration-200 opacity-70 hover:opacity-100">Начать учиться</span>
+                </Link>
+                <Link
+                  href="/compiler"
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all duration-200 text-[var(--text-muted)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-main)]"
+                >
+                  <span className="transition-opacity duration-200 opacity-70 hover:opacity-100">Компилятор</span>
+                </Link>
+                <Link
+                  href="/profile"
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all duration-200 text-[var(--text-muted)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-main)]"
+                >
+                  <span className="transition-opacity duration-200 opacity-70 hover:opacity-100">Личный кабинет</span>
                 </Link>
               </div>
             </div>
             <div>
               <h3 className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-3 px-2">
-                Темы курса
+                Темы материала
               </h3>
               <div className="space-y-1">
                 <Link
-                  href="/gift"
+                  href="/learn"
                   className="block px-3 py-1.5 rounded-lg text-sm transition-all duration-200 text-[var(--text-muted)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-main)]"
                 >
-                  <span className="transition-opacity duration-200 opacity-70">Обзор курса</span>
+                  <span className="transition-opacity duration-200 opacity-70">Обзор материала</span>
                 </Link>
                 <Link
                   href="/gift/basics"
@@ -84,7 +96,7 @@ export default function BasicsPage() {
         </nav>
 
         {/* Основной контент без изменений */}
-        <Header leftButton={{ href: "/gift", text: "← Назад к курсу" }} />
+        <Header leftButton={{ href: "/gift", text: "← Назад к материалу" }} />
         <MotivationalQuotes />
         <main>
           <section className="mx-auto max-w-6xl px-5 py-14 md:py-20">
@@ -169,7 +181,7 @@ function Footer() {
         <p>© {new Date().getFullYear()} Java с нуля до Middle</p>
         <div className="flex gap-4">
           <Link className="hover:text-[var(--text-main)]" href="/gift">
-            К курсу
+            К материалу
           </Link>
           <Link className="hover:text-[var(--text-main)]" href="/">
             На главную

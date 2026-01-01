@@ -15,5 +15,8 @@ RUN apt-get update \
 WORKDIR /app
 COPY --from=build /app/target/*.jar /app/app.jar
 
+# Используем production профиль по умолчанию
+ENV SPRING_PROFILES_ACTIVE=prod
+
 EXPOSE 8080
 ENTRYPOINT ["java","-jar","/app/app.jar"]

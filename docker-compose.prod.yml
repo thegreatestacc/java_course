@@ -1,0 +1,54 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: java-course-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-java_course_db}
+      POSTGRES_USER: ${POSTGRES_USER:-java_course_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-java_course_password}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-java_course_user} -d ${POSTGRES_DB:-java_course_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - java-course-network
+
+  backend:
+    image: ${REGISTRY:-ghcr.io}/${OWNER:-owner}/java-course-backend:${TAG:-latest}
+    container_name: java-course-backend
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-java_course_db}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-java_course_user}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-java_course_password}
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - java-course-network
+
+  frontend:
+    image: ${REGISTRY:-ghcr.io}/${OWNER:-owner}/java-course-frontend:${TAG:-latest}
+    container_name: java-course-frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - java-course-network
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  java-course-network:
+    driver: bridge
+

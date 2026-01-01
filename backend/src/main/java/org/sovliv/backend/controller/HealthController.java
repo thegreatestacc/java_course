@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 /**
  * @author Vladimir Solovyov
- * @project java-course-site
+ * @project java-educational-material-site
  * @date on 25/12/2025
  */
 

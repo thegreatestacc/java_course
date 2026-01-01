@@ -52,6 +52,16 @@ jobs:
             ${{ env.REGISTRY }}/${{ env.OWNER }}/java-course-frontend:${{ env.TAG }}
             ${{ env.REGISTRY }}/${{ env.OWNER }}/java-course-frontend:latest
 
+      - name: Copy docker-compose to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          port: ${{ secrets.DEPLOY_PORT }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          source: "docker-compose.prod.yml"
+          target: "${{ secrets.DEPLOY_PATH }}"
+
       - name: Deploy on server
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -65,15 +75,29 @@ jobs:
 
             echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u "${{ github.repository_owner }}" --password-stdin
 
+            # Обновляем переменные окружения
             if [ -f .env ]; then
               if grep -q '^TAG=' .env; then
                 sed -i "s/^TAG=.*/TAG=${{ env.TAG }}/" .env
               else
                 echo "TAG=${{ env.TAG }}" >> .env
               fi
+              
+              if ! grep -q '^REGISTRY=' .env; then
+                echo "REGISTRY=${{ env.REGISTRY }}" >> .env
+              fi
+              
+              if ! grep -q '^OWNER=' .env; then
+                echo "OWNER=${{ env.OWNER }}" >> .env
+              fi
             else
               echo "TAG=${{ env.TAG }}" > .env
+              echo "REGISTRY=${{ env.REGISTRY }}" >> .env
+              echo "OWNER=${{ env.OWNER }}" >> .env
             fi
 
-            docker compose pull
-            docker compose up -d --remove-orphans
+            # Скачиваем обновленные образы
+            docker compose -f docker-compose.prod.yml pull backend frontend
+            
+            # Перезапускаем контейнеры
+            docker compose -f docker-compose.prod.yml up -d --remove-orphans

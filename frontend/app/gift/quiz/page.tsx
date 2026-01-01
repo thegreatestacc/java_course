@@ -1,9 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { JetBrains_Mono } from "next/font/google";
 import { Header } from "../../Header";
 import { MotivationalQuotes } from "../../MotivationalQuotes";
+import { useAuth } from "../../useAuth";
+import { recordActivity } from "../../utils/activityTracker";
 import Link from "next/link";
 
 const mono = JetBrains_Mono({
@@ -149,6 +151,8 @@ export default function QuizPage() {
   const [showResults, setShowResults] = useState(false);
   const [showTheoryModal, setShowTheoryModal] = useState(false);
   const [theoryContent, setTheoryContent] = useState("");
+  const { user } = useAuth();
+  const activityRecorded = useRef(false);
 
   const handleAnswerSelect = (answerIndex: number) => {
     const newAnswers = [...selectedAnswers];
@@ -189,6 +193,7 @@ export default function QuizPage() {
     setCurrentQuestionIndex(0);
     setSelectedAnswers(new Array(questions.length).fill(-1));
     setShowResults(false);
+    activityRecorded.current = false; // Сбрасываем флаг при перезапуске
   };
 
   const handleShowTheory = (questionIndex: number) => {
@@ -219,6 +224,55 @@ export default function QuizPage() {
     };
   }, [showTheoryModal]);
 
+  // Записываем активность и результаты теста при завершении квиза
+  useEffect(() => {
+    if (showResults && user && !activityRecorded.current) {
+      const results = calculateResults();
+      const percentage = Math.round((results.correct / results.total) * 100);
+      
+      // Записываем активность только если тест пройден успешно (>= 80%)
+      if (percentage >= 80) {
+        activityRecorded.current = true; // Помечаем, что активность записана
+        recordActivity(1).catch((error) => {
+          console.error("Ошибка при записи активности:", error);
+          activityRecorded.current = false; // Сбрасываем флаг при ошибке
+        });
+      }
+
+      // Сохраняем результат теста
+      const saveTestResult = async () => {
+        try {
+          const requestBody = {
+            testType: "quiz",
+            topic: "git",
+            correctAnswers: results.correct,
+            totalQuestions: results.total,
+            percentage: percentage,
+          };
+
+          const response = await fetch("/api/test-results/save", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            credentials: "include",
+            body: JSON.stringify(requestBody),
+          });
+
+          if (!response.ok) {
+            const errorText = await response.text();
+            console.error("Ошибка при сохранении результата теста:", response.status, errorText);
+          }
+        } catch (error) {
+          console.error("Ошибка при сохранении результата теста:", error);
+        }
+      };
+
+      saveTestResult();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showResults, user]);
+
   const currentQuestion = questions[currentQuestionIndex];
   const isAnswered = selectedAnswers[currentQuestionIndex] !== -1;
   const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
@@ -238,6 +292,7 @@ export default function QuizPage() {
       resultMessage = "Вы отлично прошли тестирование!";
     }
 
+
     return (
       <div className={mono.className}>
         <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-main)]">
@@ -256,10 +311,10 @@ export default function QuizPage() {
                     <span className="transition-opacity duration-200 opacity-70 hover:opacity-100">Главная</span>
                   </Link>
                   <Link
-                    href="/gift"
+                    href="/learn"
                     className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all duration-200 text-[var(--text-muted)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-main)]"
                   >
-                    <span className="transition-opacity duration-200 opacity-70 hover:opacity-100">Подарок</span>
+                    <span className="transition-opacity duration-200 opacity-70 hover:opacity-100">Начать учиться</span>
                   </Link>
                   <Link
                     href="/compiler"
@@ -272,7 +327,7 @@ export default function QuizPage() {
             </div>
           </nav>
 
-          <Header leftButton={{ href: "/gift", text: "← К курсу" }} />
+          <Header leftButton={{ href: "/gift", text: "← К материалу" }} />
           <MotivationalQuotes />
 
           <main className="mx-auto max-w-6xl px-5 py-6">
@@ -400,10 +455,10 @@ export default function QuizPage() {
                     Пройти заново
                   </button>
                   <Link
-                    href="/gift"
+                    href="/learn"
                     className="flex-1 rounded-xl border border-[var(--border-main)] bg-[var(--bg-card)] px-6 py-3 text-sm font-semibold text-[var(--text-main)] hover:bg-[var(--bg-muted)] transition-colors text-center"
                   >
-                    Вернуться к курсу
+                    Вернуться к материалу
                   </Link>
                 </div>
               </div>
@@ -535,7 +590,7 @@ export default function QuizPage() {
                   <span className="transition-opacity duration-200 opacity-70 hover:opacity-100">Главная</span>
                 </Link>
                 <Link
-                  href="/gift"
+                  href="/learn"
                   className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all duration-200 text-[var(--text-muted)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-main)]"
                 >
                   <span className="transition-opacity duration-200 opacity-70 hover:opacity-100">Подарок</span>
@@ -546,12 +601,18 @@ export default function QuizPage() {
                 >
                   <span className="transition-opacity duration-200 opacity-70 hover:opacity-100">Компилятор</span>
                 </Link>
+                <Link
+                  href="/profile"
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all duration-200 text-[var(--text-muted)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-main)]"
+                >
+                  <span className="transition-opacity duration-200 opacity-70 hover:opacity-100">Личный кабинет</span>
+                </Link>
               </div>
             </div>
           </div>
         </nav>
 
-        <Header leftButton={{ href: "/gift", text: "← К курсу" }} />
+        <Header leftButton={{ href: "/gift", text: "← К материалу" }} />
         <MotivationalQuotes />
 
         <main className="mx-auto max-w-6xl px-5 py-6">

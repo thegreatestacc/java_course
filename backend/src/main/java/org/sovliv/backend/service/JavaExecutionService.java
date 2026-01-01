@@ -11,7 +11,7 @@ import java.util.concurrent.*;
 
 /**
  * @author Vladimir Solovyov
- * @project java-course-site
+ * @project java-educational-material-site
  * @date on 25/12/2025
  */
 @Service

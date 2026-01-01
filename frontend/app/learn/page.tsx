@@ -6,9 +6,11 @@
 import { JetBrains_Mono } from "next/font/google";
 import { Header } from "../Header";
 import { MotivationalQuotes } from "../MotivationalQuotes";
+import { AuthModal } from "../AuthModal";
+import { useAuth } from "../useAuth";
 import Link from "next/link";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 
 const mono = JetBrains_Mono({
   subsets: ["latin", "cyrillic"],
@@ -292,6 +294,15 @@ animal.makeSound(); // Гав-гав!`
 ];
 
 export default function LearnPage() {
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [authMode, setAuthMode] = useState<"login" | "register">("login");
+  const { user, setUser } = useAuth();
+
+  const handleAuthSuccess = (userData: { id: number; email: string; name: string }) => {
+    setUser(userData);
+    setAuthModalOpen(false);
+  };
+
   return (
     <div className={mono.className}>
       <div className="min-h-dvh bg-[var(--bg-main)] text-[var(--text-main)]">
@@ -321,6 +332,12 @@ export default function LearnPage() {
                   className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all duration-200 text-[var(--text-muted)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-main)]"
                 >
                   <span className="transition-opacity duration-200 opacity-70 hover:opacity-100">Компилятор</span>
+                </Link>
+                <Link
+                  href="/profile"
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all duration-200 text-[var(--text-muted)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-main)]"
+                >
+                  <span className="transition-opacity duration-200 opacity-70 hover:opacity-100">Личный кабинет</span>
                 </Link>
               </div>
             </div>
@@ -371,7 +388,15 @@ export default function LearnPage() {
                     {category.topics.map((topic) => (
                       <div key={topic.id} className="grid gap-6 md:grid-cols-[1fr_1fr] items-start">
                         {/* Карточка подтемы - слева */}
-                        <TopicCard topic={topic} codeExample={topic.codeExample} language={topic.id === "git" ? "bash" : "java"} />
+                        <TopicCard 
+                          topic={topic} 
+                          codeExample={topic.codeExample} 
+                          language={topic.id === "git" ? "bash" : "java"}
+                          onAuthRequest={(mode) => {
+                            setAuthMode(mode);
+                            setAuthModalOpen(true);
+                          }}
+                        />
                         
                         {/* Описание подтемы - справа */}
                         <div className="space-y-4">
@@ -428,12 +453,29 @@ export default function LearnPage() {
         </main>
         <Footer />
       </div>
+      <AuthModal
+        isOpen={authModalOpen}
+        onClose={() => setAuthModalOpen(false)}
+        onAuthSuccess={handleAuthSuccess}
+        mode={authMode}
+      />
     </div>
   );
 }
 
-function TopicCard({ topic, codeExample, language }: { topic: { id: string; title: string; description: string; href: string; color: string }; codeExample?: string; language?: string }) {
+interface TopicCardProps {
+  topic: { id: string; title: string; description: string; href: string; color: string };
+  codeExample?: string;
+  language?: string;
+  onAuthRequest?: (mode: "login" | "register") => void;
+}
+
+function TopicCard({ topic, codeExample, language, onAuthRequest }: TopicCardProps) {
   const [isDark, setIsDark] = useState(false);
+  const [showAuthNotification, setShowAuthNotification] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
+  const notificationRef = React.useRef<HTMLDivElement>(null);
+  const { user } = useAuth();
 
   useEffect(() => {
     const checkTheme = () => {
@@ -449,6 +491,59 @@ function TopicCard({ topic, codeExample, language }: { topic: { id: string; titl
     
     return () => observer.disconnect();
   }, []);
+
+  // Обработчик клика вне уведомления
+  useEffect(() => {
+    if (!showAuthNotification) return;
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (notificationRef.current && !notificationRef.current.contains(event.target as Node)) {
+        setIsClosing(true);
+        // Ждем завершения анимации перед полным скрытием
+        setTimeout(() => {
+          setShowAuthNotification(false);
+          setIsClosing(false);
+        }, 300);
+      }
+    };
+
+    // Добавляем небольшую задержку, чтобы не закрыть сразу после открытия
+    const timeoutId = setTimeout(() => {
+      document.addEventListener("mousedown", handleClickOutside);
+    }, 100);
+
+    return () => {
+      clearTimeout(timeoutId);
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showAuthNotification]);
+
+  const handleStartClick = (e: React.MouseEvent) => {
+    if (!user) {
+      e.preventDefault();
+      setShowAuthNotification(true);
+      setIsClosing(false);
+      // Автоматически скрываем уведомление через 5 секунд
+      setTimeout(() => {
+        setIsClosing(true);
+        setTimeout(() => {
+          setShowAuthNotification(false);
+          setIsClosing(false);
+        }, 300);
+      }, 5000);
+    }
+  };
+
+  const handleGoToAuth = (mode: "login" | "register") => {
+    if (onAuthRequest) {
+      onAuthRequest(mode);
+    }
+    setIsClosing(true);
+    setTimeout(() => {
+      setShowAuthNotification(false);
+      setIsClosing(false);
+    }, 300);
+  };
 
   return (
     <div className="rounded-2xl border border-[var(--border-main)] bg-[var(--bg-card)] p-6 shadow-sm hover:shadow-md transition-shadow">
@@ -495,12 +590,56 @@ function TopicCard({ topic, codeExample, language }: { topic: { id: string; titl
         </div>
       )}
       
-      <Link
-        href={topic.href}
-        className="inline-flex items-center justify-center rounded-xl bg-[var(--button-bg)] px-6 py-3 text-sm font-semibold text-[var(--button-text)] hover:bg-[var(--button-hover)] transition-colors w-full"
-      >
-        Начать {topic.title}
-      </Link>
+      <div className="relative">
+        {user ? (
+          <Link
+            href={topic.href}
+            className="inline-flex items-center justify-center rounded-xl bg-[var(--button-bg)] px-6 py-3 text-sm font-semibold text-[var(--button-text)] hover:bg-[var(--button-hover)] transition-colors w-full"
+          >
+            Начать {topic.title}
+          </Link>
+        ) : (
+          <button
+            onClick={handleStartClick}
+            className="inline-flex items-center justify-center rounded-xl bg-[var(--button-bg)] px-6 py-3 text-sm font-semibold text-[var(--button-text)] hover:bg-[var(--button-hover)] transition-colors w-full"
+          >
+            Начать {topic.title}
+          </button>
+        )}
+        
+        {/* Плавное уведомление о необходимости авторизации */}
+        {showAuthNotification && (
+          <div
+            ref={notificationRef}
+            className="absolute bottom-full left-0 right-0 mb-3 z-50"
+            style={{
+              animation: isClosing 
+                ? "slideOutToBottom 0.3s ease-out forwards"
+                : "slideInFromBottom 0.3s ease-out",
+            }}
+          >
+            <div className="rounded-xl border border-[var(--border-main)] bg-[var(--bg-card)] p-4 shadow-lg backdrop-blur-sm">
+              <p className="text-sm text-[var(--text-main)] mb-3">
+                Для доступа к материалам необходимо войти в систему или зарегистрироваться.
+              </p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => handleGoToAuth("login")}
+                  className="flex-1 rounded-lg border border-[var(--border-main)] bg-[var(--bg-card)] px-4 py-2 text-sm font-semibold text-[var(--text-main)] hover:bg-[var(--bg-muted)] transition-colors"
+                >
+                  Войти
+                </button>
+                <button
+                  onClick={() => handleGoToAuth("register")}
+                  className="flex-1 rounded-lg bg-[var(--button-bg)] px-4 py-2 text-sm font-semibold text-[var(--button-text)] hover:bg-[var(--button-hover)] transition-colors"
+                >
+                  Зарегистрироваться
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

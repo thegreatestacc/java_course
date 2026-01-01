@@ -46,6 +46,28 @@
    Базовые стили
    ========================= */
 
+@keyframes slideInFromBottom {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideOutToBottom {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
 body {
   background-color: var(--bg-main);
   color: var(--text-main);
@@ -137,6 +159,44 @@ div[contenteditable="false"] {
   position: relative !important;
   margin: 0 !important;
   padding: 0 !important;
+}
+
+/* Анимации для переключателя темы */
+@keyframes pullCord {
+  0%, 100% { 
+    transform: translateY(0) rotate(0deg);
+  }
+  10% { 
+    transform: translateY(8px) rotate(-3deg);
+  }
+  20% { 
+    transform: translateY(12px) rotate(3deg);
+  }
+  30% { 
+    transform: translateY(8px) rotate(-2deg);
+  }
+  40% { 
+    transform: translateY(12px) rotate(2deg);
+  }
+  50% { 
+    transform: translateY(10px) rotate(0deg);
+  }
+  60% { 
+    transform: translateY(14px) rotate(-1deg);
+  }
+  70% { 
+    transform: translateY(10px) rotate(1deg);
+  }
+  80% { 
+    transform: translateY(12px) rotate(0deg);
+  }
+  90% { 
+    transform: translateY(8px) rotate(-0.5deg);
+  }
+}
+
+.cord-pull {
+  animation: pullCord 0.6s ease-in-out;
 }
 
 /* Стили для highlight overlay */

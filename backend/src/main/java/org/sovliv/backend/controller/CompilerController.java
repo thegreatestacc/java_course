@@ -10,12 +10,12 @@ import org.springframework.web.bind.annotation.*;
 
 /**
  * @author Vladimir Solovyov
- * @project java-course-site
+ * @project java-educational-material-site
  * @date on 25/12/2025
  */
 @RestController
 @RequestMapping("/api")
-@CrossOrigin(origins = "*")
+@CrossOrigin(originPatterns = "*")
 public class CompilerController {
 
     private final JavaExecutionService javaExecutionService;
@@ -37,4 +37,5 @@ public class CompilerController {
         }
     }
 }
+
 

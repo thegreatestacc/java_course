@@ -2,7 +2,7 @@ package org.sovliv.backend.dto;
 
 /**
  * @author Vladimir Solovyov
- * @project java-course-site
+ * @project java-educational-material-site
  * @date on 25/12/2025
  */
 public class CompileRequest {
@@ -16,4 +16,5 @@ public class CompileRequest {
         this.code = code;
     }
 }
+
 

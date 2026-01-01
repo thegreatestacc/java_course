@@ -2,7 +2,7 @@ package org.sovliv.backend.dto;
 
 /**
  * @author Vladimir Solovyov
- * @project java-course-site
+ * @project java-educational-material-site
  * @date on 25/12/2025
  */
 public class CompileResponse {
@@ -25,4 +25,5 @@ public class CompileResponse {
         this.error = error;
     }
 }
+
 
