@@ -151,5 +151,10 @@ public class StatisticsService {
                 ))
                 .collect(Collectors.toList());
     }
+
+    public void unmarkMaterialAsCompleted(Long userId, String materialId) {
+        materialProgressRepository.findByUserIdAndMaterialId(userId, materialId)
+                .ifPresent(materialProgressRepository::delete);
+    }
 }
 

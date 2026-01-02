@@ -26,3 +26,4 @@ public interface UserActivityRepository extends JpaRepository<UserActivity, Long
     );
 }
 
+

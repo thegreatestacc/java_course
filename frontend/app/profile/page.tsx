@@ -5,6 +5,7 @@ import { useAuth } from "../useAuth";
 import { Header } from "../Header";
 import { ActivityTracker } from "../ActivityTracker";
 import { TestResults } from "../TestResults";
+import { CompletedMaterials } from "../CompletedMaterials";
 import { MotivationalQuotes } from "../MotivationalQuotes";
 import Link from "next/link";
 
@@ -131,6 +132,8 @@ export default function ProfilePage() {
             </div>
 
             <ActivityTracker userId={user.id} />
+
+            <CompletedMaterials userId={user.id} />
 
             <TestResults userId={user.id} />
           </div>

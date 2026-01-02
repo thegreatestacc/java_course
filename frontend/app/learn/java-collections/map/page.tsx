@@ -9,7 +9,7 @@ import { MotivationalQuotes } from "../../../MotivationalQuotes";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "../../../useAuth";
 
 const mono = JetBrains_Mono({
@@ -670,32 +670,43 @@ function DetailedLesson({
   const [loading, setLoading] = useState(false);
   const [checkingStatus, setCheckingStatus] = useState(true);
 
-  useEffect(() => {
-    const checkCompletionStatus = async () => {
-      if (!user || !materialId) {
-        setCheckingStatus(false);
-        return;
+  const checkCompletionStatus = useCallback(async () => {
+    if (!user || !materialId) {
+      setCheckingStatus(false);
+      return;
+    }
+
+    try {
+      const encodedMaterialId = encodeURIComponent(materialId);
+      const response = await fetch(`/api/statistics/materials/status?materialId=${encodedMaterialId}`, {
+        credentials: "include",
+      });
+
+      if (response.ok) {
+        const isCompleted = await response.json();
+        setCompleted(isCompleted);
       }
+    } catch (err) {
+      console.error("Ошибка проверки статуса:", err);
+    } finally {
+      setCheckingStatus(false);
+    }
+  }, [user, materialId]);
 
-      try {
-        const encodedMaterialId = encodeURIComponent(materialId);
-        const response = await fetch(`/api/statistics/materials/status?materialId=${encodedMaterialId}`, {
-          credentials: "include",
-        });
+  useEffect(() => {
+    checkCompletionStatus();
+  }, [checkCompletionStatus]);
 
-        if (response.ok) {
-          const isCompleted = await response.json();
-          setCompleted(isCompleted);
-        }
-      } catch (err) {
-        console.error("Ошибка проверки статуса:", err);
-      } finally {
-        setCheckingStatus(false);
+  // Перепроверяем статус при возврате на страницу (например, после отката материала)
+  useEffect(() => {
+    const handleFocus = () => {
+      if (user && materialId) {
+        checkCompletionStatus();
       }
     };
-
-    checkCompletionStatus();
-  }, [user, materialId]);
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, [user, materialId, checkCompletionStatus]);
 
   const handleComplete = async () => {
     if (!user || !materialId) {
@@ -746,38 +757,73 @@ function DetailedLesson({
     
     if (trimmed === "") return false;
     
+    // Строки с отступом (4+ пробела)
     if (line.match(/^\s{4,}/)) return true;
     
+    // Комментарии
     if (trimmed.startsWith("//")) return true;
     
-    if (trimmed === "}" || trimmed === "{" || trimmed === "}" || trimmed.startsWith("}") || trimmed.startsWith("{")) {
+    // Фигурные скобки
+    if (trimmed === "}" || trimmed === "{" || trimmed.startsWith("}") || trimmed.startsWith("{")) {
       return true;
     }
     
+    // Ключевые слова Java
     const javaKeywords = ["public", "private", "protected", "static", "final", "class", "interface", 
                           "enum", "abstract", "extends", "implements", "import", "package", "return",
                           "if", "else", "for", "while", "do", "switch", "case", "break", "continue",
                           "try", "catch", "finally", "throw", "throws", "new", "this", "super", "void", "boolean"];
-    if (javaKeywords.some(keyword => trimmed.startsWith(keyword + " ") || trimmed === keyword)) {
+    if (javaKeywords.some(keyword => trimmed.startsWith(keyword + " ") || trimmed.startsWith(keyword + "<") || trimmed === keyword)) {
       return true;
     }
     
-    const javaTypePattern = /^(int|String|double|boolean|char|byte|short|long|float|Map|HashMap|LinkedHashMap|TreeMap|SortedMap|Entry|Iterator|Collections|Arrays|Objects|List|ArrayList)\s+\w+/;
+    // Типы данных и классы
+    const javaTypePattern = /^(int|String|double|boolean|char|byte|short|long|float|Map|HashMap|LinkedHashMap|TreeMap|SortedMap|Entry|Iterator|Collections|Arrays|Objects|List|ArrayList|Integer)\s*[<\(=]/;
     if (javaTypePattern.test(trimmed)) return true;
     
+    // Объявления переменных с типами
+    if (/^(Map|HashMap|LinkedHashMap|TreeMap|SortedMap|Entry|Iterator|Collections|Arrays|Objects|List|ArrayList|Integer|String|int|double|boolean|char|byte|short|long|float)\s*<.*>\s*\w+\s*=/.test(trimmed)) {
+      return true;
+    }
+    
+    // System.out
     if (line.includes("System.out")) return true;
     
+    // Вызовы методов
     if (/^[a-zA-Z_][a-zA-Z0-9_]*\s*\(/.test(trimmed) || /^[a-zA-Z_][a-zA-Z0-9_]*\.[a-zA-Z_][a-zA-Z0-9_]*\s*\(/.test(trimmed)) {
       return true;
     }
     
+    // Присваивания с типами
     if (line.includes("=") && (line.includes("int ") || line.includes("String ") || line.includes("double ") || 
         line.includes("boolean ") || line.includes("char ") || line.includes("Map<") || line.includes("HashMap<") || 
-        line.includes("LinkedHashMap<") || line.includes("TreeMap<") || line.includes("SortedMap<"))) {
+        line.includes("LinkedHashMap<") || line.includes("TreeMap<") || line.includes("SortedMap<") ||
+        line.includes("Entry<") || line.includes("Iterator<") || line.includes("Collections.") || line.includes("Arrays."))) {
       return true;
     }
     
+    // Лямбда-выражения и операторы
     if (line.includes("->") || line.includes("++") || line.includes("--") || trimmed.startsWith("@")) {
+      return true;
+    }
+    
+    // Строки с точкой с запятой в конце (обычно код)
+    if (trimmed.endsWith(";") && !trimmed.startsWith("•")) {
+      return true;
+    }
+    
+    // Строки с угловыми скобками (generics)
+    if (line.includes("<") && line.includes(">")) {
+      return true;
+    }
+    
+    // Строки с квадратными скобками (массивы, индексы)
+    if (line.includes("[") && line.includes("]") && !line.startsWith("•")) {
+      return true;
+    }
+    
+    // Вызовы методов через точку
+    if (/\.\w+\s*\(/.test(line) || /\.\w+\s*\[/.test(line)) {
       return true;
     }
     
@@ -797,6 +843,21 @@ function DetailedLesson({
       <p className="text-sm text-[var(--text-muted)] mb-6">
         {description}
       </p>
+      
+      {/* Информационное сообщение о завершении материала */}
+      {!completed && (
+        <div className="mb-6 p-4 rounded-lg border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20">
+          <div className="flex items-start gap-3">
+            <svg className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <p className="text-sm text-blue-700 dark:text-blue-300">
+              <span className="font-semibold">Важно:</span> После изучения материала нажмите кнопку <span className="font-semibold">"Завершить материал"</span> внизу страницы, чтобы статистика по пройденному материалу отображалась в вашем личном кабинете.
+            </p>
+          </div>
+        </div>
+      )}
+      
       <div className="space-y-6">
         {sections.map((section, sectionIndex) => (
           <div key={sectionIndex} className="space-y-3">
@@ -825,7 +886,31 @@ function DetailedLesson({
                   const flushCodeBlock = () => {
                     if (currentCodeBlock.length > 0) {
                       const code = currentCodeBlock.join("\n");
-                      const language = code.includes("public class") || code.includes("System.out") || code.includes("Map<") || code.includes("HashMap<") || code.includes("LinkedHashMap<") || code.includes("TreeMap<") ? "java" : "bash";
+                      // Определяем язык: если есть Java-специфичные конструкции, то Java, иначе bash
+                      const isJava = code.includes("public class") || 
+                                    code.includes("System.out") || 
+                                    code.includes("Map<") || 
+                                    code.includes("HashMap<") || 
+                                    code.includes("LinkedHashMap<") || 
+                                    code.includes("TreeMap<") ||
+                                    code.includes("import java") ||
+                                    code.includes("Collections.") ||
+                                    code.includes("Arrays.") ||
+                                    code.includes("Iterator<") ||
+                                    code.includes("Entry<") ||
+                                    code.includes("for (") ||
+                                    code.includes("while (") ||
+                                    code.includes("if (") ||
+                                    code.includes("new ") ||
+                                    code.includes("int ") ||
+                                    code.includes("String ") ||
+                                    code.includes("boolean ") ||
+                                    code.includes("void ") ||
+                                    code.includes("return ") ||
+                                    code.includes("public ") ||
+                                    code.includes("private ") ||
+                                    code.includes("static ");
+                      const language = isJava ? "java" : "bash";
                       elements.push(
                         <div key={keyIndex++} className="rounded-lg border border-[var(--border-main)] bg-[var(--bg-card)] p-3 overflow-x-auto my-2">
                           <SyntaxHighlighter
@@ -971,4 +1056,5 @@ function DetailedLesson({
     </div>
   );
 }
+
 

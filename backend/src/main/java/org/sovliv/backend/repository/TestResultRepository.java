@@ -18,3 +18,4 @@ public interface TestResultRepository extends JpaRepository<TestResult, Long> {
     List<TestResult> findByUserIdAndTestTypeOrderByCompletedAtDesc(@Param("userId") Long userId, @Param("testType") String testType);
 }
 
+

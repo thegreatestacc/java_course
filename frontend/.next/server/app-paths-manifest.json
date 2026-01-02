@@ -1,7 +1,7 @@
 {
-  "/gift/page": "app/gift/page.js",
-  "/learn/page": "app/learn/page.js",
-  "/learn/java-core/variables/page": "app/learn/java-core/variables/page.js",
-  "/learn/java-core/page": "app/learn/java-core/page.js",
+  "/page": "app/page.js",
+  "/learn/java-oop/page": "app/learn/java-oop/page.js",
+  "/learn/java-collections/map/page": "app/learn/java-collections/map/page.js",
+  "/learn/java-collections/page": "app/learn/java-collections/page.js",
   "/profile/page": "app/profile/page.js"
 }

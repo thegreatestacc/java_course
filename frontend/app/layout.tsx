@@ -33,7 +33,7 @@ export default function RootLayout({
         <AuthProviderWrapper>
           <SnowProvider>
             <SnowfallWrapper />
-            {children}
+          {children}
           </SnowProvider>
         </AuthProviderWrapper>
       </body>

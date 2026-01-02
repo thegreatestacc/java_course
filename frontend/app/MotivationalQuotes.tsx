@@ -128,52 +128,71 @@ export function MotivationalQuotes() {
             </button>
           </div>
           
-          {isVisible ? (
-            <div suppressHydrationWarning>
-              <blockquote className="space-y-3">
-                <p
-                  className={`text-sm leading-relaxed text-[var(--text-main)] transition-opacity duration-200 ${
-                    isTransitioning ? "opacity-0" : "opacity-100"
-                  }`}
-                >
-                  "{currentQuote.text}"
-                </p>
-                <footer
-                  className={`text-xs text-[var(--text-muted)] italic transition-opacity duration-200 ${
-                    isTransitioning ? "opacity-0" : "opacity-100"
-                  }`}
-                >
-                  — {currentQuote.author}
-                </footer>
-              </blockquote>
+          <div 
+            className={`transition-all duration-500 ease-in-out ${
+              isVisible ? "opacity-100 max-h-[500px]" : "opacity-0 max-h-0 overflow-hidden"
+            }`}
+            suppressHydrationWarning
+          >
+            {isVisible && (
+              <>
+                <blockquote className="space-y-3">
+                  <p
+                    className={`text-sm leading-relaxed text-[var(--text-main)] transition-opacity duration-200 ${
+                      isTransitioning ? "opacity-0" : "opacity-100"
+                    }`}
+                  >
+                    "{currentQuote.text}"
+                  </p>
+                  <footer
+                    className={`text-xs text-[var(--text-muted)] italic transition-opacity duration-200 ${
+                      isTransitioning ? "opacity-0" : "opacity-100"
+                    }`}
+                  >
+                    — {currentQuote.author}
+                  </footer>
+                </blockquote>
 
-              {/* Индикатор прогресса */}
-              <div className="pt-2">
-                <div className="h-1 bg-[var(--bg-muted)] rounded-full overflow-hidden">
-                  {!isTransitioning && (
-                    <div
-                      key={progressKey}
-                      className="h-full bg-[var(--text-accent)] animate-progress"
-                      style={{
-                        animation: "progress 15s linear"
-                      }}
-                    />
-                  )}
+                {/* Индикатор прогресса */}
+                <div className="pt-2">
+                  <div className="h-1 bg-[var(--bg-muted)] rounded-full overflow-hidden">
+                    {!isTransitioning && (
+                      <div
+                        key={progressKey}
+                        className="h-full progress-bar-fill animate-progress"
+                        style={{
+                          animation: "progress 15s linear"
+                        }}
+                      />
+                    )}
+                  </div>
+                  <style jsx global>{`
+                    @keyframes progress {
+                      from {
+                        width: 0%;
+                      }
+                      to {
+                        width: 100%;
+                      }
+                    }
+                    .progress-bar-fill {
+                      background-color: var(--progress-fill);
+                      transition: background-color 0.3s ease;
+                    }
+                    :root {
+                      --progress-fill: #555555; /* Более темный цвет для светлой темы */
+                    }
+                    .dark {
+                      --progress-fill: #a1a1a1; /* Более светлый цвет для темной темы */
+                    }
+                  `}</style>
                 </div>
-                <style jsx global>{`
-                  @keyframes progress {
-                    from {
-                      width: 100%;
-                    }
-                    to {
-                      width: 0%;
-                    }
-                  }
-                `}</style>
-              </div>
-            </div>
-          ) : (
-            <div className="text-sm text-[var(--text-muted)]">
+              </>
+            )}
+          </div>
+          
+          {!isVisible && (
+            <div className="text-sm text-[var(--text-muted)] transition-opacity duration-500">
               ...
             </div>
           )}

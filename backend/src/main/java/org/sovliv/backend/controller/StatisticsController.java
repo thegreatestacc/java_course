@@ -91,5 +91,24 @@ public class StatisticsController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
+    @DeleteMapping("/materials/complete")
+    public ResponseEntity<?> unmarkMaterialAsCompleted(@RequestParam("materialId") String materialId, HttpSession session) {
+        Long userId = (Long) session.getAttribute("userId");
+        
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Пользователь не авторизован");
+        }
+
+        try {
+            statisticsService.unmarkMaterialAsCompleted(userId, materialId);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            System.err.println("Exception: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Ошибка при откате материала: " + e.getMessage());
+        }
+    }
 }
 
