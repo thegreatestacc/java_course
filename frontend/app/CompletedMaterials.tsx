@@ -41,43 +41,45 @@ export function CompletedMaterials({ userId }: CompletedMaterialsProps) {
           );
           setMaterials(sorted);
         } else {
+          console.warn("API вернул не массив:", data);
           setMaterials([]);
         }
       } else if (response.status === 401) {
         // Пользователь не авторизован - это нормально, просто показываем пустой список
         setMaterials([]);
       } else {
-        console.error("Ошибка загрузки прочитанных материалов:", response.status, response.statusText);
+        const errorText = await response.text().catch(() => response.statusText);
+        console.error("Ошибка загрузки прочитанных материалов:", response.status, errorText);
         setMaterials([]);
-        setError("Не удалось загрузить прочитанные материалы");
+        // Не устанавливаем ошибку для 401, так как это нормальная ситуация
+        if (response.status !== 401) {
+          setError("Не удалось загрузить прочитанные материалы");
+        }
       }
     } catch (error) {
       console.error("Ошибка загрузки прочитанных материалов:", error);
       setMaterials([]);
-      setError("Ошибка подключения к серверу");
+      // Не показываем ошибку, если это просто проблема с сетью - показываем пустой список
+      // setError("Ошибка подключения к серверу");
     } finally {
       setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    if (userId) {
-      loadCompletedMaterials();
-    } else {
-      setLoading(false);
-    }
-  }, [userId, loadCompletedMaterials]);
+    // Всегда пытаемся загрузить данные, даже если userId не передан
+    // API сам проверит авторизацию через сессию
+    loadCompletedMaterials();
+  }, [loadCompletedMaterials]);
 
-  // Перезагружаем материалы при изменении userId или при фокусе на странице
+  // Перезагружаем материалы при фокусе на странице
   useEffect(() => {
     const handleFocus = () => {
-      if (userId) {
-        loadCompletedMaterials();
-      }
+      loadCompletedMaterials();
     };
     window.addEventListener('focus', handleFocus);
     return () => window.removeEventListener('focus', handleFocus);
-  }, [userId, loadCompletedMaterials]);
+  }, [loadCompletedMaterials]);
 
   const handleUncompleteMaterial = async (materialId: string) => {
     try {
@@ -268,24 +270,34 @@ export function CompletedMaterials({ userId }: CompletedMaterialsProps) {
     );
   }
 
-  const groupedMaterials = groupMaterialsByTopic(materials);
+  // Безопасная группировка материалов с обработкой ошибок
+  let groupedMaterials: GroupedMaterials = {};
+  let topicStats: Array<{ topic: string; completedCount: number; totalCount: number; hasCompleted: boolean; materials: MaterialProgress[] }> = [];
   
-  // Создаем объект со статистикой для всех разделов
-  const topicStats = Object.keys(TOPIC_MATERIALS).map((topic) => {
-    const allMaterials = TOPIC_MATERIALS[topic];
-    const completedMaterials = groupedMaterials[topic] || [];
-    const completedCount = completedMaterials.length;
-    const totalCount = allMaterials.length;
-    const hasCompleted = completedCount > 0;
+  try {
+    groupedMaterials = groupMaterialsByTopic(materials);
     
-    return {
-      topic,
-      completedCount,
-      totalCount,
-      hasCompleted,
-      materials: completedMaterials,
-    };
-  });
+    // Создаем объект со статистикой для всех разделов
+    topicStats = Object.keys(TOPIC_MATERIALS).map((topic) => {
+      const allMaterials = TOPIC_MATERIALS[topic];
+      const completedMaterials = groupedMaterials[topic] || [];
+      const completedCount = completedMaterials.length;
+      const totalCount = allMaterials.length;
+      const hasCompleted = completedCount > 0;
+      
+      return {
+        topic,
+        completedCount,
+        totalCount,
+        hasCompleted,
+        materials: completedMaterials,
+      };
+    });
+  } catch (err) {
+    console.error("Ошибка при группировке материалов:", err);
+    // В случае ошибки показываем пустой список, но компонент все равно отображается
+    topicStats = [];
+  }
 
   return (
     <>
@@ -312,7 +324,8 @@ export function CompletedMaterials({ userId }: CompletedMaterialsProps) {
           </div>
         )}
         <div className="flex flex-wrap gap-3">
-          {topicStats.map(({ topic, completedCount, totalCount, hasCompleted }) => (
+          {topicStats.length > 0 ? (
+            topicStats.map(({ topic, completedCount, totalCount, hasCompleted }) => (
             <button
               key={topic}
               onClick={() => handleTopicClick(topic)}
@@ -346,7 +359,12 @@ export function CompletedMaterials({ userId }: CompletedMaterialsProps) {
                 </div>
               )}
             </button>
-          ))}
+            ))
+          ) : (
+            <p className="text-sm text-[var(--text-muted)]">
+              Нет доступных разделов
+            </p>
+          )}
         </div>
       </div>
 
