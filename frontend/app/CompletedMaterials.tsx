@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 
 interface MaterialProgress {
@@ -20,29 +20,13 @@ interface GroupedMaterials {
 export function CompletedMaterials({ userId }: CompletedMaterialsProps) {
   const [materials, setMaterials] = useState<MaterialProgress[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
   const [isAnimating, setIsAnimating] = useState(false);
 
-  useEffect(() => {
-    if (userId) {
-      loadCompletedMaterials();
-    } else {
-      setLoading(false);
-    }
-  }, [userId]);
-
-  // Перезагружаем материалы при изменении userId или при фокусе на странице
-  useEffect(() => {
-    const handleFocus = () => {
-      if (userId) {
-        loadCompletedMaterials();
-      }
-    };
-    window.addEventListener('focus', handleFocus);
-    return () => window.removeEventListener('focus', handleFocus);
-  }, [userId]);
-
-  const loadCompletedMaterials = async () => {
+  const loadCompletedMaterials = useCallback(async () => {
+    setLoading(true);
+    setError(null);
     try {
       const response = await fetch("/api/statistics/materials/completed", {
         credentials: "include",
@@ -59,14 +43,62 @@ export function CompletedMaterials({ userId }: CompletedMaterialsProps) {
         } else {
           setMaterials([]);
         }
-      } else {
+      } else if (response.status === 401) {
+        // Пользователь не авторизован - это нормально, просто показываем пустой список
         setMaterials([]);
+      } else {
+        console.error("Ошибка загрузки прочитанных материалов:", response.status, response.statusText);
+        setMaterials([]);
+        setError("Не удалось загрузить прочитанные материалы");
       }
     } catch (error) {
       console.error("Ошибка загрузки прочитанных материалов:", error);
       setMaterials([]);
+      setError("Ошибка подключения к серверу");
     } finally {
       setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (userId) {
+      loadCompletedMaterials();
+    } else {
+      setLoading(false);
+    }
+  }, [userId, loadCompletedMaterials]);
+
+  // Перезагружаем материалы при изменении userId или при фокусе на странице
+  useEffect(() => {
+    const handleFocus = () => {
+      if (userId) {
+        loadCompletedMaterials();
+      }
+    };
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, [userId, loadCompletedMaterials]);
+
+  const handleUncompleteMaterial = async (materialId: string) => {
+    try {
+      const encodedMaterialId = encodeURIComponent(materialId);
+      const response = await fetch(`/api/statistics/materials/complete?materialId=${encodedMaterialId}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+
+      if (response.ok) {
+        // Удаляем материал из списка
+        setMaterials(prev => prev.filter(m => m.materialId !== materialId));
+        // Перезагружаем список для обновления статистики
+        await loadCompletedMaterials();
+      } else {
+        const errorText = await response.text();
+        alert(errorText || "Ошибка при откате материала");
+      }
+    } catch (error) {
+      console.error("Ошибка при откате материала:", error);
+      alert("Ошибка при откате материала");
     }
   };
 
@@ -198,7 +230,8 @@ export function CompletedMaterials({ userId }: CompletedMaterialsProps) {
     );
   }
 
-  if (materials.length === 0) {
+  // Всегда показываем раздел, даже если нет материалов или есть ошибка
+  if (materials.length === 0 && !error) {
     return (
       <div className="rounded-2xl border border-[var(--border-main)] bg-[var(--bg-card)] p-6">
         <h2 className="text-lg font-semibold text-[var(--text-main)] mb-4">
@@ -208,6 +241,28 @@ export function CompletedMaterials({ userId }: CompletedMaterialsProps) {
           <p className="text-sm text-[var(--text-muted)]">
             Пока нет прочитанных материалов
           </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Если есть ошибка, показываем её, но все равно отображаем раздел
+  if (error && materials.length === 0) {
+    return (
+      <div className="rounded-2xl border border-[var(--border-main)] bg-[var(--bg-card)] p-6">
+        <h2 className="text-lg font-semibold text-[var(--text-main)] mb-4">
+          Прочитанные материалы
+        </h2>
+        <div className="flex flex-col items-center justify-center py-12 space-y-3">
+          <p className="text-sm text-[var(--text-muted)]">
+            {error}
+          </p>
+          <button
+            onClick={loadCompletedMaterials}
+            className="px-4 py-2 text-sm font-medium text-[var(--text-main)] border border-[var(--border-main)] rounded-lg hover:bg-[var(--bg-muted)] transition-colors"
+          >
+            Попробовать снова
+          </button>
         </div>
       </div>
     );
@@ -235,9 +290,27 @@ export function CompletedMaterials({ userId }: CompletedMaterialsProps) {
   return (
     <>
       <div className="rounded-2xl border border-[var(--border-main)] bg-[var(--bg-card)] p-6">
-        <h2 className="text-lg font-semibold text-[var(--text-main)] mb-4">
-          Прочитанные материалы
-        </h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-[var(--text-main)]">
+            Прочитанные материалы
+          </h2>
+          {error && (
+            <button
+              onClick={loadCompletedMaterials}
+              className="text-xs text-[var(--text-muted)] hover:text-[var(--text-main)] underline"
+              title="Обновить данные"
+            >
+              Обновить
+            </button>
+          )}
+        </div>
+        {error && (
+          <div className="mb-4 p-3 rounded-lg border border-orange-200 dark:border-orange-800 bg-orange-50 dark:bg-orange-900/20">
+            <p className="text-xs text-orange-700 dark:text-orange-300">
+              {error}
+            </p>
+          </div>
+        )}
         <div className="flex flex-wrap gap-3">
           {topicStats.map(({ topic, completedCount, totalCount, hasCompleted }) => (
             <button
@@ -328,54 +401,117 @@ export function CompletedMaterials({ userId }: CompletedMaterialsProps) {
             {/* Content */}
             <div className="overflow-y-auto max-h-[calc(90vh-80px)] px-6 py-6">
               <div className="space-y-3">
+                {/* Прочитанные материалы */}
                 {groupedMaterials[selectedTopic]?.length > 0 ? (
-                  groupedMaterials[selectedTopic].map((material) => (
-                  <div
-                    key={material.id}
-                    className="rounded-xl border border-[var(--border-main)] bg-[var(--bg-secondary)] p-4"
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <Link
-                          href={getMaterialLink(material.materialId)}
-                          className="block group"
-                          onClick={handleCloseModal}
-                        >
-                          <h3 className="text-sm font-semibold text-[var(--text-main)] group-hover:text-[var(--button-bg)] transition-colors">
-                            {getMaterialName(material.materialId)}
-                          </h3>
-                        </Link>
-                        <p className="text-xs text-[var(--text-muted)] mt-1">
-                          Завершено: {formatDate(material.completedAt)}
-                        </p>
-                      </div>
-                      <div className="ml-4 flex-shrink-0">
-                        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-green-500/20">
-                          <svg
-                            className="w-5 h-5 text-green-500"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
+                  <>
+                    {groupedMaterials[selectedTopic].map((material) => (
+                      <div
+                        key={material.id}
+                        className="rounded-xl border border-[var(--border-main)] bg-[var(--bg-secondary)] p-4"
+                      >
+                        <div className="flex items-start gap-3">
+                          <div className="flex-shrink-0 mt-0.5">
+                            <div className="flex items-center justify-center w-6 h-6 rounded-full bg-green-500/20">
+                              <svg
+                                className="w-4 h-4 text-green-500"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M5 13l4 4L19 7"
+                                />
+                              </svg>
+                            </div>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <Link
+                              href={getMaterialLink(material.materialId)}
+                              className="block group"
+                              onClick={handleCloseModal}
+                            >
+                              <h3 className="text-sm font-semibold text-[var(--text-main)] group-hover:text-[var(--button-bg)] transition-colors">
+                                {getMaterialName(material.materialId)}
+                              </h3>
+                            </Link>
+                            <p className="text-xs text-[var(--text-muted)] mt-1">
+                              Завершено: {formatDate(material.completedAt)}
+                            </p>
+                          </div>
+                          <button
+                            onClick={() => handleUncompleteMaterial(material.materialId)}
+                            className="flex-shrink-0 ml-2 px-3 py-1.5 text-xs font-medium text-[var(--text-muted)] hover:text-[var(--text-main)] border border-[var(--border-main)] rounded-lg hover:bg-[var(--bg-muted)] transition-colors"
+                            title="Откатить материал"
                           >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M5 13l4 4L19 7"
-                            />
-                          </svg>
+                            Откатить
+                          </button>
                         </div>
                       </div>
-                    </div>
-                  </div>
-                  ))
+                    ))}
+                  </>
                 ) : (
-                  <div className="text-center py-8">
+                  <div className="text-center py-4">
                     <p className="text-sm text-[var(--text-muted)]">
                       Пока нет прочитанных материалов по этой теме
                     </p>
                   </div>
                 )}
+
+                {/* Разделитель и непрочитанные материалы */}
+                {(() => {
+                  const allMaterials = TOPIC_MATERIALS[selectedTopic] || [];
+                  const completedMaterialIds = new Set(
+                    groupedMaterials[selectedTopic]?.map(m => m.materialId) || []
+                  );
+                  const uncompletedMaterials = allMaterials.filter(
+                    materialId => !completedMaterialIds.has(materialId)
+                  );
+
+                  if (uncompletedMaterials.length > 0) {
+                    return (
+                      <>
+                        {/* Разделитель */}
+                        {groupedMaterials[selectedTopic]?.length > 0 && (
+                          <div className="my-4 border-t border-[var(--border-main)]" />
+                        )}
+                        
+                        {/* Заголовок "Осталось прочитать" */}
+                        <h3 className="text-sm font-semibold text-[var(--text-muted)] mb-3">
+                          Осталось прочитать
+                        </h3>
+
+                        {/* Непрочитанные материалы */}
+                        {uncompletedMaterials.map((materialId) => (
+                          <div
+                            key={materialId}
+                            className="rounded-xl border border-[var(--border-main)] bg-[var(--bg-secondary)] p-4 opacity-70"
+                          >
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <Link
+                                  href={getMaterialLink(materialId)}
+                                  className="block group"
+                                  onClick={handleCloseModal}
+                                >
+                                  <h3 className="text-sm font-semibold text-[var(--text-main)] group-hover:text-[var(--button-bg)] transition-colors">
+                                    {getMaterialName(materialId)}
+                                  </h3>
+                                </Link>
+                                <p className="text-xs text-[var(--text-muted)] mt-1">
+                                  Не прочитано
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </>
+                    );
+                  }
+                  return null;
+                })()}
               </div>
             </div>
           </div>
