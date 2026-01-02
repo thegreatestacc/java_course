@@ -117,6 +117,26 @@ export function ActivityTracker({ userId, refreshTrigger }: ActivityTrackerProps
     return `${count} ${taskWord} выполнено: ${formattedDate}`;
   };
 
+  // Функция для правильного склонения слова "день"
+  const getDayWord = (count: number): string => {
+    const lastDigit = count % 10;
+    const lastTwoDigits = count % 100;
+    
+    // Исключения для 11-14
+    if (lastTwoDigits >= 11 && lastTwoDigits <= 14) {
+      return 'дней';
+    }
+    
+    // Проверяем последнюю цифру
+    if (lastDigit === 1) {
+      return 'день';
+    } else if (lastDigit >= 2 && lastDigit <= 4) {
+      return 'дня';
+    } else {
+      return 'дней';
+    }
+  };
+
   // Если данных нет, создаем пустую сетку за выбранный год
   const displayData = activityData.length > 0 ? activityData : (() => {
     const emptyData: ActivityData[] = [];
@@ -300,7 +320,7 @@ export function ActivityTracker({ userId, refreshTrigger }: ActivityTrackerProps
                       {monthData.label} {monthData.year}
                     </div>
                     <div className="text-[10px] text-[var(--text-muted)] mt-0.5">
-                      {monthData.days.length} {monthData.days.length === 1 ? 'день' : monthData.days.length < 5 ? 'дня' : 'дней'}
+                      {monthData.days.length} {getDayWord(monthData.days.length)}
                     </div>
                   </div>
 
