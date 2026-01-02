@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
 
 interface MaterialProgress {
@@ -82,6 +82,13 @@ export function CompletedMaterials({ userId }: CompletedMaterialsProps) {
   }, [loadCompletedMaterials]);
 
   const handleUncompleteMaterial = async (materialId: string) => {
+    // Сохраняем текущее состояние для отката в случае ошибки
+    const previousMaterials = [...materials];
+    
+    // Оптимистичное обновление - сразу удаляем материал из списка
+    // Это обновит UI мгновенно, без перезагрузки
+    setMaterials(prev => prev.filter(m => m.materialId !== materialId));
+    
     try {
       const encodedMaterialId = encodeURIComponent(materialId);
       const response = await fetch(`/api/statistics/materials/complete?materialId=${encodedMaterialId}`, {
@@ -90,15 +97,31 @@ export function CompletedMaterials({ userId }: CompletedMaterialsProps) {
       });
 
       if (response.ok) {
-        // Удаляем материал из списка
-        setMaterials(prev => prev.filter(m => m.materialId !== materialId));
-        // Перезагружаем список для обновления статистики
-        await loadCompletedMaterials();
+        // Обновляем данные в фоне, не показывая индикатор загрузки
+        // и не сбрасывая состояние модального окна
+        const refreshResponse = await fetch("/api/statistics/materials/completed", {
+          credentials: "include",
+        });
+        
+        if (refreshResponse.ok) {
+          const data = await refreshResponse.json();
+          if (Array.isArray(data)) {
+            const sorted = data.sort((a, b) => 
+              new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime()
+            );
+            // Обновляем материалы, сохраняя открытое модальное окно
+            setMaterials(sorted);
+          }
+        }
       } else {
+        // В случае ошибки откатываем изменения
+        setMaterials(previousMaterials);
         const errorText = await response.text();
         alert(errorText || "Ошибка при откате материала");
       }
     } catch (error) {
+      // В случае ошибки откатываем изменения
+      setMaterials(previousMaterials);
       console.error("Ошибка при откате материала:", error);
       alert("Ошибка при откате материала");
     }
@@ -211,6 +234,14 @@ export function CompletedMaterials({ userId }: CompletedMaterialsProps) {
   useEffect(() => {
     if (selectedTopic) {
       document.body.style.overflow = "hidden";
+      // Убеждаемся, что анимация активна, если модальное окно открыто
+      // Используем отдельный таймер, чтобы не создавать бесконечный цикл
+      const timer = setTimeout(() => {
+        if (selectedTopic && !isAnimating) {
+          setIsAnimating(true);
+        }
+      }, 10);
+      return () => clearTimeout(timer);
     } else {
       document.body.style.overflow = "unset";
     }
@@ -271,33 +302,38 @@ export function CompletedMaterials({ userId }: CompletedMaterialsProps) {
   }
 
   // Безопасная группировка материалов с обработкой ошибок
-  let groupedMaterials: GroupedMaterials = {};
-  let topicStats: Array<{ topic: string; completedCount: number; totalCount: number; hasCompleted: boolean; materials: MaterialProgress[] }> = [];
-  
-  try {
-    groupedMaterials = groupMaterialsByTopic(materials);
+  // Используем useMemo для оптимизации и предотвращения лишних пересчетов
+  const { groupedMaterials, topicStats } = useMemo(() => {
+    let grouped: GroupedMaterials = {};
+    let stats: Array<{ topic: string; completedCount: number; totalCount: number; hasCompleted: boolean; materials: MaterialProgress[] }> = [];
     
-    // Создаем объект со статистикой для всех разделов
-    topicStats = Object.keys(TOPIC_MATERIALS).map((topic) => {
-      const allMaterials = TOPIC_MATERIALS[topic];
-      const completedMaterials = groupedMaterials[topic] || [];
-      const completedCount = completedMaterials.length;
-      const totalCount = allMaterials.length;
-      const hasCompleted = completedCount > 0;
+    try {
+      grouped = groupMaterialsByTopic(materials);
       
-      return {
-        topic,
-        completedCount,
-        totalCount,
-        hasCompleted,
-        materials: completedMaterials,
-      };
-    });
-  } catch (err) {
-    console.error("Ошибка при группировке материалов:", err);
-    // В случае ошибки показываем пустой список, но компонент все равно отображается
-    topicStats = [];
-  }
+      // Создаем объект со статистикой для всех разделов
+      stats = Object.keys(TOPIC_MATERIALS).map((topic) => {
+        const allMaterials = TOPIC_MATERIALS[topic];
+        const completedMaterials = grouped[topic] || [];
+        const completedCount = completedMaterials.length;
+        const totalCount = allMaterials.length;
+        const hasCompleted = completedCount > 0;
+        
+        return {
+          topic,
+          completedCount,
+          totalCount,
+          hasCompleted,
+          materials: completedMaterials,
+        };
+      });
+    } catch (err) {
+      console.error("Ошибка при группировке материалов:", err);
+      // В случае ошибки показываем пустой список, но компонент все равно отображается
+      stats = [];
+    }
+    
+    return { groupedMaterials: grouped, topicStats: stats };
+  }, [materials]);
 
   return (
     <>
