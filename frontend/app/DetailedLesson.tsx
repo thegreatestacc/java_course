@@ -1,8 +1,93 @@
 "use client";
 
 import { useAuth } from "./useAuth";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { triggerActivityUpdate } from "./utils/activityTracker";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+
+// Тема IntelliJ IDEA Light
+const intellijLight: any = {
+  'code[class*="language-"]': {
+    color: '#000000',
+    background: 'transparent',
+  },
+  'pre[class*="language-"]': {
+    color: '#000000',
+    background: 'transparent',
+    padding: 0,
+    margin: 0,
+  },
+  'comment': { color: '#808080', fontStyle: 'italic' },
+  'prolog': { color: '#808080', fontStyle: 'italic' },
+  'doctype': { color: '#808080', fontStyle: 'italic' },
+  'cdata': { color: '#808080', fontStyle: 'italic' },
+  'punctuation': { color: '#000000' },
+  'operator': { color: '#000000' },
+  'keyword': { color: '#0000ff' },
+  'class-name': { color: '#0066cc' },
+  'function': { color: '#006600' },
+  'variable': { color: '#000000' },
+  'string': { color: '#008000' },
+  'char': { color: '#008000' },
+  'number': { color: '#0000ff' },
+  'boolean': { color: '#0000ff' },
+  'constant': { color: '#0000ff' },
+  'property': { color: '#ffc800' },
+  'tag': { color: '#ffc800' },
+  'attr-name': { color: '#ffc800' },
+  'attr-value': { color: '#808080' },
+  'builtin': { color: '#008000' },
+  'symbol': { color: '#0000ff' },
+  'deleted': { color: '#0000ff' },
+  'inserted': { color: '#008000' },
+  'entity': { color: '#000000' },
+  'url': { color: '#000000' },
+  'atrule': { color: '#0000ff' },
+  'regex': { color: '#000000' },
+  'important': { color: '#000000', fontWeight: 'bold' },
+};
+
+// Тема IntelliJ IDEA Darcula (Dark)
+const intellijDark: any = {
+  'code[class*="language-"]': {
+    color: '#a9b7c6',
+    background: 'transparent',
+  },
+  'pre[class*="language-"]': {
+    color: '#a9b7c6',
+    background: 'transparent',
+    padding: 0,
+    margin: 0,
+  },
+  'comment': { color: '#808080', fontStyle: 'italic' },
+  'prolog': { color: '#808080', fontStyle: 'italic' },
+  'doctype': { color: '#808080', fontStyle: 'italic' },
+  'cdata': { color: '#808080', fontStyle: 'italic' },
+  'punctuation': { color: '#a9b7c6' },
+  'operator': { color: '#a9b7c6' },
+  'keyword': { color: '#cc7832' },
+  'class-name': { color: '#4eade5' },
+  'function': { color: '#e6b85c' },
+  'variable': { color: '#a9b7c6' },
+  'string': { color: '#6a8759' },
+  'char': { color: '#6a8759' },
+  'number': { color: '#6897bb' },
+  'boolean': { color: '#6897bb' },
+  'constant': { color: '#6897bb' },
+  'property': { color: '#cc7832' },
+  'tag': { color: '#cc7832' },
+  'attr-name': { color: '#629755' },
+  'attr-value': { color: '#6a8759' },
+  'builtin': { color: '#6a8759' },
+  'symbol': { color: '#6897bb' },
+  'deleted': { color: '#6897bb' },
+  'inserted': { color: '#6a8759' },
+  'entity': { color: '#a9b7c6' },
+  'url': { color: '#a9b7c6' },
+  'atrule': { color: '#cc7832' },
+  'regex': { color: '#a9b7c6' },
+  'important': { color: '#a9b7c6', fontWeight: 'bold' },
+};
 
 interface DetailedLessonProps {
   materialId: string;
@@ -21,35 +106,157 @@ export function DetailedLesson({
   const [completed, setCompleted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [checkingStatus, setCheckingStatus] = useState(true);
+  const [isDark, setIsDark] = useState(false);
+
+  const checkCompletionStatus = useCallback(async () => {
+    if (!user || !materialId) {
+      setCheckingStatus(false);
+      return;
+    }
+
+    try {
+      // Используем query parameter вместо path variable
+      const encodedMaterialId = encodeURIComponent(materialId);
+      const response = await fetch(`/api/statistics/materials/status?materialId=${encodedMaterialId}`, {
+        credentials: "include",
+      });
+
+      if (response.ok) {
+        const isCompleted = await response.json();
+        setCompleted(isCompleted);
+      }
+    } catch (err) {
+      console.error("Ошибка проверки статуса:", err);
+    } finally {
+      setCheckingStatus(false);
+    }
+  }, [user, materialId]);
 
   // Проверяем статус завершения материала при загрузке
   useEffect(() => {
-    const checkCompletionStatus = async () => {
-      if (!user) {
-        setCheckingStatus(false);
-        return;
-      }
+    checkCompletionStatus();
+  }, [checkCompletionStatus]);
 
-      try {
-        // Используем query parameter вместо path variable
-        const encodedMaterialId = encodeURIComponent(materialId);
-        const response = await fetch(`/api/statistics/materials/status?materialId=${encodedMaterialId}`, {
-          credentials: "include",
-        });
-
-        if (response.ok) {
-          const isCompleted = await response.json();
-          setCompleted(isCompleted);
-        }
-      } catch (err) {
-        console.error("Ошибка проверки статуса:", err);
-      } finally {
-        setCheckingStatus(false);
+  // Перепроверяем статус при возврате на страницу (например, после отката материала)
+  useEffect(() => {
+    const handleFocus = () => {
+      if (user && materialId) {
+        checkCompletionStatus();
       }
     };
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, [user, materialId, checkCompletionStatus]);
 
-    checkCompletionStatus();
-  }, [user, materialId]);
+  // Определяем тему (светлая/темная)
+  useEffect(() => {
+    const checkTheme = () => {
+      const html = document.documentElement;
+      const isDarkMode = html.classList.contains('dark') || 
+                        html.getAttribute('data-theme') === 'dark' ||
+                        window.matchMedia('(prefers-color-scheme: dark)').matches;
+      setIsDark(isDarkMode);
+    };
+
+    checkTheme();
+
+    // Отслеживаем изменения темы
+    const observer = new MutationObserver(checkTheme);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class', 'data-theme'],
+    });
+
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    mediaQuery.addEventListener('change', checkTheme);
+
+    return () => {
+      observer.disconnect();
+      mediaQuery.removeEventListener('change', checkTheme);
+    };
+  }, []);
+
+  const isCodeLine = (line: string): boolean => {
+    const trimmed = line.trim();
+    
+    if (trimmed === "") return false;
+    
+    // Строки с отступом (4+ пробела)
+    if (line.match(/^\s{4,}/)) return true;
+    
+    // Комментарии
+    if (trimmed.startsWith("//")) return true;
+    
+    // Фигурные скобки
+    if (trimmed === "}" || trimmed === "{" || trimmed.startsWith("}") || trimmed.startsWith("{")) {
+      return true;
+    }
+    
+    // Ключевые слова Java
+    const javaKeywords = ["public", "private", "protected", "static", "final", "class", "interface", 
+                          "enum", "abstract", "extends", "implements", "import", "package", "return",
+                          "if", "else", "for", "while", "do", "switch", "case", "break", "continue",
+                          "try", "catch", "finally", "throw", "throws", "new", "this", "super", "void"];
+    if (javaKeywords.some(keyword => trimmed.startsWith(keyword + " ") || trimmed.startsWith(keyword + "<") || trimmed === keyword)) {
+      return true;
+    }
+    
+    // Типы данных и классы
+    const javaTypePattern = /^(int|String|double|boolean|char|byte|short|long|float|List|ArrayList|LinkedList|Iterator|Collections|Arrays|Integer|User|Task)\s*[<\(=]/;
+    if (javaTypePattern.test(trimmed)) return true;
+    
+    // Объявления переменных с типами
+    if (/^(List|ArrayList|LinkedList|Iterator|Collections|Arrays|Integer|String|int|double|boolean|char|byte|short|long|float)\s*<.*>\s*\w+\s*=/.test(trimmed)) {
+      return true;
+    }
+    
+    // System.out
+    if (line.includes("System.out")) return true;
+    
+    // Вызовы методов
+    if (/^[a-zA-Z_][a-zA-Z0-9_]*\s*\(/.test(trimmed) || /^[a-zA-Z_][a-zA-Z0-9_]*\.[a-zA-Z_][a-zA-Z0-9_]*\s*\(/.test(trimmed)) {
+      return true;
+    }
+    
+    // Присваивания с типами
+    if (line.includes("=") && (line.includes("int ") || line.includes("String ") || line.includes("double ") || 
+        line.includes("boolean ") || line.includes("char ") || line.includes("List<") || line.includes("ArrayList<") || 
+        line.includes("LinkedList<") || line.includes("Iterator<") || line.includes("Collections.") || line.includes("Arrays."))) {
+      return true;
+    }
+    
+    // Лямбда-выражения и операторы
+    if (line.includes("->") || line.includes("++") || line.includes("--") || trimmed.startsWith("@")) {
+      return true;
+    }
+    
+    // Строки с точкой с запятой в конце (обычно код)
+    if (trimmed.endsWith(";") && !trimmed.startsWith("•")) {
+      return true;
+    }
+    
+    // Строки с угловыми скобками (generics)
+    if (line.includes("<") && line.includes(">")) {
+      return true;
+    }
+    
+    // Строки с квадратными скобками (массивы, индексы)
+    if (line.includes("[") && line.includes("]") && !line.startsWith("•")) {
+      return true;
+    }
+    
+    // Вызовы методов через точку
+    if (/\.\w+\s*\(/.test(line) || /\.\w+\s*\[/.test(line)) {
+      return true;
+    }
+    
+    return false;
+  };
+
+  const isCommandLine = (line: string): boolean => {
+    return line.startsWith("java ") || line.startsWith("javac ") || line.startsWith("brew ") || 
+           line.startsWith("sudo ") || line.startsWith("cd ") || line.startsWith("git ");
+  };
 
   const handleComplete = async () => {
     if (!user) {
@@ -94,6 +301,21 @@ export function DetailedLesson({
       <p className="text-sm text-[var(--text-muted)] mb-6">
         {description}
       </p>
+      
+      {/* Информационное сообщение о завершении материала */}
+      {!completed && (
+        <div className="mb-6 p-4 rounded-lg border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20">
+          <div className="flex items-start gap-3">
+            <svg className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <p className="text-sm text-blue-700 dark:text-blue-300">
+              <span className="font-semibold">Важно:</span> После изучения материала нажмите кнопку <span className="font-semibold">"Завершить материал"</span> внизу страницы, чтобы статистика по пройденному материалу отображалась в вашем личном кабинете.
+            </p>
+          </div>
+        </div>
+      )}
+      
       <div className="space-y-6">
         {sections.map((section, sectionIndex) => (
           <div key={sectionIndex} className="space-y-3">
@@ -102,56 +324,177 @@ export function DetailedLesson({
             </h4>
             <div className="rounded-xl border border-[var(--border-main)] bg-[var(--bg-secondary)] p-4">
               <div className="space-y-2.5 text-sm text-[var(--text-muted)] leading-relaxed">
-                {section.content.map((line, lineIndex) => {
-                  if (line.trim() === "") {
-                    return <div key={lineIndex} className="h-2" />;
-                  }
-                  // Команды Git и другие команды терминала
-                  if (line.startsWith("git ") || line.startsWith("cd ") || line.startsWith("sudo ") || line.match(/^[a-z-]+\s+[a-z]/i)) {
-                    return (
-                      <div key={lineIndex} className="font-mono text-xs bg-[var(--bg-card)] border border-[var(--border-main)] rounded-lg px-3 py-2 text-[var(--text-main)]">
-                        <span className="text-[var(--text-muted)]">$</span> {line}
-                      </div>
-                    );
-                  }
-                  // Заголовки разделов (например, "Установка Git:")
-                  if (line.endsWith(":") && !line.includes("•") && line.length < 50) {
-                    return (
-                      <p key={lineIndex} className="font-semibold text-[var(--text-main)] mt-3 first:mt-0">
-                        {line}
-                      </p>
-                    );
-                  }
-                  // Маркированные списки
-                  if (line.startsWith("•")) {
-                    return (
-                      <div key={lineIndex} className="flex items-start gap-2 ml-2">
-                        <span className="inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--button-bg)] mt-1.5" />
-                        <span>{line.replace(/^•\s*/, "")}</span>
-                      </div>
-                    );
-                  }
-                  // Нумерованные списки
-                  if (line.match(/^\d+\.\s/)) {
-                    const match = line.match(/^(\d+)\.\s(.+)/);
-                    return (
-                      <div key={lineIndex} className="flex items-start gap-2 ml-2">
-                        <span className="font-semibold text-[var(--text-main)] shrink-0">{match?.[1]}.</span>
-                        <span>{match?.[2]}</span>
-                      </div>
-                    );
-                  }
-                  // Предупреждения
-                  if (line.includes("⚠️") || line.includes("ВНИМАНИЕ")) {
-                    return (
-                      <p key={lineIndex} className="text-xs font-medium text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg px-3 py-2">
-                        {line}
-                      </p>
-                    );
-                  }
-                  // Обычный текст
-                  return <p key={lineIndex}>{line}</p>;
-                })}
+                {(() => {
+                  const elements: React.ReactElement[] = [];
+                  let currentParagraph: string[] = [];
+                  let currentCodeBlock: string[] = [];
+                  let keyIndex = 0;
+
+                  const flushParagraph = () => {
+                    if (currentParagraph.length > 0) {
+                      elements.push(
+                        <p key={keyIndex++}>
+                          {currentParagraph.join(" ")}
+                        </p>
+                      );
+                      currentParagraph = [];
+                    }
+                  };
+
+                  const flushCodeBlock = () => {
+                    if (currentCodeBlock.length > 0) {
+                      const code = currentCodeBlock.join("\n");
+                      // Определяем язык: если есть Java-специфичные конструкции, то Java, иначе bash
+                      const isJava = code.includes("public class") || 
+                                    code.includes("System.out") || 
+                                    code.includes("List<") || 
+                                    code.includes("ArrayList<") || 
+                                    code.includes("LinkedList<") ||
+                                    code.includes("import java") ||
+                                    code.includes("Collections.") ||
+                                    code.includes("Arrays.") ||
+                                    code.includes("Iterator<") ||
+                                    code.includes("for (") ||
+                                    code.includes("while (") ||
+                                    code.includes("if (") ||
+                                    code.includes("new ") ||
+                                    code.includes("int ") ||
+                                    code.includes("String ") ||
+                                    code.includes("boolean ") ||
+                                    code.includes("void ") ||
+                                    code.includes("return ") ||
+                                    code.includes("public ") ||
+                                    code.includes("private ") ||
+                                    code.includes("static ");
+                      const language = isJava ? "java" : "bash";
+                      elements.push(
+                        <div key={keyIndex++} className="rounded-lg border border-[var(--border-main)] bg-[var(--bg-card)] p-3 overflow-x-auto my-2">
+                          <SyntaxHighlighter
+                            language={language}
+                            style={isDark ? intellijDark : intellijLight}
+                            customStyle={{
+                              margin: 0,
+                              padding: 0,
+                              background: 'transparent',
+                              fontSize: '12px',
+                              lineHeight: '1.6',
+                              fontFamily: 'inherit',
+                            }}
+                            codeTagProps={{
+                              style: {
+                                fontFamily: 'inherit',
+                              },
+                            }}
+                          >
+                            {code}
+                          </SyntaxHighlighter>
+                        </div>
+                      );
+                      currentCodeBlock = [];
+                    }
+                  };
+
+                  section.content.forEach((line, lineIndex) => {
+                    const trimmedLine = line.trim();
+                    const nextLine = lineIndex < section.content.length - 1 ? section.content[lineIndex + 1] : "";
+                    const nextLineTrimmed = nextLine.trim();
+                    
+                    if (trimmedLine === "") {
+                      if (currentCodeBlock.length > 0) {
+                        currentCodeBlock.push("");
+                        return;
+                      }
+                      if (isCodeLine(nextLine) || isCommandLine(nextLine)) {
+                        flushParagraph();
+                        return;
+                      }
+                      flushParagraph();
+                      flushCodeBlock();
+                      elements.push(<div key={keyIndex++} className="h-2" />);
+                      return;
+                    }
+                    
+                    if (line.trim() === "" && line.length > 0 && currentCodeBlock.length > 0) {
+                      currentCodeBlock.push("");
+                      return;
+                    }
+
+                    if (isCommandLine(line)) {
+                      flushParagraph();
+                      if (currentCodeBlock.length > 0) {
+                        currentCodeBlock.push(line);
+                      } else {
+                        flushCodeBlock();
+                        currentCodeBlock.push(line);
+                      }
+                      return;
+                    }
+
+                    if (isCodeLine(line)) {
+                      flushParagraph();
+                      if (currentCodeBlock.length > 0) {
+                        currentCodeBlock.push(line);
+                      } else {
+                        flushCodeBlock();
+                        currentCodeBlock.push(line);
+                      }
+                      return;
+                    }
+
+                    if (currentCodeBlock.length > 0) {
+                      flushCodeBlock();
+                    }
+
+                    if (line.endsWith(":") && !line.includes("•") && line.length < 50) {
+                      flushParagraph();
+                      elements.push(
+                        <p key={keyIndex++} className="font-semibold text-[var(--text-main)] mt-3 first:mt-0">
+                          {line}
+                        </p>
+                      );
+                      return;
+                    }
+
+                    if (line.startsWith("•")) {
+                      flushParagraph();
+                      elements.push(
+                        <div key={keyIndex++} className="flex items-start gap-2 ml-2">
+                          <span className="inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--button-bg)] mt-1.5" />
+                          <span>{line.replace(/^•\s*/, "")}</span>
+                        </div>
+                      );
+                      return;
+                    }
+
+                    if (line.match(/^\d+\.\s/)) {
+                      flushParagraph();
+                      const match = line.match(/^(\d+)\.\s(.+)/);
+                      elements.push(
+                        <div key={keyIndex++} className="flex items-start gap-2 ml-2">
+                          <span className="font-semibold text-[var(--text-main)] shrink-0">{match?.[1]}.</span>
+                          <span>{match?.[2]}</span>
+                        </div>
+                      );
+                      return;
+                    }
+
+                    if (line.includes("⚠️") || line.includes("ВНИМАНИЕ")) {
+                      flushParagraph();
+                      elements.push(
+                        <p key={keyIndex++} className="text-xs font-medium text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg px-3 py-2">
+                          {line}
+                        </p>
+                      );
+                      return;
+                    }
+
+                    currentParagraph.push(trimmedLine);
+                  });
+
+                  flushParagraph();
+                  flushCodeBlock();
+                  return elements;
+                })()}
               </div>
             </div>
           </div>
