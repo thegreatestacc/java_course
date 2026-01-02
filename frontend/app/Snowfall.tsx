@@ -10,8 +10,6 @@ interface Snowflake {
   size: number;
 }
 
-const SNOWFLAKES_STORAGE_KEY = "snowflakesConfig";
-
 function generateSnowflakes(count: number = 50, baseId: number = 0): Snowflake[] {
   return Array.from({ length: count }, (_, i) => ({
     id: baseId + i,
@@ -22,49 +20,11 @@ function generateSnowflakes(count: number = 50, baseId: number = 0): Snowflake[]
   }));
 }
 
-function getSnowflakesConfig(): Snowflake[] {
-  if (typeof window === "undefined") {
-    return generateSnowflakes();
-  }
-
-  const saved = localStorage.getItem(SNOWFLAKES_STORAGE_KEY);
-  if (saved) {
-    try {
-      return JSON.parse(saved);
-    } catch {
-      const flakes = generateSnowflakes();
-      localStorage.setItem(SNOWFLAKES_STORAGE_KEY, JSON.stringify(flakes));
-      return flakes;
-    }
-  }
-
-  const flakes = generateSnowflakes();
-  localStorage.setItem(SNOWFLAKES_STORAGE_KEY, JSON.stringify(flakes));
-  return flakes;
-}
-
 export function Snowfall({ isActive }: { isActive: boolean }) {
   const [snowflakes, setSnowflakes] = useState<Snowflake[]>([]);
-  const [isDark, setIsDark] = useState(false);
-  const [isStopping, setIsStopping] = useState(false);
-  const [flakesToStop, setFlakesToStop] = useState<Set<number>>(new Set());
   const nextIdRef = useRef(0);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
-
-  useEffect(() => {
-    const checkTheme = () => {
-      setIsDark(document.documentElement.classList.contains("dark"));
-    };
-    
-    checkTheme();
-    const observer = new MutationObserver(checkTheme);
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ["class"],
-    });
-    
-    return () => observer.disconnect();
-  }, []);
+  const MAX_SNOWFLAKES = 120; // Максимальное количество снежинок одновременно
 
   useEffect(() => {
     // Очищаем предыдущий интервал, если он существует
@@ -74,44 +34,34 @@ export function Snowfall({ isActive }: { isActive: boolean }) {
     }
 
     if (!isActive) {
-      // Останавливаем создание новых снежинок, но позволяем существующим завершить анимацию
-      setIsStopping(true);
-      // Помечаем все текущие снежинки для остановки после завершения текущего цикла
-      setSnowflakes(prev => {
-        setFlakesToStop(new Set(prev.map(f => f.id)));
-        return prev;
-      });
-      
-      // Вычисляем максимальное время до завершения всех анимаций
-      // Максимальная длительность анимации (40 секунд) + максимальная задержка (2 секунды)
-      const maxAnimationTime = 40000 + 2000;
-      
-      // Удаляем снежинки после того, как все анимации завершатся
-      const timer = setTimeout(() => {
-        setSnowflakes([]);
-        setIsStopping(false);
-        setFlakesToStop(new Set());
-      }, maxAnimationTime);
-      
-      return () => clearTimeout(timer);
+      // Немедленно удаляем все снежинки при выключении
+      setSnowflakes([]);
+      return;
     } else {
-      // Сбрасываем состояние остановки при включении
-      setIsStopping(false);
-      setFlakesToStop(new Set());
-      // Генерируем начальные снежинки
+      // Генерируем начальные снежинки (меньше для производительности)
       nextIdRef.current = 0;
       const initialFlakes = generateSnowflakes(50, 0);
       nextIdRef.current = 50;
       setSnowflakes(initialFlakes);
       
-      // Периодически добавляем новые снежинки для непрерывного эффекта
+      // Периодически добавляем новые снежинки и удаляем старые для непрерывного эффекта
       intervalRef.current = setInterval(() => {
         setSnowflakes(prev => {
-          const newFlakes = generateSnowflakes(10, nextIdRef.current);
-          nextIdRef.current += 10;
-          return [...prev, ...newFlakes];
+          // Ограничиваем общее количество снежинок, удаляя самые старые
+          let current = prev.length >= MAX_SNOWFLAKES 
+            ? prev.slice(-MAX_SNOWFLAKES + 6) // Удаляем старые, оставляем последние
+            : prev;
+          
+          // Добавляем новые снежинки только если не превышен лимит
+          if (current.length < MAX_SNOWFLAKES) {
+            const newFlakes = generateSnowflakes(6, nextIdRef.current);
+            nextIdRef.current += 6;
+            current = [...current, ...newFlakes];
+          }
+          
+          return current;
         });
-      }, 2000); // Добавляем новые снежинки каждые 2 секунды
+      }, 4000); // Добавляем новые снежинки каждые 4 секунды (реже для производительности)
       
       return () => {
         if (intervalRef.current) {
@@ -122,17 +72,6 @@ export function Snowfall({ isActive }: { isActive: boolean }) {
     }
   }, [isActive]);
 
-  // Обработчик завершения итерации анимации - переключаем на forwards после завершения текущего цикла
-  const handleAnimationIteration = (flakeId: number) => {
-    if (isStopping && flakesToStop.has(flakeId)) {
-      // После завершения текущего цикла меняем на forwards для последнего падения
-      setFlakesToStop((prev) => {
-        const newSet = new Set(prev);
-        newSet.delete(flakeId);
-        return newSet;
-      });
-    }
-  };
 
   if (snowflakes.length === 0) {
     return null;
@@ -147,10 +86,7 @@ export function Snowfall({ isActive }: { isActive: boolean }) {
       }}
     >
       {snowflakes.map((flake) => {
-        const shouldUseForwards = isStopping && !flakesToStop.has(flake.id);
-        const animationValue = shouldUseForwards
-          ? `snowfall ${flake.animationDuration}s linear ${flake.animationDelay}s forwards`
-          : `snowfall ${flake.animationDuration}s linear ${flake.animationDelay}s infinite`;
+        const animationValue = `snowfall ${flake.animationDuration}s linear ${flake.animationDelay}s infinite`;
         
         return (
           <div
@@ -161,11 +97,11 @@ export function Snowfall({ isActive }: { isActive: boolean }) {
               top: '-20px',
               fontSize: `${flake.size}px`,
               color: '#ffffff',
-              filter: 'grayscale(100%) brightness(200%)',
-              WebkitFilter: 'grayscale(100%) brightness(200%)',
+              filter: 'brightness(0) invert(1)',
+              WebkitFilter: 'brightness(0) invert(1)',
+              willChange: 'transform', // Оптимизация для браузера
               animation: animationValue,
             }}
-            onAnimationIteration={() => handleAnimationIteration(flake.id)}
           >
             ❄
           </div>
@@ -176,7 +112,7 @@ export function Snowfall({ isActive }: { isActive: boolean }) {
       <style jsx>{`
         @keyframes snowfall {
           0% {
-            transform: translateY(-20px) rotate(0deg);
+            transform: translate3d(0, -20px, 0) rotate(0deg);
             opacity: 0;
           }
           10% {
@@ -186,7 +122,7 @@ export function Snowfall({ isActive }: { isActive: boolean }) {
             opacity: 0.7;
           }
           100% {
-            transform: translateY(calc(100vh + 20px)) rotate(360deg);
+            transform: translate3d(0, calc(100vh + 20px), 0) rotate(360deg);
             opacity: 0;
           }
         }
