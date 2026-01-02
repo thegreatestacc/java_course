@@ -250,6 +250,41 @@ export function CompletedMaterials({ userId }: CompletedMaterialsProps) {
     };
   }, [selectedTopic]);
 
+  // Безопасная группировка материалов с обработкой ошибок
+  // Используем useMemo для оптимизации и предотвращения лишних пересчетов
+  // ВАЖНО: useMemo должен быть вызван ДО всех условных возвратов, чтобы соблюдать правила хуков
+  const { groupedMaterials, topicStats } = useMemo(() => {
+    let grouped: GroupedMaterials = {};
+    let stats: Array<{ topic: string; completedCount: number; totalCount: number; hasCompleted: boolean; materials: MaterialProgress[] }> = [];
+    
+    try {
+      grouped = groupMaterialsByTopic(materials);
+      
+      // Создаем объект со статистикой для всех разделов
+      stats = Object.keys(TOPIC_MATERIALS).map((topic) => {
+        const allMaterials = TOPIC_MATERIALS[topic];
+        const completedMaterials = grouped[topic] || [];
+        const completedCount = completedMaterials.length;
+        const totalCount = allMaterials.length;
+        const hasCompleted = completedCount > 0;
+        
+        return {
+          topic,
+          completedCount,
+          totalCount,
+          hasCompleted,
+          materials: completedMaterials,
+        };
+      });
+    } catch (err) {
+      console.error("Ошибка при группировке материалов:", err);
+      // В случае ошибки показываем пустой список, но компонент все равно отображается
+      stats = [];
+    }
+    
+    return { groupedMaterials: grouped, topicStats: stats };
+  }, [materials]);
+
   if (loading) {
     return (
       <div className="rounded-2xl border border-[var(--border-main)] bg-[var(--bg-card)] p-6">
@@ -300,40 +335,6 @@ export function CompletedMaterials({ userId }: CompletedMaterialsProps) {
       </div>
     );
   }
-
-  // Безопасная группировка материалов с обработкой ошибок
-  // Используем useMemo для оптимизации и предотвращения лишних пересчетов
-  const { groupedMaterials, topicStats } = useMemo(() => {
-    let grouped: GroupedMaterials = {};
-    let stats: Array<{ topic: string; completedCount: number; totalCount: number; hasCompleted: boolean; materials: MaterialProgress[] }> = [];
-    
-    try {
-      grouped = groupMaterialsByTopic(materials);
-      
-      // Создаем объект со статистикой для всех разделов
-      stats = Object.keys(TOPIC_MATERIALS).map((topic) => {
-        const allMaterials = TOPIC_MATERIALS[topic];
-        const completedMaterials = grouped[topic] || [];
-        const completedCount = completedMaterials.length;
-        const totalCount = allMaterials.length;
-        const hasCompleted = completedCount > 0;
-        
-        return {
-          topic,
-          completedCount,
-          totalCount,
-          hasCompleted,
-          materials: completedMaterials,
-        };
-      });
-    } catch (err) {
-      console.error("Ошибка при группировке материалов:", err);
-      // В случае ошибки показываем пустой список, но компонент все равно отображается
-      stats = [];
-    }
-    
-    return { groupedMaterials: grouped, topicStats: stats };
-  }, [materials]);
 
   return (
     <>
