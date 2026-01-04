@@ -523,10 +523,7 @@ export function DetailedLesson({
                     }
 
                     // Проверяем структуру папок (символы ├──, │, └──)
-                    // Также проверяем строки, которые выглядят как структура папок (с отступами и точками/слэшами)
-                    const isTreeStructure = line.includes("├──") || line.includes("│") || line.includes("└──") ||
-                                           (line.trim().length > 0 && /^\s+[├│└]/.test(line)) ||
-                                           (line.trim().length > 0 && /^\s+[├│└\s]+\w/.test(line) && line.match(/^\s+/)?.[0].length >= 2);
+                    const isTreeStructure = line.includes("├──") || line.includes("│") || line.includes("└──");
                     
                     if (isTreeStructure) {
                       flushParagraph();
