@@ -6,6 +6,7 @@ import { Header } from "../Header";
 import { ActivityTracker } from "../ActivityTracker";
 import { TestResults } from "../TestResults";
 import { CompletedMaterials } from "../CompletedMaterials";
+import { AvailableTopics } from "../AvailableTopics";
 import { MotivationalQuotes } from "../MotivationalQuotes";
 import Link from "next/link";
 

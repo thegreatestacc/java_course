@@ -36,10 +36,14 @@ public class StatisticsService {
         "learn/java-core/variables",
         "learn/java-core/control-flow",
         "learn/java-oop",
+        "learn/java-oop/equals-hashcode",
         "learn/java-collections",
         "learn/java-collections/list",
         "learn/java-collections/set",
-        "learn/java-collections/map"
+        "learn/java-collections/map",
+        "learn/junior",
+        "learn/middle",
+        "learn/clean-architecture"
         // learn/git не включен, так как это просто редирект на /gift
     );
 

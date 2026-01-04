@@ -989,6 +989,18 @@ function DetailedLesson({
                       flushCodeBlock();
                     }
 
+                    // Обработка заголовков (строки, начинающиеся с цифры и точки, заканчивающиеся на ":")
+                    if (/^\d+\.\s/.test(trimmedLine) && trimmedLine.endsWith(":") && !line.includes("•")) {
+                      flushParagraph();
+                      elements.push(
+                        <p key={keyIndex++} className="font-semibold text-[var(--text-main)] mt-3 first:mt-0">
+                          {line}
+                        </p>
+                      );
+                      return;
+                    }
+                    
+                    // Обработка других заголовков (короткие строки, заканчивающиеся на ":")
                     if (line.endsWith(":") && !line.includes("•") && line.length < 50) {
                       flushParagraph();
                       elements.push(

@@ -111,6 +111,20 @@ export default function JavaOOPPage() {
                     Полиморфизм
                   </span>
                 </Link>
+                <Link
+                  href="/learn/java-oop/equals-hashcode"
+                  className={`block px-3 py-1.5 rounded-lg text-sm transition-all duration-200 ${
+                    pathname === "/learn/java-oop/equals-hashcode"
+                      ? "bg-[var(--bg-muted)] text-[var(--text-main)] font-medium"
+                      : "text-[var(--text-muted)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-main)]"
+                  }`}
+                >
+                  <span className={`inline-block transition-opacity duration-200 ${
+                    pathname === "/learn/java-oop/equals-hashcode" ? "opacity-100" : "opacity-70"
+                  }`}>
+                    equals() и hashCode()
+                  </span>
+                </Link>
               </div>
             </div>
           </div>
@@ -165,6 +179,17 @@ export default function JavaOOPPage() {
                     "Абстрактные классы",
                     "Интерфейсы",
                     "Практическое применение"
+                  ]}
+                />
+                <LessonCard
+                  materialId="learn/java-oop/equals-hashcode"
+                  title="equals() и hashCode()"
+                  href="/learn/java-oop/equals-hashcode"
+                  topics={[
+                    "Зачем нужны equals() и hashCode()",
+                    "Правильная реализация методов",
+                    "Использование в коллекциях",
+                    "Проблемы и решения"
                   ]}
                 />
               </div>

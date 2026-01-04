@@ -24,6 +24,8 @@ const intellijLight: any = {
   'punctuation': { color: '#000000' },
   'operator': { color: '#000000' },
   'keyword': { color: '#0000ff' },
+  'span[class*="keyword"]': { color: '#0000ff' },
+  'code[class*="language-"] span[class*="keyword"]': { color: '#0000ff' },
   'class-name': { color: '#0066cc' },
   'function': { color: '#006600' },
   'variable': { color: '#000000' },
@@ -66,6 +68,8 @@ const intellijDark: any = {
   'punctuation': { color: '#a9b7c6' },
   'operator': { color: '#a9b7c6' },
   'keyword': { color: '#cc7832' },
+  'span[class*="keyword"]': { color: '#cc7832' },
+  'code[class*="language-"] span[class*="keyword"]': { color: '#cc7832' },
   'class-name': { color: '#4eade5' },
   'function': { color: '#e6b85c' },
   'variable': { color: '#a9b7c6' },
@@ -181,6 +185,9 @@ export function DetailedLesson({
     
     if (trimmed === "") return false;
     
+    // Строки, начинающиеся с маркера "•", не являются кодом
+    if (trimmed.startsWith("•")) return false;
+    
     // Строки с отступом (4+ пробела)
     if (line.match(/^\s{4,}/)) return true;
     
@@ -196,8 +203,26 @@ export function DetailedLesson({
     const javaKeywords = ["public", "private", "protected", "static", "final", "class", "interface", 
                           "enum", "abstract", "extends", "implements", "import", "package", "return",
                           "if", "else", "for", "while", "do", "switch", "case", "break", "continue",
-                          "try", "catch", "finally", "throw", "throws", "new", "this", "super", "void"];
-    if (javaKeywords.some(keyword => trimmed.startsWith(keyword + " ") || trimmed.startsWith(keyword + "<") || trimmed === keyword)) {
+                          "try", "catch", "finally", "throw", "throws", "new", "this", "super", "void",
+                          "default"];
+    
+    // Специальная проверка для switch с круглыми скобками (должна быть до общей проверки ключевых слов)
+    if (/^switch\s*\(/.test(trimmed)) return true;
+    
+    // Специальная проверка для case с двоеточием (может быть с отступом или без)
+    if (/^\s*case\s+.*:/.test(line) || /^case\s+.*:/.test(trimmed)) return true;
+    
+    // Специальная проверка для default с двоеточием (может быть с отступом или без)
+    if (/^\s*default:/.test(line) || trimmed === "default:" || trimmed.startsWith("default:")) return true;
+    
+    // Проверяем ключевые слова более точно
+    if (javaKeywords.some(keyword => {
+      // Точное совпадение
+      if (trimmed === keyword) return true;
+      // Начинается с ключевого слова и пробела или скобки
+      if (trimmed.startsWith(keyword + " ") || trimmed.startsWith(keyword + "(") || trimmed.startsWith(keyword + "<")) return true;
+      return false;
+    })) {
       return true;
     }
     
@@ -357,6 +382,11 @@ export function DetailedLesson({
                                     code.includes("for (") ||
                                     code.includes("while (") ||
                                     code.includes("if (") ||
+                                    code.includes("switch (") ||
+                                    code.includes("switch(") ||
+                                    code.includes("case ") ||
+                                    code.includes("default:") ||
+                                    code.includes("break;") ||
                                     code.includes("new ") ||
                                     code.includes("int ") ||
                                     code.includes("String ") ||
@@ -366,7 +396,9 @@ export function DetailedLesson({
                                     code.includes("public ") ||
                                     code.includes("private ") ||
                                     code.includes("static ");
-                      const language = isJava ? "java" : "bash";
+                      // Определяем язык более точно: если есть switch, case, default - точно Java
+                      const hasSwitch = code.includes("switch") || code.includes("case") || code.includes("default:");
+                      const language = (isJava || hasSwitch) ? "java" : "bash";
                       elements.push(
                         <div key={keyIndex++} className="rounded-lg border border-[var(--border-main)] bg-[var(--bg-card)] p-3 overflow-x-auto my-2">
                           <SyntaxHighlighter
@@ -408,6 +440,11 @@ export function DetailedLesson({
                         flushParagraph();
                         return;
                       }
+                      // Игнорируем пустые строки между нумерованными пунктами или маркированными списками
+                      if (nextLineTrimmed.match(/^\d+\.\s/) || nextLineTrimmed.startsWith("•")) {
+                        flushParagraph();
+                        return;
+                      }
                       flushParagraph();
                       flushCodeBlock();
                       elements.push(<div key={keyIndex++} className="h-2" />);
@@ -419,6 +456,16 @@ export function DetailedLesson({
                       return;
                     }
 
+                    if (trimmedLine.includes("⚠️") || trimmedLine.includes("ВНИМАНИЕ")) {
+                      flushParagraph();
+                      elements.push(
+                        <p key={keyIndex++} className="text-xs font-medium text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg px-3 py-2">
+                          {trimmedLine}
+                        </p>
+                      );
+                      return;
+                    }
+
                     if (isCommandLine(line)) {
                       flushParagraph();
                       if (currentCodeBlock.length > 0) {
@@ -427,6 +474,20 @@ export function DetailedLesson({
                         flushCodeBlock();
                         currentCodeBlock.push(line);
                       }
+                      return;
+                    }
+
+                    // Проверяем нумерованный список ДО проверки isCodeLine, чтобы избежать ложных срабатываний
+                    if (line.match(/^\d+\.\s/)) {
+                      flushParagraph();
+                      flushCodeBlock();
+                      const match = line.match(/^(\d+)\.\s(.+)/);
+                      elements.push(
+                        <div key={keyIndex++} className="flex items-start gap-2 ml-2 mb-2">
+                          <span className="font-semibold text-[var(--text-main)] shrink-0">{match?.[1]}.</span>
+                          <span>{match?.[2]}</span>
+                        </div>
+                      );
                       return;
                     }
 
@@ -458,32 +519,10 @@ export function DetailedLesson({
                     if (line.startsWith("•")) {
                       flushParagraph();
                       elements.push(
-                        <div key={keyIndex++} className="flex items-start gap-2 ml-2">
+                        <div key={keyIndex++} className="flex items-start gap-2 ml-2 mb-2">
                           <span className="inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--button-bg)] mt-1.5" />
                           <span>{line.replace(/^•\s*/, "")}</span>
                         </div>
-                      );
-                      return;
-                    }
-
-                    if (line.match(/^\d+\.\s/)) {
-                      flushParagraph();
-                      const match = line.match(/^(\d+)\.\s(.+)/);
-                      elements.push(
-                        <div key={keyIndex++} className="flex items-start gap-2 ml-2">
-                          <span className="font-semibold text-[var(--text-main)] shrink-0">{match?.[1]}.</span>
-                          <span>{match?.[2]}</span>
-                        </div>
-                      );
-                      return;
-                    }
-
-                    if (line.includes("⚠️") || line.includes("ВНИМАНИЕ")) {
-                      flushParagraph();
-                      elements.push(
-                        <p key={keyIndex++} className="text-xs font-medium text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg px-3 py-2">
-                          {line}
-                        </p>
                       );
                       return;
                     }
