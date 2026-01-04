@@ -37,7 +37,7 @@ services:
     image: ${REGISTRY:-ghcr.io}/${OWNER:-owner}/java-course-frontend:${TAG:-latest}
     container_name: java-course-frontend
     ports:
-      - "3000:3000"
+      - "80:3000"
     depends_on:
       - backend
     restart: unless-stopped
