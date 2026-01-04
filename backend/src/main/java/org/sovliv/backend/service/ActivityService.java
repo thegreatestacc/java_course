@@ -86,4 +86,3 @@ public class ActivityService {
         activityRepository.save(activity);
     }
 }
-
