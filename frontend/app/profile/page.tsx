@@ -6,9 +6,12 @@ import { Header } from "../Header";
 import { ActivityTracker } from "../ActivityTracker";
 import { TestResults } from "../TestResults";
 import { CompletedMaterials } from "../CompletedMaterials";
-import { AvailableTopics } from "../AvailableTopics";
 import { MotivationalQuotes } from "../MotivationalQuotes";
 import Link from "next/link";
+import { useMemo } from "react";
+import { useCompletedMaterials } from "../hooks/useCompletedMaterials";
+import { LEVEL_MATERIALS } from "../utils/levelMaterials";
+import { StarRating } from "../components/StarRating";
 
 const mono = JetBrains_Mono({
   subsets: ["latin", "cyrillic"],
@@ -112,25 +115,7 @@ export default function ProfilePage() {
               </p>
             </div>
 
-            <div className="rounded-2xl border border-[var(--border-main)] bg-[var(--bg-card)] p-6">
-              <h2 className="text-lg font-semibold text-[var(--text-main)] mb-4">
-                Информация о пользователе
-              </h2>
-              <div className="space-y-3">
-                <div>
-                  <p className="text-xs font-medium text-[var(--text-muted)] mb-1">
-                    Имя
-                  </p>
-                  <p className="text-sm text-[var(--text-main)]">{user.name}</p>
-                </div>
-                <div>
-                  <p className="text-xs font-medium text-[var(--text-muted)] mb-1">
-                    Email
-                  </p>
-                  <p className="text-sm text-[var(--text-main)]">{user.email}</p>
-                </div>
-              </div>
-            </div>
+            <UserInfoWithTopics userId={user.id} userName={user.name} userEmail={user.email} />
 
             <ActivityTracker userId={user.id} />
 
@@ -163,6 +148,88 @@ function Footer() {
         </div>
       </div>
     </footer>
+  );
+}
+
+function UserInfoWithTopics({ userId, userName, userEmail }: { userId: number; userName: string; userEmail: string }) {
+  const { materials, loading } = useCompletedMaterials();
+
+  const levelStats = useMemo(() => {
+    const completedMaterialIds = new Set(materials.map(m => m.materialId));
+    
+    return Object.entries(LEVEL_MATERIALS).map(([level, materialIds]) => {
+      const completed = materialIds.filter(id => completedMaterialIds.has(id));
+      
+      return {
+        level,
+        totalCount: materialIds.length,
+        completedCount: completed.length,
+      };
+    });
+  }, [materials]);
+
+  // Вычисляем максимальную ширину названия темы
+  const maxLevelNameWidth = useMemo(() => {
+    if (levelStats.length === 0) return 0;
+    const maxLength = Math.max(...levelStats.map(s => s.level.length));
+    // Примерно 9-10px на символ для text-sm с учетом кириллицы
+    return Math.max(280, maxLength * 10);
+  }, [levelStats]);
+
+  return (
+    <div className="rounded-2xl border border-[var(--border-main)] bg-[var(--bg-card)] p-6">
+      <h2 className="text-lg font-semibold text-[var(--text-main)] mb-4">
+        Информация о пользователе
+      </h2>
+      <div className="grid grid-cols-1 md:grid-cols-[1fr_1px_1fr] gap-6">
+        {/* Левая часть - информация о пользователе */}
+        <div className="space-y-3">
+          <div>
+            <p className="text-xs font-medium text-[var(--text-muted)] mb-1">
+              Имя
+            </p>
+            <p className="text-sm text-[var(--text-main)]">{userName}</p>
+          </div>
+          <div>
+            <p className="text-xs font-medium text-[var(--text-muted)] mb-1">
+              Email
+            </p>
+            <p className="text-sm text-[var(--text-main)]">{userEmail}</p>
+          </div>
+        </div>
+
+        {/* Вертикальная линия */}
+        <div className="hidden md:block w-px bg-[var(--border-main)]" />
+
+        {/* Правая часть - темы с результатами */}
+        <div className="space-y-4">
+          {loading ? (
+            <p className="text-sm text-[var(--text-muted)]">Загрузка...</p>
+          ) : levelStats.length === 0 ? (
+            <p className="text-sm text-[var(--text-muted)]">Нет данных о темах</p>
+          ) : (
+            <div className="space-y-4">
+              {levelStats.map(({ level, totalCount, completedCount }) => {
+                const progressPercentage = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+                
+                return (
+                  <div key={level} className="grid grid-cols-[auto_auto_1fr] gap-x-3 items-center">
+                    <h3 className="text-sm font-semibold text-[var(--text-main)] whitespace-nowrap" style={{ minWidth: `${maxLevelNameWidth}px` }}>
+                      {level}
+                    </h3>
+                    {/* Звезды для всех тем */}
+                    <StarRating progressPercentage={progressPercentage} className="flex-shrink-0" />
+                    <span className="text-xs font-medium text-[var(--text-muted)] whitespace-nowrap justify-self-end">
+                      {progressPercentage}%
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }
 

@@ -1,104 +1,21 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
-
-interface MaterialProgress {
-  id: number;
-  materialId: string;
-  completedAt: string;
-}
+import { LEVEL_MATERIALS, MaterialProgress } from "./utils/levelMaterials";
+import { useCompletedMaterials } from "./hooks/useCompletedMaterials";
 
 interface CompletedMaterialsProps {
   userId?: number;
 }
 
-// Определяем материалы для каждого уровня
-const LEVEL_MATERIALS: Record<string, string[]> = {
-  "Junior Java Developer": [
-    "gift/basics",
-    "gift/branches",
-    "gift/remote",
-    "gift/advanced",
-    "learn/java-core/basics",
-    "learn/java-core/variables",
-    "learn/java-core/control-flow",
-    "learn/java-oop",
-    "learn/java-oop/equals-hashcode",
-    "learn/java-collections/list",
-    "learn/java-collections/set",
-    "learn/java-collections/map",
-    "learn/junior"
-  ],
-  "Middle Java Developer": [
-    "learn/middle"
-  ],
-  "Чистая архитектура сервисов": [
-    "learn/clean-architecture"
-  ]
-};
-
 export function CompletedMaterials({ userId }: CompletedMaterialsProps) {
-  const [materials, setMaterials] = useState<MaterialProgress[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { materials, loading, error, reload } = useCompletedMaterials();
   const [expandedLevels, setExpandedLevels] = useState<Set<string>>(
     new Set()
   );
 
-  const loadCompletedMaterials = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await fetch("/api/statistics/materials/completed", {
-        credentials: "include",
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        if (Array.isArray(data)) {
-          const sorted = data.sort((a, b) => 
-            new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime()
-          );
-          setMaterials(sorted);
-        } else {
-          console.warn("API вернул не массив:", data);
-          setMaterials([]);
-        }
-      } else if (response.status === 401) {
-        setMaterials([]);
-      } else {
-        const errorText = await response.text().catch(() => response.statusText);
-        console.error("Ошибка загрузки прочитанных материалов:", response.status, errorText);
-        setMaterials([]);
-        if (response.status !== 401) {
-          setError("Не удалось загрузить прочитанные материалы");
-        }
-      }
-    } catch (error) {
-      console.error("Ошибка загрузки прочитанных материалов:", error);
-      setMaterials([]);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    loadCompletedMaterials();
-  }, [loadCompletedMaterials]);
-
-  useEffect(() => {
-    const handleFocus = () => {
-      loadCompletedMaterials();
-    };
-    window.addEventListener('focus', handleFocus);
-    return () => window.removeEventListener('focus', handleFocus);
-  }, [loadCompletedMaterials]);
-
   const handleUncompleteMaterial = async (materialId: string) => {
-    const previousMaterials = [...materials];
-    setMaterials(prev => prev.filter(m => m.materialId !== materialId));
-    
     try {
       const encodedMaterialId = encodeURIComponent(materialId);
       const response = await fetch(`/api/statistics/materials/complete?materialId=${encodedMaterialId}`, {
@@ -107,26 +24,12 @@ export function CompletedMaterials({ userId }: CompletedMaterialsProps) {
       });
 
       if (response.ok) {
-        const refreshResponse = await fetch("/api/statistics/materials/completed", {
-          credentials: "include",
-        });
-        
-        if (refreshResponse.ok) {
-          const data = await refreshResponse.json();
-          if (Array.isArray(data)) {
-            const sorted = data.sort((a, b) => 
-              new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime()
-            );
-            setMaterials(sorted);
-          }
-        }
+        reload();
       } else {
-        setMaterials(previousMaterials);
         const errorText = await response.text();
         alert(errorText || "Ошибка при откате материала");
       }
     } catch (error) {
-      setMaterials(previousMaterials);
       console.error("Ошибка при откате материала:", error);
       alert("Ошибка при откате материала");
     }
@@ -252,7 +155,7 @@ export function CompletedMaterials({ userId }: CompletedMaterialsProps) {
             {error}
           </p>
           <button
-            onClick={loadCompletedMaterials}
+            onClick={reload}
             className="px-4 py-2 text-sm font-medium text-[var(--text-main)] border border-[var(--border-main)] rounded-lg hover:bg-[var(--bg-muted)] transition-colors"
           >
             Попробовать снова
@@ -270,7 +173,7 @@ export function CompletedMaterials({ userId }: CompletedMaterialsProps) {
         </h2>
         {error && (
           <button
-            onClick={loadCompletedMaterials}
+            onClick={reload}
             className="text-xs text-[var(--text-muted)] hover:text-[var(--text-main)] underline"
             title="Обновить данные"
           >
@@ -329,50 +232,6 @@ export function CompletedMaterials({ userId }: CompletedMaterialsProps) {
                     <span className="text-xs text-[var(--text-muted)]">
                       {completedCount} из {totalCount}
                     </span>
-                    {/* Медали для Junior Java Developer */}
-                    {level === "Junior Java Developer" && progressPercentage >= 80 && (
-                      <div className="flex items-center gap-1">
-                        {progressPercentage >= 95 && (
-                          <div className="flex items-center justify-center" title="Золотая медаль - 95%">
-                            <svg className="w-5 h-5 text-yellow-500" fill="currentColor" viewBox="0 0 24 24">
-                              <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
-                            </svg>
-                          </div>
-                        )}
-                        {progressPercentage >= 85 && progressPercentage < 95 && (
-                          <div className="flex items-center justify-center" title="Серебряная медаль - 85%">
-                            <svg className="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
-                              <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
-                            </svg>
-                          </div>
-                        )}
-                        {progressPercentage >= 80 && progressPercentage < 85 && (
-                          <div className="flex items-center justify-center" title="Медная медаль - 80%">
-                            <svg className="w-5 h-5 text-amber-700" fill="currentColor" viewBox="0 0 24 24">
-                              <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
-                            </svg>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                    {/* Галочка для других уровней */}
-                    {level !== "Junior Java Developer" && hasProgress && (
-                      <div className="flex items-center justify-center w-5 h-5 rounded-full bg-green-500/20">
-                        <svg
-                          className="w-3 h-3 text-green-500"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M5 13l4 4L19 7"
-                          />
-                        </svg>
-                      </div>
-                    )}
                   </div>
                   <div className="flex items-center gap-3">
                     <Link
@@ -391,7 +250,7 @@ export function CompletedMaterials({ userId }: CompletedMaterialsProps) {
                 {/* Прогресс-бар */}
                 <div className="mt-3 w-full h-2 bg-[var(--bg-muted)] rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-[var(--button-bg)] transition-all duration-300"
+                    className="h-full bg-[var(--progress-bar-bg)] transition-all duration-300"
                     style={{ width: `${progressPercentage}%` }}
                   />
                 </div>

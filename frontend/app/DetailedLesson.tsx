@@ -353,6 +353,7 @@ export function DetailedLesson({
                   const elements: React.ReactElement[] = [];
                   let currentParagraph: string[] = [];
                   let currentCodeBlock: string[] = [];
+                  let currentTreeStructure: string[] = [];
                   let keyIndex = 0;
 
                   const flushParagraph = () => {
@@ -363,6 +364,26 @@ export function DetailedLesson({
                         </p>
                       );
                       currentParagraph = [];
+                    }
+                  };
+
+                  const flushTreeStructure = () => {
+                    if (currentTreeStructure.length > 0) {
+                      const tree = currentTreeStructure.join("\n");
+                      elements.push(
+                        <div key={keyIndex++} className="rounded-lg border border-[var(--border-main)] bg-[var(--bg-card)] p-3 overflow-x-auto my-2">
+                          <pre className="text-xs text-[var(--text-main)] whitespace-pre m-0 leading-relaxed font-mono" style={{ 
+                            fontFamily: '"Courier New", Courier, "Lucida Console", Monaco, "Consolas", "Liberation Mono", monospace',
+                            letterSpacing: '0',
+                            tabSize: 2,
+                            whiteSpace: 'pre',
+                            wordSpacing: '0'
+                          }}>
+                            {tree}
+                          </pre>
+                        </div>
+                      );
+                      currentTreeStructure = [];
                     }
                   };
 
@@ -432,12 +453,22 @@ export function DetailedLesson({
                     const nextLineTrimmed = nextLine.trim();
                     
                     if (trimmedLine === "") {
+                      if (currentTreeStructure.length > 0) {
+                        currentTreeStructure.push("");
+                        return;
+                      }
                       if (currentCodeBlock.length > 0) {
                         currentCodeBlock.push("");
                         return;
                       }
                       if (isCodeLine(nextLine) || isCommandLine(nextLine)) {
                         flushParagraph();
+                        return;
+                      }
+                      // Проверяем структуру папок
+                      if (nextLine.includes("├──") || nextLine.includes("│") || nextLine.includes("└──")) {
+                        flushParagraph();
+                        flushCodeBlock();
                         return;
                       }
                       // Игнорируем пустые строки между нумерованными пунктами или маркированными списками
@@ -491,6 +522,24 @@ export function DetailedLesson({
                       return;
                     }
 
+                    // Проверяем структуру папок (символы ├──, │, └──)
+                    // Также проверяем строки, которые выглядят как структура папок (с отступами и точками/слэшами)
+                    const isTreeStructure = line.includes("├──") || line.includes("│") || line.includes("└──") ||
+                                           (line.trim().length > 0 && /^\s+[├│└]/.test(line)) ||
+                                           (line.trim().length > 0 && /^\s+[├│└\s]+\w/.test(line) && line.match(/^\s+/)?.[0].length >= 2);
+                    
+                    if (isTreeStructure) {
+                      flushParagraph();
+                      flushCodeBlock();
+                      if (currentTreeStructure.length > 0) {
+                        currentTreeStructure.push(line);
+                      } else {
+                        flushTreeStructure();
+                        currentTreeStructure.push(line);
+                      }
+                      return;
+                    }
+
                     if (isCodeLine(line)) {
                       flushParagraph();
                       if (currentCodeBlock.length > 0) {
@@ -502,6 +551,9 @@ export function DetailedLesson({
                       return;
                     }
 
+                    if (currentTreeStructure.length > 0) {
+                      flushTreeStructure();
+                    }
                     if (currentCodeBlock.length > 0) {
                       flushCodeBlock();
                     }
@@ -531,6 +583,7 @@ export function DetailedLesson({
                   });
 
                   flushParagraph();
+                  flushTreeStructure();
                   flushCodeBlock();
                   return elements;
                 })()}

@@ -21,6 +21,8 @@
   --button-bg: #171717;
   --button-text: #ffffff;
   --button-hover: #404040;
+  
+  --progress-bar-bg: #888888; /* Светло-серый для светлой темы */
 }
 
 .dark {
@@ -40,6 +42,8 @@
   --button-bg: #e6e6e6;
   --button-text: #0f1115;
   --button-hover: #d4d4d4;
+  
+  --progress-bar-bg: #e6e6e6; /* Светлый для темной темы */
 }
 
 /* =========================
