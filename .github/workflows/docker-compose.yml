@@ -78,7 +78,7 @@ jobs:
             echo "User: $(whoami)"
             echo "SSH port: ${{ secrets.DEPLOY_PORT }}"
             echo "Target path: ${{ secrets.DEPLOY_PATH }}"
-            
+
       - name: Check SSH test result
         if: steps.ssh-test.outcome == 'failure'
         run: |
@@ -89,74 +89,42 @@ jobs:
           echo "3. DEPLOY_USER has SSH access"
           echo "4. DEPLOY_SSH_KEY is correct and matches server's authorized_keys"
           echo "5. Firewall allows connections on SSH port"
-          echo "See DEPLOY_TROUBLESHOOTING.md for detailed troubleshooting steps"
           exit 1
-      
-      - name: Copy docker-compose to server
-        uses: appleboy/scp-action@v0.1.8
-        continue-on-error: true
-        id: scp-compose
-        with:
-          host: ${{ secrets.DEPLOY_HOST }}
-          username: ${{ secrets.DEPLOY_USER }}
-          port: ${{ secrets.DEPLOY_PORT }}
-          key: ${{ secrets.DEPLOY_SSH_KEY }}
-          source: "docker-compose.prod.yml"
-          target: "${{ secrets.DEPLOY_PATH }}"
-          timeout: 30s
-          command_timeout: 60s
-          strip_components: 0
-          overwrite: true
-          debug: true
-          
+
+      # --- Replace appleboy/scp-action with native scp/rsync (reliable) ---
+      - name: Install SSH tools (scp/rsync)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y openssh-client rsync
+
+      - name: Configure SSH key and known_hosts
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -p "${{ secrets.DEPLOY_PORT }}" "${{ secrets.DEPLOY_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Ensure deploy directories exist
+        run: |
+          set -euo pipefail
+          ssh -p "${{ secrets.DEPLOY_PORT }}" -i ~/.ssh/id_rsa \
+            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
+            "mkdir -p '${{ secrets.DEPLOY_PATH }}/nginx'"
+
+      - name: Copy docker-compose.prod.yml to server
+        run: |
+          set -euo pipefail
+          scp -P "${{ secrets.DEPLOY_PORT }}" -i ~/.ssh/id_rsa \
+            docker-compose.prod.yml \
+            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}/docker-compose.prod.yml"
+
       - name: Copy nginx directory to server
-        uses: appleboy/scp-action@v0.1.8
-        continue-on-error: true
-        id: scp-nginx
-        with:
-          host: ${{ secrets.DEPLOY_HOST }}
-          username: ${{ secrets.DEPLOY_USER }}
-          port: ${{ secrets.DEPLOY_PORT }}
-          key: ${{ secrets.DEPLOY_SSH_KEY }}
-          source: "nginx/"
-          target: "${{ secrets.DEPLOY_PATH }}/nginx/"
-          timeout: 30s
-          command_timeout: 60s
-          strip_components: 0
-          overwrite: true
-          debug: true
-      
-      - name: Fallback - Copy files via SSH if SCP failed
-        if: steps.scp-compose.outcome == 'failure' || steps.scp-nginx.outcome == 'failure'
-        uses: appleboy/ssh-action@v1.0.3
-        continue-on-error: true
-        with:
-          host: ${{ secrets.DEPLOY_HOST }}
-          username: ${{ secrets.DEPLOY_USER }}
-          port: ${{ secrets.DEPLOY_PORT }}
-          key: ${{ secrets.DEPLOY_SSH_KEY }}
-          script: |
-            set -euo pipefail
-            mkdir -p "${{ secrets.DEPLOY_PATH }}/nginx"
-            cd "${{ secrets.DEPLOY_PATH }}"
-            
-            # Если docker-compose.prod.yml не скопировался, попробуем получить через git
-            if [ ! -f docker-compose.prod.yml ]; then
-              echo "docker-compose.prod.yml not found, trying to get from git..."
-              if [ -d .git ]; then
-                git pull origin main || echo "Git pull failed"
-              else
-                echo "Git repository not found. Please ensure docker-compose.prod.yml exists manually."
-              fi
-            fi
-            
-            # Если nginx директория не скопировалась, попробуем получить через git
-            if [ ! -d nginx ] || [ ! -f nginx/nginx.conf ]; then
-              echo "nginx directory/files not found, trying to get from git..."
-              if [ -d .git ]; then
-                git pull origin main || echo "Git pull failed"
-              fi
-            fi
+        run: |
+          set -euo pipefail
+          rsync -avz --delete -e "ssh -p ${{ secrets.DEPLOY_PORT }} -i ~/.ssh/id_rsa" \
+            nginx/ \
+            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}/nginx/"
 
       - name: Deploy on server
         uses: appleboy/ssh-action@v1.0.3
@@ -168,17 +136,15 @@ jobs:
           script: |
             set -euo pipefail
             cd "${{ secrets.DEPLOY_PATH }}"
-            
+
             # Проверяем наличие docker-compose.prod.yml
             if [ ! -f docker-compose.prod.yml ]; then
               echo "ERROR: docker-compose.prod.yml not found!"
               echo "Please ensure the file exists in ${{ secrets.DEPLOY_PATH }}"
-              echo "You can copy it manually or ensure SCP step completed successfully"
               exit 1
             fi
-            
             echo "✓ docker-compose.prod.yml found"
-            
+
             # Проверяем наличие nginx директории
             if [ ! -d nginx ]; then
               echo "WARNING: nginx directory not found, creating it..."
@@ -194,11 +160,11 @@ jobs:
               else
                 echo "TAG=${{ env.TAG }}" >> .env
               fi
-              
+
               if ! grep -q '^REGISTRY=' .env; then
                 echo "REGISTRY=${{ env.REGISTRY }}" >> .env
               fi
-              
+
               if ! grep -q '^OWNER=' .env; then
                 echo "OWNER=${{ env.OWNER }}" >> .env
               fi
@@ -210,6 +176,6 @@ jobs:
 
             # Скачиваем обновленные образы
             docker compose -f docker-compose.prod.yml pull backend frontend nginx
-            
+
             # Перезапускаем контейнеры
             docker compose -f docker-compose.prod.yml up -d --remove-orphans
