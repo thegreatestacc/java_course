@@ -18,6 +18,7 @@ interface ActivityTrackerProps {
 
 export function ActivityTracker({ userId, refreshTrigger }: ActivityTrackerProps) {
   const { user } = useAuth();
+  const { timezone } = useTimezone();
   const [activityData, setActivityData] = useState<ActivityData[]>([]);
   const [loading, setLoading] = useState(true);
   
@@ -103,8 +104,6 @@ export function ActivityTracker({ userId, refreshTrigger }: ActivityTrackerProps
     if (count === 3) return "bg-green-500/70";
     return "bg-green-500";
   };
-
-  const { timezone } = useTimezone();
 
   const getTooltipText = (date: string, count: number): string => {
     const dateObj = new Date(date);
