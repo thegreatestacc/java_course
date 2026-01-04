@@ -4,6 +4,8 @@ import { useState, useMemo } from "react";
 import Link from "next/link";
 import { LEVEL_MATERIALS, MaterialProgress } from "./utils/levelMaterials";
 import { useCompletedMaterials } from "./hooks/useCompletedMaterials";
+import { useTimezone } from "./hooks/useTimezone";
+import { formatDateWithTimezone } from "./utils/timezone";
 
 interface CompletedMaterialsProps {
   userId?: number;
@@ -75,14 +77,18 @@ export function CompletedMaterials({ userId }: CompletedMaterialsProps) {
   };
 
   const formatDate = (dateString: string): string => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("ru-RU", {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    if (!timezone) {
+      // Fallback на стандартное форматирование, если временной пояс еще не определен
+      const date = new Date(dateString);
+      return date.toLocaleDateString("ru-RU", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    }
+    return formatDateWithTimezone(dateString, timezone);
   };
 
   // Группируем материалы по уровням

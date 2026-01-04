@@ -3,6 +3,8 @@
  * Вызывается при выполнении заданий (квизов, упражнений и т.д.)
  */
 
+import { getLocalDateString, getUserTimezone } from "./timezone";
+
 // Глобальное событие для обновления трекера активности
 let activityUpdateListeners: (() => void)[] = [];
 
@@ -17,9 +19,10 @@ export function triggerActivityUpdate() {
   activityUpdateListeners.forEach(listener => listener());
 }
 
-export async function recordActivity(tasksCompleted: number, date?: string): Promise<boolean> {
+export async function recordActivity(tasksCompleted: number, date?: string, timezone?: string): Promise<boolean> {
   try {
-    const activityDate = date || new Date().toISOString().split('T')[0];
+    // Используем локальную дату пользователя, если не указана конкретная дата
+    const activityDate = date || getLocalDateString(timezone || getUserTimezone());
     
     const response = await fetch("/api/activity/record", {
       method: "POST",

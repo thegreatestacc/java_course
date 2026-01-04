@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { onActivityUpdate } from "@/app/utils/activityTracker";
 import { useAuth } from "@/app/useAuth";
+import { useTimezone } from "@/app/hooks/useTimezone";
+import { formatDateWithTimezone, getLocalDateString, convertUTCToLocalDate } from "@/app/utils/timezone";
 
 interface ActivityData {
   date: string;
@@ -59,7 +61,7 @@ export function ActivityTracker({ userId, refreshTrigger }: ActivityTrackerProps
     } finally {
       setLoading(false);
     }
-  }, [selectedYear]);
+  }, [selectedYear, timezone]);
 
   // Обновляем selectedYear, когда пользователь загружается
   useEffect(() => {
@@ -102,13 +104,17 @@ export function ActivityTracker({ userId, refreshTrigger }: ActivityTrackerProps
     return "bg-green-500";
   };
 
+  const { timezone } = useTimezone();
+
   const getTooltipText = (date: string, count: number): string => {
     const dateObj = new Date(date);
-    const formattedDate = dateObj.toLocaleDateString('ru-RU', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
-    });
+    const formattedDate = timezone 
+      ? formatDateWithTimezone(date, timezone, { day: 'numeric', month: 'long', year: 'numeric' })
+      : dateObj.toLocaleDateString('ru-RU', {
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric'
+        });
     
     if (count === 0) {
       return `Нет активности: ${formattedDate}`;
@@ -174,7 +180,7 @@ export function ActivityTracker({ userId, refreshTrigger }: ActivityTrackerProps
     dataMap.set(day.date, day);
   });
 
-  // Генерируем данные по месяцам за выбранный год
+  // Генерируем данные по месяцам за выбранный год в локальном часовом поясе
   const startDate = new Date(selectedYear, 0, 1); // 1 января выбранного года
   const endDate = new Date(selectedYear, 11, 31); // 31 декабря выбранного года
 
@@ -200,9 +206,18 @@ export function ActivityTracker({ userId, refreshTrigger }: ActivityTrackerProps
       months.push(monthData);
     }
 
-    // Получаем данные для этого дня
-    const dateStr = currentDate.toISOString().split('T')[0];
-    const dayData = dataMap.get(dateStr) || { date: dateStr, count: 0 };
+    // Получаем дату в локальном часовом поясе пользователя
+    // Создаем дату как полночь в локальном часовом поясе
+    const localDateStr = timezone
+      ? new Intl.DateTimeFormat("en-CA", {
+          timeZone: timezone,
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+        }).format(new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate()))
+      : currentDate.toISOString().split('T')[0];
+    
+    const dayData = dataMap.get(localDateStr) || { date: localDateStr, count: 0 };
     monthData.days.push(dayData);
 
     // Переходим к следующему дню

@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTimezone } from "./hooks/useTimezone";
+import { formatDateWithTimezone } from "./utils/timezone";
 
 interface TestResult {
   id: number;
@@ -27,6 +29,7 @@ export function TestResults({ userId }: TestResultsProps) {
   const [loading, setLoading] = useState(true);
   const [showAllResults, setShowAllResults] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
+  const { timezone } = useTimezone();
 
   useEffect(() => {
     if (userId) {
@@ -128,14 +131,18 @@ export function TestResults({ userId }: TestResultsProps) {
   };
 
   const formatDate = (dateString: string): string => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("ru-RU", {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    if (!timezone) {
+      // Fallback на стандартное форматирование, если временной пояс еще не определен
+      const date = new Date(dateString);
+      return date.toLocaleDateString("ru-RU", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    }
+    return formatDateWithTimezone(dateString, timezone);
   };
 
   const getPercentageColor = (percentage: number): string => {
