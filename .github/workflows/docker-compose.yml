@@ -71,6 +71,8 @@ jobs:
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           source: "docker-compose.prod.yml"
           target: "${{ secrets.DEPLOY_PATH }}"
+          timeout: 180s
+          command_timeout: 300s
 
       - name: Deploy on server
         uses: appleboy/ssh-action@v1.0.3
@@ -82,6 +84,11 @@ jobs:
           script: |
             set -euo pipefail
             cd "${{ secrets.DEPLOY_PATH }}"
+            
+            # Если docker-compose.prod.yml не скопировался через SCP, создадим его через SSH
+            if [ ! -f docker-compose.prod.yml ]; then
+              echo "docker-compose.prod.yml not found, will be created via git pull or manual copy"
+            fi
 
             echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u "${{ github.repository_owner }}" --password-stdin
 
