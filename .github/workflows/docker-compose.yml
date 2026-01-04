@@ -66,13 +66,12 @@ jobs:
         uses: appleboy/ssh-action@v1.0.3
         id: ssh-test
         continue-on-error: true
-        timeout: 30s
+        timeout-minutes: 1
         with:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
           port: ${{ secrets.DEPLOY_PORT }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
-          timeout: 30s
           command_timeout: 10s
           script: |
             echo "✓ SSH connection test successful"
@@ -131,13 +130,12 @@ jobs:
 
       - name: Deploy on server
         uses: appleboy/ssh-action@v1.0.3
-        timeout: 5m
+        timeout-minutes: 10
         with:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
           port: ${{ secrets.DEPLOY_PORT }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
-          timeout: 60s
           command_timeout: 120s
           script: |
             set -euo pipefail
