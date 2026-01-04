@@ -1,6 +1,7 @@
 package org.sovliv.backend.service;
 
 import org.sovliv.backend.dto.CompileResponse;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
@@ -21,7 +22,16 @@ public class JavaExecutionService {
     private static final String TEMP_DIR = System.getProperty("java.io.tmpdir");
     private static final int MAX_CODE_LENGTH = 10000;
 
+    /**
+     * Выполняет код с кэшированием результатов.
+     * Кэширует только успешные компиляции и выполнения.
+     */
+    @Cacheable(value = "compileResults", key = "T(java.util.Objects).hash(#code)", unless = "#result.error != null")
     public CompileResponse executeCode(String code) {
+        return executeCodeInternal(code);
+    }
+
+    private CompileResponse executeCodeInternal(String code) {
         CompileResponse response = new CompileResponse();
 
         // Валидация

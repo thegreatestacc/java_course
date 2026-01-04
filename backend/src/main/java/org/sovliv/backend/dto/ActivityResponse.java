@@ -1,8 +1,10 @@
 package org.sovliv.backend.dto;
 
+import java.io.Serializable;
 import java.util.List;
 
-public class ActivityResponse {
+public class ActivityResponse implements Serializable {
+    private static final long serialVersionUID = 1L;
     private List<ActivityDay> activities;
 
     public ActivityResponse() {
@@ -20,7 +22,8 @@ public class ActivityResponse {
         this.activities = activities;
     }
 
-    public static class ActivityDay {
+    public static class ActivityDay implements Serializable {
+        private static final long serialVersionUID = 1L;
         private String date;
         private Integer count;
 

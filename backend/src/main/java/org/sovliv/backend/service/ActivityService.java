@@ -6,6 +6,8 @@ import org.sovliv.backend.model.UserActivity;
 import org.sovliv.backend.repository.UserActivityRepository;
 import org.sovliv.backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -27,10 +29,12 @@ public class ActivityService {
         this.userRepository = userRepository;
     }
 
+    @Cacheable(value = "userActivity", key = "#userId + ':current'")
     public ActivityResponse getUserActivity(Long userId) {
         return getUserActivityByYear(userId, LocalDate.now().getYear());
     }
 
+    @Cacheable(value = "userActivity", key = "#userId + ':' + #year")
     public ActivityResponse getUserActivityByYear(Long userId, int year) {
         // Получаем данные за весь выбранный год
         LocalDate startDate = LocalDate.of(year, 1, 1);
@@ -63,6 +67,7 @@ public class ActivityService {
         return new ActivityResponse(result);
     }
 
+    @CacheEvict(value = "userActivity", key = "#userId + '*'", allEntries = true)
     public void recordActivity(Long userId, LocalDate date, Integer tasksCompleted) {
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new RuntimeException("User not found"));

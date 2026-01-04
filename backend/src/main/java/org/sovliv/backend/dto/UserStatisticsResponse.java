@@ -1,6 +1,9 @@
 package org.sovliv.backend.dto;
 
-public class UserStatisticsResponse {
+import java.io.Serializable;
+
+public class UserStatisticsResponse implements Serializable {
+    private static final long serialVersionUID = 1L;
     private Integer totalTests;
     private Integer completedTests;
     private Double testsPercentage;

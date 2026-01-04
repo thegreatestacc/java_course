@@ -25,6 +25,27 @@ services:
           cpus: '0.25'
           memory: 256M
 
+  redis:
+    image: redis:7-alpine
+    container_name: java-course-redis
+    command: redis-server --maxmemory 128mb --maxmemory-policy allkeys-lru --save "" --appendonly no
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - java-course-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.2'
+          memory: 128M
+        reservations:
+          cpus: '0.1'
+          memory: 64M
+
   backend:
     image: ${REGISTRY:-ghcr.io}/${OWNER:-owner}/java-course-backend:${TAG:-latest}
     container_name: java-course-backend
@@ -32,10 +53,14 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-java_course_db}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-java_course_user}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-java_course_password}
+      SPRING_REDIS_HOST: redis
+      SPRING_REDIS_PORT: 6379
     ports:
       - "8080:8080"
     depends_on:
       postgres:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     restart: unless-stopped
     networks:

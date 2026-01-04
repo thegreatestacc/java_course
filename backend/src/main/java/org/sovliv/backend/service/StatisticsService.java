@@ -9,6 +9,8 @@ import org.sovliv.backend.repository.MaterialProgressRepository;
 import org.sovliv.backend.repository.TestResultRepository;
 import org.sovliv.backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
@@ -58,6 +60,7 @@ public class StatisticsService {
         this.activityService = activityService;
     }
 
+    @Cacheable(value = "userStatistics", key = "#userId")
     public UserStatisticsResponse getUserStatistics(Long userId) {
         // Подсчитываем прочитанные материалы
         List<MaterialProgress> materialProgresses = materialProgressRepository.findByUserId(userId);
@@ -95,6 +98,7 @@ public class StatisticsService {
         );
     }
 
+    @CacheEvict(value = {"userStatistics", "materialStatus", "userActivity"}, key = "#userId")
     public void markMaterialAsCompleted(Long userId, String materialId) {
         System.out.println("markMaterialAsCompleted called: userId=" + userId + ", materialId=" + materialId);
         
@@ -137,6 +141,7 @@ public class StatisticsService {
         }
     }
 
+    @Cacheable(value = "materialStatus", key = "#userId + ':' + #materialId")
     public boolean isMaterialCompleted(Long userId, String materialId) {
         return materialProgressRepository.findByUserIdAndMaterialId(userId, materialId).isPresent();
     }
@@ -152,6 +157,7 @@ public class StatisticsService {
                 .collect(Collectors.toList());
     }
 
+    @CacheEvict(value = {"userStatistics", "materialStatus", "userActivity"}, key = "#userId")
     public void unmarkMaterialAsCompleted(Long userId, String materialId) {
         materialProgressRepository.findByUserIdAndMaterialId(userId, materialId)
                 .ifPresent(materialProgressRepository::delete);
