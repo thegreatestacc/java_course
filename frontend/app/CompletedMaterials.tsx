@@ -13,6 +13,7 @@ interface CompletedMaterialsProps {
 
 export function CompletedMaterials({ userId }: CompletedMaterialsProps) {
   const { materials, loading, error, reload } = useCompletedMaterials();
+  const { timezone } = useTimezone();
   const [expandedLevels, setExpandedLevels] = useState<Set<string>>(
     new Set()
   );
