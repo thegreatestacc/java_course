@@ -33,11 +33,26 @@ services:
     networks:
       - java-course-network
 
+  nginx:
+    image: ${REGISTRY:-ghcr.io}/${OWNER:-owner}/java-course-nginx:${TAG:-latest}
+    container_name: java-course-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /etc/letsencrypt/live/devcours.ru-0001/fullchain.pem:/etc/nginx/ssl/fullchain.pem:ro
+      - /etc/letsencrypt/live/devcours.ru-0001/privkey.pem:/etc/nginx/ssl/privkey.pem:ro
+    depends_on:
+      - backend
+      - frontend
+    restart: unless-stopped
+    networks:
+      - java-course-network
+
   frontend:
     image: ${REGISTRY:-ghcr.io}/${OWNER:-owner}/java-course-frontend:${TAG:-latest}
     container_name: java-course-frontend
-    ports:
-      - "80:3000"
+    # Не экспортируем порты напрямую, используем Nginx
     depends_on:
       - backend
     restart: unless-stopped

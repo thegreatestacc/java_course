@@ -52,6 +52,16 @@ jobs:
             ${{ env.REGISTRY }}/${{ env.OWNER }}/java-course-frontend:${{ env.TAG }}
             ${{ env.REGISTRY }}/${{ env.OWNER }}/java-course-frontend:latest
 
+      - name: Build & push nginx
+        uses: docker/build-push-action@v6
+        with:
+          context: ./nginx
+          file: ./nginx/Dockerfile
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.OWNER }}/java-course-nginx:${{ env.TAG }}
+            ${{ env.REGISTRY }}/${{ env.OWNER }}/java-course-nginx:latest
+
       - name: Copy docker-compose to server
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -97,7 +107,7 @@ jobs:
             fi
 
             # Скачиваем обновленные образы
-            docker compose -f docker-compose.prod.yml pull backend frontend
+            docker compose -f docker-compose.prod.yml pull backend frontend nginx
             
             # Перезапускаем контейнеры
             docker compose -f docker-compose.prod.yml up -d --remove-orphans
