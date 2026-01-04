@@ -1,7 +1,6 @@
 {
+  "/profile/page": "app/profile/page.js",
   "/page": "app/page.js",
-  "/learn/java-oop/page": "app/learn/java-oop/page.js",
-  "/learn/java-collections/map/page": "app/learn/java-collections/map/page.js",
-  "/learn/java-collections/page": "app/learn/java-collections/page.js",
-  "/profile/page": "app/profile/page.js"
+  "/learn/java-collections/list/page": "app/learn/java-collections/list/page.js",
+  "/gift/advanced/page": "app/gift/advanced/page.js"
 }

@@ -62,8 +62,40 @@ jobs:
             ${{ env.REGISTRY }}/${{ env.OWNER }}/java-course-nginx:${{ env.TAG }}
             ${{ env.REGISTRY }}/${{ env.OWNER }}/java-course-nginx:latest
 
+      - name: Test SSH connection
+        uses: appleboy/ssh-action@v1.0.3
+        id: ssh-test
+        continue-on-error: true
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          port: ${{ secrets.DEPLOY_PORT }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script: |
+            echo "✓ SSH connection test successful"
+            echo "Hostname: $(hostname)"
+            echo "Current directory: $(pwd)"
+            echo "User: $(whoami)"
+            echo "SSH port: ${{ secrets.DEPLOY_PORT }}"
+            echo "Target path: ${{ secrets.DEPLOY_PATH }}"
+            
+      - name: Check SSH test result
+        if: steps.ssh-test.outcome == 'failure'
+        run: |
+          echo "::error::SSH connection test failed!"
+          echo "Please check:"
+          echo "1. DEPLOY_HOST is correct and server is accessible"
+          echo "2. DEPLOY_PORT is correct (default is 22)"
+          echo "3. DEPLOY_USER has SSH access"
+          echo "4. DEPLOY_SSH_KEY is correct and matches server's authorized_keys"
+          echo "5. Firewall allows connections on SSH port"
+          echo "See DEPLOY_TROUBLESHOOTING.md for detailed troubleshooting steps"
+          exit 1
+      
       - name: Copy docker-compose to server
-        uses: appleboy/scp-action@v0.1.7
+        uses: appleboy/scp-action@v0.1.8
+        continue-on-error: true
+        id: scp-compose
         with:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
@@ -71,11 +103,16 @@ jobs:
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           source: "docker-compose.prod.yml"
           target: "${{ secrets.DEPLOY_PATH }}"
-          timeout: 180s
-          command_timeout: 300s
+          timeout: 30s
+          command_timeout: 60s
+          strip_components: 0
+          overwrite: true
+          debug: true
           
       - name: Copy nginx directory to server
-        uses: appleboy/scp-action@v0.1.7
+        uses: appleboy/scp-action@v0.1.8
+        continue-on-error: true
+        id: scp-nginx
         with:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
@@ -83,8 +120,43 @@ jobs:
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           source: "nginx/"
           target: "${{ secrets.DEPLOY_PATH }}/nginx/"
-          timeout: 180s
-          command_timeout: 300s
+          timeout: 30s
+          command_timeout: 60s
+          strip_components: 0
+          overwrite: true
+          debug: true
+      
+      - name: Fallback - Copy files via SSH if SCP failed
+        if: steps.scp-compose.outcome == 'failure' || steps.scp-nginx.outcome == 'failure'
+        uses: appleboy/ssh-action@v1.0.3
+        continue-on-error: true
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          port: ${{ secrets.DEPLOY_PORT }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script: |
+            set -euo pipefail
+            mkdir -p "${{ secrets.DEPLOY_PATH }}/nginx"
+            cd "${{ secrets.DEPLOY_PATH }}"
+            
+            # Если docker-compose.prod.yml не скопировался, попробуем получить через git
+            if [ ! -f docker-compose.prod.yml ]; then
+              echo "docker-compose.prod.yml not found, trying to get from git..."
+              if [ -d .git ]; then
+                git pull origin main || echo "Git pull failed"
+              else
+                echo "Git repository not found. Please ensure docker-compose.prod.yml exists manually."
+              fi
+            fi
+            
+            # Если nginx директория не скопировалась, попробуем получить через git
+            if [ ! -d nginx ] || [ ! -f nginx/nginx.conf ]; then
+              echo "nginx directory/files not found, trying to get from git..."
+              if [ -d .git ]; then
+                git pull origin main || echo "Git pull failed"
+              fi
+            fi
 
       - name: Deploy on server
         uses: appleboy/ssh-action@v1.0.3
@@ -97,9 +169,20 @@ jobs:
             set -euo pipefail
             cd "${{ secrets.DEPLOY_PATH }}"
             
-            # Если docker-compose.prod.yml не скопировался через SCP, создадим его через SSH
+            # Проверяем наличие docker-compose.prod.yml
             if [ ! -f docker-compose.prod.yml ]; then
-              echo "docker-compose.prod.yml not found, will be created via git pull or manual copy"
+              echo "ERROR: docker-compose.prod.yml not found!"
+              echo "Please ensure the file exists in ${{ secrets.DEPLOY_PATH }}"
+              echo "You can copy it manually or ensure SCP step completed successfully"
+              exit 1
+            fi
+            
+            echo "✓ docker-compose.prod.yml found"
+            
+            # Проверяем наличие nginx директории
+            if [ ! -d nginx ]; then
+              echo "WARNING: nginx directory not found, creating it..."
+              mkdir -p nginx/conf.d
             fi
 
             echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u "${{ github.repository_owner }}" --password-stdin
