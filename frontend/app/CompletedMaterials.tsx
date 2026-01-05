@@ -27,6 +27,27 @@ export function CompletedMaterials({ userId }: CompletedMaterialsProps) {
       });
 
       if (response.ok) {
+        // Обновляем статус задачи в доске задач (перемещаем из done в backlog)
+        const taskBoardKey = `taskBoard_${userId}`;
+        const savedTasks = localStorage.getItem(taskBoardKey);
+        if (savedTasks) {
+          try {
+            const tasks = JSON.parse(savedTasks);
+            const updatedTasks = tasks.map((task: any) => {
+              if (task.id === materialId && task.status === "done") {
+                return { ...task, status: "backlog" };
+              }
+              return task;
+            });
+            localStorage.setItem(taskBoardKey, JSON.stringify(updatedTasks));
+            
+            // Триггерим событие для обновления доски задач, если она открыта
+            window.dispatchEvent(new CustomEvent('taskBoardUpdate', { detail: { materialId, newStatus: 'backlog' } }));
+          } catch (error) {
+            console.error("Ошибка при обновлении доски задач:", error);
+          }
+        }
+        
         reload();
       } else {
         const errorText = await response.text();

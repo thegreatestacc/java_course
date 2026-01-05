@@ -196,12 +196,34 @@ export function TaskBoard({ userId }: TaskBoardProps) {
             if (task.status !== "done") {
               return { ...task, status: "done" };
             }
+          } else if (task.type === "material" && !completedMaterialIds.has(task.id)) {
+            // Если материал не завершен, но задача в done, перемещаем в backlog
+            if (task.status === "done") {
+              return { ...task, status: "backlog" };
+            }
           }
           return task;
         })
       );
     }
   }, [materials]);
+
+  // Слушаем события обновления доски задач из других компонентов
+  useEffect(() => {
+    const handleTaskBoardUpdate = (event: CustomEvent) => {
+      const { materialId, newStatus } = event.detail;
+      setTasks((prevTasks) =>
+        prevTasks.map((task) =>
+          task.id === materialId ? { ...task, status: newStatus } : task
+        )
+      );
+    };
+
+    window.addEventListener('taskBoardUpdate', handleTaskBoardUpdate as EventListener);
+    return () => {
+      window.removeEventListener('taskBoardUpdate', handleTaskBoardUpdate as EventListener);
+    };
+  }, []);
 
   const handleDragStart = (task: Task) => {
     setDraggedTask(task);
@@ -216,8 +238,11 @@ export function TaskBoard({ userId }: TaskBoardProps) {
     setDragOverColumn(null);
   };
 
-  const handleDrop = (status: TaskStatus) => {
+  const handleDrop = async (status: TaskStatus) => {
     if (draggedTask) {
+      const previousStatus = draggedTask.status;
+      
+      // Обновляем статус задачи
       setTasks((prevTasks) =>
         prevTasks.map((task) =>
           task.id === draggedTask.id ? { ...task, status } : task
@@ -225,6 +250,32 @@ export function TaskBoard({ userId }: TaskBoardProps) {
       );
       setDraggedTask(null);
       setDragOverColumn(null);
+
+      // Синхронизация с API: если перемещаем из done в другой статус - откатываем материал
+      if (previousStatus === "done" && status !== "done" && draggedTask.type === "material") {
+        try {
+          const encodedMaterialId = encodeURIComponent(draggedTask.id);
+          await fetch(`/api/statistics/materials/complete?materialId=${encodedMaterialId}`, {
+            method: "DELETE",
+            credentials: "include",
+          });
+        } catch (error) {
+          console.error("Ошибка при откате материала:", error);
+        }
+      }
+      
+      // Синхронизация с API: если перемещаем в done - отмечаем материал как завершенный
+      if (previousStatus !== "done" && status === "done" && draggedTask.type === "material") {
+        try {
+          const encodedMaterialId = encodeURIComponent(draggedTask.id);
+          await fetch(`/api/statistics/materials/complete?materialId=${encodedMaterialId}`, {
+            method: "POST",
+            credentials: "include",
+          });
+        } catch (error) {
+          console.error("Ошибка при отметке материала как завершенного:", error);
+        }
+      }
     }
   };
 
