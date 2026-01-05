@@ -370,6 +370,36 @@ export function DetailedLesson({
         // Обновляем трекер активности
         triggerActivityUpdate();
         console.log("Статус completed установлен в:", true);
+        
+        // Обновляем статус задачи на доске задач (перемещаем в done)
+        if (materialId) {
+          // Отправляем событие для обновления доски задач
+          window.dispatchEvent(new CustomEvent('taskBoardUpdate', { 
+            detail: { materialId, newStatus: 'done' } 
+          }));
+          
+          // Также обновляем localStorage напрямую для надежности
+          const userId = user?.id;
+          if (userId) {
+            const taskBoardKey = `taskBoard_${userId}`;
+            const savedTasks = localStorage.getItem(taskBoardKey);
+            if (savedTasks) {
+              try {
+                const tasks = JSON.parse(savedTasks);
+                const updatedTasks = tasks.map((task: any) => {
+                  if (task.id === materialId && task.status !== "done") {
+                    return { ...task, status: "done" };
+                  }
+                  return task;
+                });
+                localStorage.setItem(taskBoardKey, JSON.stringify(updatedTasks));
+                console.log('Task board updated in localStorage for material:', materialId);
+              } catch (error) {
+                console.error("Ошибка при обновлении доски задач:", error);
+              }
+            }
+          }
+        }
       } else {
         const errorText = await response.text();
         console.error("Ошибка сохранения прогресса:", errorText);
