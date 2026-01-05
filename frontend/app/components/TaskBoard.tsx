@@ -13,6 +13,7 @@ export interface Task {
   type: "material" | "practice";
   href: string;
   status: TaskStatus;
+  topic?: string; // Тема для группировки
 }
 
 const PRACTICAL_TASKS: Omit<Task, "status">[] = [
@@ -68,6 +69,27 @@ export function TaskBoard({ userId }: TaskBoardProps) {
   const [draggedTask, setDraggedTask] = useState<Task | null>(null);
   const [dragOverColumn, setDragOverColumn] = useState<TaskStatus | null>(null);
 
+  // Функция для определения темы задачи
+  const getTaskTopic = (taskId: string, taskType: "material" | "practice"): string => {
+    if (taskType === "practice") {
+      return "Практические задания";
+    }
+    
+    // Ищем тему в LEVEL_MATERIALS
+    for (const [topic, materialIds] of Object.entries(LEVEL_MATERIALS)) {
+      if (materialIds.includes(taskId)) {
+        return topic;
+      }
+    }
+    
+    // Проверяем подтемы clean-architecture
+    if (taskId.startsWith("learn/clean-architecture/")) {
+      return "Чистая архитектура сервисов";
+    }
+    
+    return "Другие";
+  };
+
   // Генерируем все задачи из материалов и практических заданий
   const allTasks = useMemo(() => {
     const materialTasks: Omit<Task, "status">[] = [];
@@ -82,6 +104,7 @@ export function TaskBoard({ userId }: TaskBoardProps) {
           href: materialId.startsWith("gift/") || materialId.startsWith("learn/")
             ? `/${materialId}`
             : `/learn/${materialId}`,
+          topic: getTaskTopic(materialId, "material"),
         });
       });
     });
@@ -103,10 +126,17 @@ export function TaskBoard({ userId }: TaskBoardProps) {
         title: getMaterialName(materialId),
         type: "material",
         href: `/${materialId}`,
+        topic: "Чистая архитектура сервисов",
       });
     });
 
-    return [...materialTasks, ...PRACTICAL_TASKS];
+    // Добавляем практические задачи с темой
+    const practicalTasksWithTopic = PRACTICAL_TASKS.map(task => ({
+      ...task,
+      topic: "Практические задания",
+    }));
+
+    return [...materialTasks, ...practicalTasksWithTopic];
   }, []);
 
   // Загружаем состояние задач из localStorage
@@ -122,9 +152,17 @@ export function TaskBoard({ userId }: TaskBoardProps) {
         });
 
         // Добавляем новые задачи в backlog, если они появились
+        // Также обновляем topic для существующих задач, если его нет
         allTasks.forEach((task) => {
           if (!taskMap.has(task.id)) {
             taskMap.set(task.id, { ...task, status: "backlog" });
+          } else {
+            // Обновляем topic для существующих задач, если его нет
+            const existingTask = taskMap.get(task.id)!;
+            if (!existingTask.topic && task.topic) {
+              existingTask.topic = task.topic;
+              taskMap.set(task.id, existingTask);
+            }
           }
         });
 
@@ -199,6 +237,28 @@ export function TaskBoard({ userId }: TaskBoardProps) {
     return tasks.filter((task) => task.status === status);
   };
 
+  // Группируем задачи по темам для backlog
+  const getGroupedTasksByStatus = (status: TaskStatus) => {
+    const tasksByStatus = getTasksByStatus(status);
+    
+    if (status !== "backlog") {
+      // Для других колонок возвращаем без группировки
+      return { ungrouped: tasksByStatus };
+    }
+    
+    // Группируем задачи по темам
+    const grouped: Record<string, Task[]> = {};
+    tasksByStatus.forEach((task) => {
+      const topic = task.topic || "Другие";
+      if (!grouped[topic]) {
+        grouped[topic] = [];
+      }
+      grouped[topic].push(task);
+    });
+    
+    return grouped;
+  };
+
   const columns: { id: TaskStatus; title: string }[] = [
     { id: "backlog", title: "Backlog" },
     { id: "todo", title: "To Do" },
@@ -214,6 +274,9 @@ export function TaskBoard({ userId }: TaskBoardProps) {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {columns.map((column) => {
           const columnTasks = getTasksByStatus(column.id);
+          const groupedTasks = getGroupedTasksByStatus(column.id);
+          const isBacklog = column.id === "backlog";
+          
           return (
             <div
               key={column.id}
@@ -229,12 +292,52 @@ export function TaskBoard({ userId }: TaskBoardProps) {
               <h3 className="text-sm font-semibold text-[var(--text-main)] mb-3">
                 {column.title} ({columnTasks.length})
               </h3>
-              <div className="flex-1 space-y-2 overflow-y-auto">
+              <div className="flex-1 space-y-4 overflow-y-auto">
                 {columnTasks.length === 0 ? (
                   <p className="text-xs text-[var(--text-muted)] text-center py-4">
                     Нет задач
                   </p>
+                ) : isBacklog ? (
+                  // Для backlog показываем группировку по темам
+                  Object.entries(groupedTasks).map(([topic, topicTasks]) => (
+                    <div key={topic} className="space-y-2">
+                      <h4 className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider px-1">
+                        {topic}
+                      </h4>
+                      {topicTasks.map((task) => (
+                        <div
+                          key={task.id}
+                          draggable
+                          onDragStart={() => handleDragStart(task)}
+                          onDragEnd={handleDragEnd}
+                          className={`rounded-lg border border-[var(--border-main)] bg-[var(--bg-card)] p-3 cursor-move hover:shadow-md transition-all ${
+                            draggedTask?.id === task.id ? "opacity-50" : ""
+                          }`}
+                        >
+                          <div className="flex items-start justify-between gap-2 mb-2">
+                            <span
+                              className={`text-xs font-medium px-2 py-1 rounded ${
+                                task.type === "material"
+                                  ? "bg-blue-500/20 text-blue-600 dark:text-blue-400"
+                                  : "bg-purple-500/20 text-purple-600 dark:text-purple-400"
+                              }`}
+                            >
+                              {task.type === "material" ? "Материал" : "Практика"}
+                            </span>
+                          </div>
+                          <Link
+                            href={task.href}
+                            className="text-sm font-medium text-[var(--text-main)] hover:text-[var(--button-bg)] transition-colors block mb-2"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            {task.title}
+                          </Link>
+                        </div>
+                      ))}
+                    </div>
+                  ))
                 ) : (
+                  // Для других колонок показываем без группировки
                   columnTasks.map((task) => (
                     <div
                       key={task.id}
