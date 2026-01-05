@@ -148,6 +148,29 @@ export function DetailedLesson({
         checkCompletionStatus();
       }
     };
+    
+    // Слушаем события обновления статуса материала с доски задач
+    const handleMaterialUncompleted = (event: CustomEvent) => {
+      if (event.detail.materialId === materialId) {
+        setCompleted(false);
+      }
+    };
+    
+    const handleMaterialCompleted = (event: CustomEvent) => {
+      if (event.detail.materialId === materialId) {
+        setCompleted(true);
+      }
+    };
+    
+    window.addEventListener('focus', handleFocus);
+    window.addEventListener('materialUncompleted', handleMaterialUncompleted as EventListener);
+    window.addEventListener('materialCompleted', handleMaterialCompleted as EventListener);
+    
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      window.removeEventListener('materialUncompleted', handleMaterialUncompleted as EventListener);
+      window.removeEventListener('materialCompleted', handleMaterialCompleted as EventListener);
+    };
     window.addEventListener('focus', handleFocus);
     return () => window.removeEventListener('focus', handleFocus);
   }, [user, materialId, checkCompletionStatus]);

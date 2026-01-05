@@ -276,6 +276,11 @@ export function TaskBoard({ userId }: TaskBoardProps) {
             method: "DELETE",
             credentials: "include",
           });
+          
+          // Отправляем событие для обновления статуса на страницах материалов
+          window.dispatchEvent(new CustomEvent('materialUncompleted', { 
+            detail: { materialId: draggedTask.id } 
+          }));
         } catch (error) {
           console.error("Ошибка при откате материала:", error);
         }
@@ -289,6 +294,11 @@ export function TaskBoard({ userId }: TaskBoardProps) {
             method: "POST",
             credentials: "include",
           });
+          
+          // Отправляем событие для обновления статуса на страницах материалов
+          window.dispatchEvent(new CustomEvent('materialCompleted', { 
+            detail: { materialId: draggedTask.id } 
+          }));
         } catch (error) {
           console.error("Ошибка при отметке материала как завершенного:", error);
         }
@@ -405,11 +415,6 @@ export function TaskBoard({ userId }: TaskBoardProps) {
                           >
                             {task.title}
                           </Link>
-                          {task.status === "done" && task.type === "material" && (
-                            <div className="text-xs text-green-600 dark:text-green-400 font-medium mt-2 pt-2 border-t border-[var(--border-main)]">
-                              Материал завершен
-                            </div>
-                          )}
                         </div>
                       ))}
                     </div>
@@ -449,11 +454,6 @@ export function TaskBoard({ userId }: TaskBoardProps) {
                       >
                         {task.title}
                       </Link>
-                      {task.status === "done" && task.type === "material" && (
-                        <div className="text-xs text-green-600 dark:text-green-400 font-medium mt-2 pt-2 border-t border-[var(--border-main)]">
-                          Материал завершен
-                        </div>
-                      )}
                     </div>
                   ))
                 )}
