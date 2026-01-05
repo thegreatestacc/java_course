@@ -62,6 +62,20 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess, mode }: AuthModalPro
         body: JSON.stringify(body),
       });
 
+      // Проверяем, что получили ответ
+      if (!response.ok) {
+        // Пытаемся получить текст ошибки
+        let errorMessage = "Ошибка соединения с сервером";
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorData.error || `Ошибка ${response.status}: ${response.statusText}`;
+        } catch {
+          errorMessage = `Ошибка ${response.status}: ${response.statusText || "Сервер не отвечает"}`;
+        }
+        setError(errorMessage);
+        return;
+      }
+
       const data = await response.json();
 
       if (data.success) {
@@ -71,7 +85,11 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess, mode }: AuthModalPro
         setError(data.message || "Произошла ошибка");
       }
     } catch (err) {
-      setError("Ошибка соединения с сервером");
+      console.error("Ошибка при выполнении запроса:", err);
+      const errorMessage = err instanceof Error 
+        ? `Ошибка соединения: ${err.message}` 
+        : "Ошибка соединения с сервером. Убедитесь, что бэкенд запущен на порту 8080";
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
