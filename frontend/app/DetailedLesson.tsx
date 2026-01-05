@@ -127,7 +127,10 @@ export function DetailedLesson({
 
       if (response.ok) {
         const isCompleted = await response.json();
+        console.log('Completion status checked for', materialId, ':', isCompleted);
         setCompleted(isCompleted);
+      } else {
+        console.error('Failed to check completion status:', response.status, response.statusText);
       }
     } catch (err) {
       console.error("Ошибка проверки статуса:", err);
@@ -141,6 +144,17 @@ export function DetailedLesson({
     checkCompletionStatus();
   }, [checkCompletionStatus]);
 
+  // Периодическая проверка статуса (каждую секунду) для синхронизации с доской задач
+  useEffect(() => {
+    if (!user || !materialId) return;
+    
+    const interval = setInterval(() => {
+      checkCompletionStatus();
+    }, 1000);
+    
+    return () => clearInterval(interval);
+  }, [user, materialId, checkCompletionStatus]);
+
   // Перепроверяем статус при возврате на страницу (например, после отката материала)
   useEffect(() => {
     const handleFocus = () => {
@@ -148,8 +162,69 @@ export function DetailedLesson({
         checkCompletionStatus();
       }
     };
+    
+    // Слушаем события обновления статуса материала с доски задач
+    const handleMaterialUncompleted = (event: CustomEvent) => {
+      const eventMaterialId = event.detail?.materialId;
+      console.log('Material uncompleted event received:', { eventMaterialId, currentMaterialId: materialId });
+      if (eventMaterialId === materialId) {
+        console.log('Material uncompleted - updating status for:', materialId);
+        // Сразу обновляем состояние
+        setCompleted(false);
+        // Перепроверяем статус через API для надежности
+        setTimeout(() => {
+          checkCompletionStatus();
+        }, 200);
+      }
+    };
+    
+    const handleMaterialCompleted = (event: CustomEvent) => {
+      const eventMaterialId = event.detail?.materialId;
+      console.log('Material completed event received:', { eventMaterialId, currentMaterialId: materialId, match: eventMaterialId === materialId });
+      if (eventMaterialId === materialId) {
+        console.log('Material completed - updating status for:', materialId);
+        // Сразу обновляем состояние
+        setCompleted(true);
+        // Перепроверяем статус через API несколько раз для надежности (кэш может быть не обновлен сразу)
+        setTimeout(() => {
+          console.log('Rechecking completion status for:', materialId);
+          checkCompletionStatus();
+        }, 300);
+        setTimeout(() => {
+          checkCompletionStatus();
+        }, 800);
+        setTimeout(() => {
+          checkCompletionStatus();
+        }, 1500);
+      } else {
+        console.log('Material ID mismatch:', { eventMaterialId, currentMaterialId: materialId });
+      }
+    };
+    
+    // Добавляем обработчики событий
     window.addEventListener('focus', handleFocus);
-    return () => window.removeEventListener('focus', handleFocus);
+    window.addEventListener('materialUncompleted', handleMaterialUncompleted as EventListener);
+    window.addEventListener('materialCompleted', handleMaterialCompleted as EventListener);
+    
+    // Глобальный слушатель для отладки
+    const debugListener = (event: Event) => {
+      const customEvent = event as CustomEvent;
+      console.log('Global event listener:', {
+        type: event.type,
+        materialId: customEvent.detail?.materialId,
+        currentMaterialId: materialId
+      });
+    };
+    window.addEventListener('materialCompleted', debugListener);
+    window.addEventListener('materialUncompleted', debugListener);
+    
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      window.removeEventListener('materialUncompleted', handleMaterialUncompleted as EventListener);
+      window.removeEventListener('materialCompleted', handleMaterialCompleted as EventListener);
+      window.removeEventListener('materialCompleted', debugListener);
+      window.removeEventListener('materialUncompleted', debugListener);
+    };
   }, [user, materialId, checkCompletionStatus]);
 
   // Определяем тему (светлая/темная)
@@ -305,6 +380,36 @@ export function DetailedLesson({
         // Обновляем трекер активности
         triggerActivityUpdate();
         console.log("Статус completed установлен в:", true);
+        
+        // Обновляем статус задачи на доске задач (перемещаем в done)
+        if (materialId) {
+          // Отправляем событие для обновления доски задач
+          window.dispatchEvent(new CustomEvent('taskBoardUpdate', { 
+            detail: { materialId, newStatus: 'done' } 
+          }));
+          
+          // Также обновляем localStorage напрямую для надежности
+          const userId = user?.id;
+          if (userId) {
+            const taskBoardKey = `taskBoard_${userId}`;
+            const savedTasks = localStorage.getItem(taskBoardKey);
+            if (savedTasks) {
+              try {
+                const tasks = JSON.parse(savedTasks);
+                const updatedTasks = tasks.map((task: any) => {
+                  if (task.id === materialId && task.status !== "done") {
+                    return { ...task, status: "done" };
+                  }
+                  return task;
+                });
+                localStorage.setItem(taskBoardKey, JSON.stringify(updatedTasks));
+                console.log('Task board updated in localStorage for material:', materialId);
+              } catch (error) {
+                console.error("Ошибка при обновлении доски задач:", error);
+              }
+            }
+          }
+        }
       } else {
         const errorText = await response.text();
         console.error("Ошибка сохранения прогресса:", errorText);

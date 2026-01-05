@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
+import Link from "next/link";
 import { onActivityUpdate } from "@/app/utils/activityTracker";
 import { useAuth } from "@/app/useAuth";
 import { useTimezone } from "@/app/hooks/useTimezone";
@@ -378,8 +379,16 @@ export function ActivityTracker({ userId, refreshTrigger }: ActivityTrackerProps
         <span>Больше</span>
       </div>
 
-      <div className="mt-4 text-xs text-[var(--text-muted)]">
-        <p>Показывает выполнение заданий за {selectedYear} год</p>
+      <div className="mt-4 flex items-center justify-between">
+        <p className="text-xs text-[var(--text-muted)]">
+          Показывает выполнение заданий за {selectedYear} год
+        </p>
+        <Link
+          href="/tasks"
+          className="rounded-xl bg-[var(--button-bg)] px-4 py-2 text-sm font-semibold text-[var(--button-text)] hover:bg-[var(--button-hover)] transition-colors"
+        >
+          Доска задач
+        </Link>
       </div>
     </div>
   );
