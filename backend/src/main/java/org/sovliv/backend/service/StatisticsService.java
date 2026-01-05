@@ -102,7 +102,7 @@ public class StatisticsService {
         );
     }
 
-    @CacheEvict(value = {"userStatistics", "materialStatus", "userActivity"}, key = "#userId")
+    @CacheEvict(value = {"userStatistics", "materialStatus", "userActivity"}, allEntries = true)
     public void markMaterialAsCompleted(Long userId, String materialId) {
         System.out.println("markMaterialAsCompleted called: userId=" + userId + ", materialId=" + materialId);
         
@@ -161,7 +161,7 @@ public class StatisticsService {
                 .collect(Collectors.toList());
     }
 
-    @CacheEvict(value = {"userStatistics", "materialStatus", "userActivity"}, key = "#userId")
+    @CacheEvict(value = {"userStatistics", "materialStatus", "userActivity"}, allEntries = true)
     public void unmarkMaterialAsCompleted(Long userId, String materialId) {
         materialProgressRepository.findByUserIdAndMaterialId(userId, materialId)
                 .ifPresent(materialProgressRepository::delete);

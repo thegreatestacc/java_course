@@ -310,8 +310,8 @@ export function TaskBoard({ userId }: TaskBoardProps) {
             // Обновляем список материалов
             reload();
             // Отправляем событие для обновления статуса на страницах материалов
-            // Используем более длительную задержку для гарантии обработки
-            setTimeout(() => {
+            // Отправляем несколько раз для надежности
+            const dispatchEvent = () => {
               console.log('Dispatching materialCompleted event with materialId:', draggedTask.id);
               const event = new CustomEvent('materialCompleted', { 
                 detail: { materialId: draggedTask.id },
@@ -320,7 +320,12 @@ export function TaskBoard({ userId }: TaskBoardProps) {
               });
               window.dispatchEvent(event);
               console.log('Event dispatched:', event, 'Detail:', event.detail);
-            }, 300);
+            };
+            
+            // Отправляем сразу и с задержками для надежности
+            setTimeout(dispatchEvent, 100);
+            setTimeout(dispatchEvent, 500);
+            setTimeout(dispatchEvent, 1000);
           } else {
             const errorText = await response.text().catch(() => response.statusText);
             console.error("Ошибка при отметке материала как завершенного:", response.status, errorText);

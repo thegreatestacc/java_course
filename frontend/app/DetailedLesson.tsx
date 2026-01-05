@@ -144,13 +144,13 @@ export function DetailedLesson({
     checkCompletionStatus();
   }, [checkCompletionStatus]);
 
-  // Периодическая проверка статуса (каждые 2 секунды) для синхронизации с доской задач
+  // Периодическая проверка статуса (каждую секунду) для синхронизации с доской задач
   useEffect(() => {
     if (!user || !materialId) return;
     
     const interval = setInterval(() => {
       checkCompletionStatus();
-    }, 2000);
+    }, 1000);
     
     return () => clearInterval(interval);
   }, [user, materialId, checkCompletionStatus]);
@@ -185,11 +185,17 @@ export function DetailedLesson({
         console.log('Material completed - updating status for:', materialId);
         // Сразу обновляем состояние
         setCompleted(true);
-        // Перепроверяем статус через API для надежности (с небольшой задержкой, чтобы API успел обновиться)
+        // Перепроверяем статус через API несколько раз для надежности (кэш может быть не обновлен сразу)
         setTimeout(() => {
           console.log('Rechecking completion status for:', materialId);
           checkCompletionStatus();
-        }, 500);
+        }, 300);
+        setTimeout(() => {
+          checkCompletionStatus();
+        }, 800);
+        setTimeout(() => {
+          checkCompletionStatus();
+        }, 1500);
       } else {
         console.log('Material ID mismatch:', { eventMaterialId, currentMaterialId: materialId });
       }
