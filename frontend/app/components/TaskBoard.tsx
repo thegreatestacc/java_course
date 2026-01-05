@@ -405,6 +405,11 @@ export function TaskBoard({ userId }: TaskBoardProps) {
                           >
                             {task.title}
                           </Link>
+                          {task.status === "done" && task.type === "material" && (
+                            <div className="text-xs text-green-600 dark:text-green-400 font-medium mt-2 pt-2 border-t border-[var(--border-main)]">
+                              Материал завершен
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>
@@ -444,6 +449,11 @@ export function TaskBoard({ userId }: TaskBoardProps) {
                       >
                         {task.title}
                       </Link>
+                      {task.status === "done" && task.type === "material" && (
+                        <div className="text-xs text-green-600 dark:text-green-400 font-medium mt-2 pt-2 border-t border-[var(--border-main)]">
+                          Материал завершен
+                        </div>
+                      )}
                     </div>
                   ))
                 )}
