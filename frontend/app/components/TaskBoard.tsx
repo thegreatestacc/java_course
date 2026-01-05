@@ -306,17 +306,22 @@ export function TaskBoard({ userId }: TaskBoardProps) {
           
           // Отправляем событие только после успешного завершения
           if (response.ok) {
-            console.log('Material completed, dispatching event for:', draggedTask.id);
+            console.log('Material completed successfully, dispatching event for:', draggedTask.id);
             // Обновляем список материалов
             reload();
             // Отправляем событие для обновления статуса на страницах материалов
+            // Используем более длительную задержку для гарантии обработки
             setTimeout(() => {
-              window.dispatchEvent(new CustomEvent('materialCompleted', { 
+              console.log('Dispatching materialCompleted event with materialId:', draggedTask.id);
+              const event = new CustomEvent('materialCompleted', { 
                 detail: { materialId: draggedTask.id } 
-              }));
-            }, 100);
+              });
+              window.dispatchEvent(event);
+              console.log('Event dispatched:', event);
+            }, 200);
           } else {
-            console.error("Ошибка при отметке материала как завершенного:", response.status, response.statusText);
+            const errorText = await response.text().catch(() => response.statusText);
+            console.error("Ошибка при отметке материала как завершенного:", response.status, errorText);
           }
         } catch (error) {
           console.error("Ошибка при отметке материала как завершенного:", error);

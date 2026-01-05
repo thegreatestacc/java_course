@@ -152,38 +152,57 @@ export function DetailedLesson({
     // Слушаем события обновления статуса материала с доски задач
     const handleMaterialUncompleted = (event: CustomEvent) => {
       const eventMaterialId = event.detail?.materialId;
+      console.log('Material uncompleted event received:', { eventMaterialId, currentMaterialId: materialId });
       if (eventMaterialId === materialId) {
-        console.log('Material uncompleted event received for:', materialId);
+        console.log('Material uncompleted - updating status for:', materialId);
         // Сразу обновляем состояние
         setCompleted(false);
         // Перепроверяем статус через API для надежности
         setTimeout(() => {
           checkCompletionStatus();
-        }, 100);
+        }, 200);
       }
     };
     
     const handleMaterialCompleted = (event: CustomEvent) => {
       const eventMaterialId = event.detail?.materialId;
+      console.log('Material completed event received:', { eventMaterialId, currentMaterialId: materialId });
       if (eventMaterialId === materialId) {
-        console.log('Material completed event received for:', materialId);
+        console.log('Material completed - updating status for:', materialId);
         // Сразу обновляем состояние
         setCompleted(true);
         // Перепроверяем статус через API для надежности
         setTimeout(() => {
           checkCompletionStatus();
-        }, 100);
+        }, 200);
+      } else {
+        console.log('Material ID mismatch:', { eventMaterialId, currentMaterialId: materialId });
       }
     };
     
+    // Добавляем обработчики событий
     window.addEventListener('focus', handleFocus);
     window.addEventListener('materialUncompleted', handleMaterialUncompleted as EventListener);
     window.addEventListener('materialCompleted', handleMaterialCompleted as EventListener);
+    
+    // Глобальный слушатель для отладки
+    const debugListener = (event: Event) => {
+      const customEvent = event as CustomEvent;
+      console.log('Global event listener:', {
+        type: event.type,
+        materialId: customEvent.detail?.materialId,
+        currentMaterialId: materialId
+      });
+    };
+    window.addEventListener('materialCompleted', debugListener);
+    window.addEventListener('materialUncompleted', debugListener);
     
     return () => {
       window.removeEventListener('focus', handleFocus);
       window.removeEventListener('materialUncompleted', handleMaterialUncompleted as EventListener);
       window.removeEventListener('materialCompleted', handleMaterialCompleted as EventListener);
+      window.removeEventListener('materialCompleted', debugListener);
+      window.removeEventListener('materialUncompleted', debugListener);
     };
   }, [user, materialId, checkCompletionStatus]);
 
