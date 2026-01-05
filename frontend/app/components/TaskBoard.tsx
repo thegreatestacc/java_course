@@ -299,20 +299,25 @@ export function TaskBoard({ userId }: TaskBoardProps) {
       if (previousStatus !== "done" && status === "done" && draggedTask.type === "material") {
         try {
           const encodedMaterialId = encodeURIComponent(draggedTask.id);
-          await fetch(`/api/statistics/materials/complete?materialId=${encodedMaterialId}`, {
+          const response = await fetch(`/api/statistics/materials/complete?materialId=${encodedMaterialId}`, {
             method: "POST",
             credentials: "include",
           });
           
-          // Обновляем список материалов
-          reload();
-          // Отправляем событие для обновления статуса на страницах материалов
-          console.log('Material completed, dispatching event for:', draggedTask.id);
-          setTimeout(() => {
-            window.dispatchEvent(new CustomEvent('materialCompleted', { 
-              detail: { materialId: draggedTask.id } 
-            }));
-          }, 100);
+          // Отправляем событие только после успешного завершения
+          if (response.ok) {
+            console.log('Material completed, dispatching event for:', draggedTask.id);
+            // Обновляем список материалов
+            reload();
+            // Отправляем событие для обновления статуса на страницах материалов
+            setTimeout(() => {
+              window.dispatchEvent(new CustomEvent('materialCompleted', { 
+                detail: { materialId: draggedTask.id } 
+              }));
+            }, 100);
+          } else {
+            console.error("Ошибка при отметке материала как завершенного:", response.status, response.statusText);
+          }
         } catch (error) {
           console.error("Ошибка при отметке материала как завершенного:", error);
         }
