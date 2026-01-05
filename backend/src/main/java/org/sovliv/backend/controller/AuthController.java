@@ -25,31 +25,55 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> register(@RequestBody RegisterRequest request, HttpSession session) {
-        AuthResponse response = authService.register(request);
-        
-        if (response.isSuccess()) {
-            // Сохраняем пользователя в сессии
-            session.setAttribute("userId", response.getUser().getId());
-            session.setAttribute("userEmail", response.getUser().getEmail());
-            session.setAttribute("userName", response.getUser().getName());
-            return ResponseEntity.ok(response);
-        } else {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        try {
+            AuthResponse response = authService.register(request);
+            
+            if (response.isSuccess()) {
+                // Проверяем, что user не null
+                if (response.getUser() == null) {
+                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                            .body(new AuthResponse(false, "Ошибка: данные пользователя не получены"));
+                }
+                
+                // Сохраняем пользователя в сессии
+                session.setAttribute("userId", response.getUser().getId());
+                session.setAttribute("userEmail", response.getUser().getEmail());
+                session.setAttribute("userName", response.getUser().getName());
+                return ResponseEntity.ok(response);
+            } else {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new AuthResponse(false, "Ошибка сервера: " + e.getMessage()));
         }
     }
 
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request, HttpSession session) {
-        AuthResponse response = authService.login(request);
-        
-        if (response.isSuccess()) {
-            // Сохраняем пользователя в сессии
-            session.setAttribute("userId", response.getUser().getId());
-            session.setAttribute("userEmail", response.getUser().getEmail());
-            session.setAttribute("userName", response.getUser().getName());
-            return ResponseEntity.ok(response);
-        } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+        try {
+            AuthResponse response = authService.login(request);
+            
+            if (response.isSuccess()) {
+                // Проверяем, что user не null
+                if (response.getUser() == null) {
+                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                            .body(new AuthResponse(false, "Ошибка: данные пользователя не получены"));
+                }
+                
+                // Сохраняем пользователя в сессии
+                session.setAttribute("userId", response.getUser().getId());
+                session.setAttribute("userEmail", response.getUser().getEmail());
+                session.setAttribute("userName", response.getUser().getName());
+                return ResponseEntity.ok(response);
+            } else {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new AuthResponse(false, "Ошибка сервера: " + e.getMessage()));
         }
     }
 
