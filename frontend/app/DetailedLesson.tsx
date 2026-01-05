@@ -141,6 +141,17 @@ export function DetailedLesson({
     checkCompletionStatus();
   }, [checkCompletionStatus]);
 
+  // Периодическая проверка статуса (каждые 2 секунды) для синхронизации с доской задач
+  useEffect(() => {
+    if (!user || !materialId) return;
+    
+    const interval = setInterval(() => {
+      checkCompletionStatus();
+    }, 2000);
+    
+    return () => clearInterval(interval);
+  }, [user, materialId, checkCompletionStatus]);
+
   // Перепроверяем статус при возврате на страницу (например, после отката материала)
   useEffect(() => {
     const handleFocus = () => {
