@@ -127,7 +127,10 @@ export function DetailedLesson({
 
       if (response.ok) {
         const isCompleted = await response.json();
+        console.log('Completion status checked for', materialId, ':', isCompleted);
         setCompleted(isCompleted);
+      } else {
+        console.error('Failed to check completion status:', response.status, response.statusText);
       }
     } catch (err) {
       console.error("Ошибка проверки статуса:", err);
@@ -177,15 +180,16 @@ export function DetailedLesson({
     
     const handleMaterialCompleted = (event: CustomEvent) => {
       const eventMaterialId = event.detail?.materialId;
-      console.log('Material completed event received:', { eventMaterialId, currentMaterialId: materialId });
+      console.log('Material completed event received:', { eventMaterialId, currentMaterialId: materialId, match: eventMaterialId === materialId });
       if (eventMaterialId === materialId) {
         console.log('Material completed - updating status for:', materialId);
         // Сразу обновляем состояние
         setCompleted(true);
-        // Перепроверяем статус через API для надежности
+        // Перепроверяем статус через API для надежности (с небольшой задержкой, чтобы API успел обновиться)
         setTimeout(() => {
+          console.log('Rechecking completion status for:', materialId);
           checkCompletionStatus();
-        }, 200);
+        }, 500);
       } else {
         console.log('Material ID mismatch:', { eventMaterialId, currentMaterialId: materialId });
       }

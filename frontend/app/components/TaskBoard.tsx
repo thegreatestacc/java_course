@@ -314,11 +314,13 @@ export function TaskBoard({ userId }: TaskBoardProps) {
             setTimeout(() => {
               console.log('Dispatching materialCompleted event with materialId:', draggedTask.id);
               const event = new CustomEvent('materialCompleted', { 
-                detail: { materialId: draggedTask.id } 
+                detail: { materialId: draggedTask.id },
+                bubbles: true,
+                cancelable: true
               });
               window.dispatchEvent(event);
-              console.log('Event dispatched:', event);
-            }, 200);
+              console.log('Event dispatched:', event, 'Detail:', event.detail);
+            }, 300);
           } else {
             const errorText = await response.text().catch(() => response.statusText);
             console.error("Ошибка при отметке материала как завершенного:", response.status, errorText);
