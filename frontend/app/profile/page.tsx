@@ -6,7 +6,6 @@ import { Header } from "../Header";
 import { ActivityTracker } from "../ActivityTracker";
 import { TestResults } from "../TestResults";
 import { CompletedMaterials } from "../CompletedMaterials";
-import { TaskBoard } from "../components/TaskBoard";
 import { MotivationalQuotes } from "../MotivationalQuotes";
 import Link from "next/link";
 import { useMemo } from "react";
@@ -119,8 +118,6 @@ export default function ProfilePage() {
             <UserInfoWithTopics userId={user.id} userName={user.name} userEmail={user.email} />
 
             <ActivityTracker userId={user.id} />
-
-            <TaskBoard userId={user.id} />
 
             <CompletedMaterials userId={user.id} />
 
