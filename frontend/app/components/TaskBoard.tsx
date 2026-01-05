@@ -272,15 +272,18 @@ export function TaskBoard({ userId }: TaskBoardProps) {
       if (previousStatus === "done" && status !== "done" && draggedTask.type === "material") {
         try {
           const encodedMaterialId = encodeURIComponent(draggedTask.id);
-          await fetch(`/api/statistics/materials/complete?materialId=${encodedMaterialId}`, {
+          const response = await fetch(`/api/statistics/materials/complete?materialId=${encodedMaterialId}`, {
             method: "DELETE",
             credentials: "include",
           });
           
-          // Отправляем событие для обновления статуса на страницах материалов
-          window.dispatchEvent(new CustomEvent('materialUncompleted', { 
-            detail: { materialId: draggedTask.id } 
-          }));
+          // Отправляем событие только после успешного отката
+          if (response.ok) {
+            // Отправляем событие для обновления статуса на страницах материалов
+            window.dispatchEvent(new CustomEvent('materialUncompleted', { 
+              detail: { materialId: draggedTask.id } 
+            }));
+          }
         } catch (error) {
           console.error("Ошибка при откате материала:", error);
         }

@@ -153,12 +153,16 @@ export function DetailedLesson({
     const handleMaterialUncompleted = (event: CustomEvent) => {
       if (event.detail.materialId === materialId) {
         setCompleted(false);
+        // Перепроверяем статус через API для надежности
+        checkCompletionStatus();
       }
     };
     
     const handleMaterialCompleted = (event: CustomEvent) => {
       if (event.detail.materialId === materialId) {
         setCompleted(true);
+        // Перепроверяем статус через API для надежности
+        checkCompletionStatus();
       }
     };
     
