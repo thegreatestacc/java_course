@@ -90,6 +90,23 @@ export function TaskBoard({ userId }: TaskBoardProps) {
     return "Другие";
   };
 
+  // Функция для получения краткого тега темы
+  const getTopicTag = (topic?: string): string => {
+    if (!topic) return "";
+    
+    if (topic === "Junior Java Developer") {
+      return "Java Jun";
+    } else if (topic === "Middle Java Developer") {
+      return "Java Mid";
+    } else if (topic === "Чистая архитектура сервисов") {
+      return "Арх-ра";
+    } else if (topic === "Практические задания") {
+      return "Практика";
+    }
+    
+    return topic;
+  };
+
   // Генерируем все задачи из материалов и практических заданий
   const allTasks = useMemo(() => {
     const materialTasks: Omit<Task, "status">[] = [];
@@ -375,6 +392,11 @@ export function TaskBoard({ userId }: TaskBoardProps) {
                             >
                               {task.type === "material" ? "Материал" : "Практика"}
                             </span>
+                            {task.topic && (
+                              <span className="text-xs font-medium px-2 py-1 rounded bg-[var(--bg-muted)] text-[var(--text-muted)]">
+                                {getTopicTag(task.topic)}
+                              </span>
+                            )}
                           </div>
                           <Link
                             href={task.href}
@@ -409,6 +431,11 @@ export function TaskBoard({ userId }: TaskBoardProps) {
                         >
                           {task.type === "material" ? "Материал" : "Практика"}
                         </span>
+                        {task.topic && (
+                          <span className="text-xs font-medium px-2 py-1 rounded bg-[var(--bg-muted)] text-[var(--text-muted)]">
+                            {getTopicTag(task.topic)}
+                          </span>
+                        )}
                       </div>
                       <Link
                         href={task.href}
