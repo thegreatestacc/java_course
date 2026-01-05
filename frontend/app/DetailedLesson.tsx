@@ -151,18 +151,28 @@ export function DetailedLesson({
     
     // Слушаем события обновления статуса материала с доски задач
     const handleMaterialUncompleted = (event: CustomEvent) => {
-      if (event.detail.materialId === materialId) {
+      const eventMaterialId = event.detail?.materialId;
+      if (eventMaterialId === materialId) {
+        console.log('Material uncompleted event received for:', materialId);
+        // Сразу обновляем состояние
         setCompleted(false);
         // Перепроверяем статус через API для надежности
-        checkCompletionStatus();
+        setTimeout(() => {
+          checkCompletionStatus();
+        }, 100);
       }
     };
     
     const handleMaterialCompleted = (event: CustomEvent) => {
-      if (event.detail.materialId === materialId) {
+      const eventMaterialId = event.detail?.materialId;
+      if (eventMaterialId === materialId) {
+        console.log('Material completed event received for:', materialId);
+        // Сразу обновляем состояние
         setCompleted(true);
         // Перепроверяем статус через API для надежности
-        checkCompletionStatus();
+        setTimeout(() => {
+          checkCompletionStatus();
+        }, 100);
       }
     };
     

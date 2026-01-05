@@ -64,7 +64,7 @@ interface TaskBoardProps {
 }
 
 export function TaskBoard({ userId }: TaskBoardProps) {
-  const { materials } = useCompletedMaterials();
+  const { materials, reload } = useCompletedMaterials();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [draggedTask, setDraggedTask] = useState<Task | null>(null);
   const [dragOverColumn, setDragOverColumn] = useState<TaskStatus | null>(null);
@@ -279,10 +279,16 @@ export function TaskBoard({ userId }: TaskBoardProps) {
           
           // Отправляем событие только после успешного отката
           if (response.ok) {
+            console.log('Material uncompleted, dispatching event for:', draggedTask.id);
+            // Обновляем список материалов
+            reload();
             // Отправляем событие для обновления статуса на страницах материалов
-            window.dispatchEvent(new CustomEvent('materialUncompleted', { 
-              detail: { materialId: draggedTask.id } 
-            }));
+            // Используем setTimeout для гарантии, что событие обработается
+            setTimeout(() => {
+              window.dispatchEvent(new CustomEvent('materialUncompleted', { 
+                detail: { materialId: draggedTask.id } 
+              }));
+            }, 100);
           }
         } catch (error) {
           console.error("Ошибка при откате материала:", error);
@@ -298,10 +304,15 @@ export function TaskBoard({ userId }: TaskBoardProps) {
             credentials: "include",
           });
           
+          // Обновляем список материалов
+          reload();
           // Отправляем событие для обновления статуса на страницах материалов
-          window.dispatchEvent(new CustomEvent('materialCompleted', { 
-            detail: { materialId: draggedTask.id } 
-          }));
+          console.log('Material completed, dispatching event for:', draggedTask.id);
+          setTimeout(() => {
+            window.dispatchEvent(new CustomEvent('materialCompleted', { 
+              detail: { materialId: draggedTask.id } 
+            }));
+          }, 100);
         } catch (error) {
           console.error("Ошибка при отметке материала как завершенного:", error);
         }
