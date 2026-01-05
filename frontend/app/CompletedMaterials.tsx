@@ -48,6 +48,11 @@ export function CompletedMaterials({ userId }: CompletedMaterialsProps) {
           }
         }
         
+        // Отправляем событие для обновления статуса на страницах материалов
+        window.dispatchEvent(new CustomEvent('materialUncompleted', { 
+          detail: { materialId } 
+        }));
+        
         reload();
       } else {
         const errorText = await response.text();

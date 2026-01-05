@@ -171,8 +171,6 @@ export function DetailedLesson({
       window.removeEventListener('materialUncompleted', handleMaterialUncompleted as EventListener);
       window.removeEventListener('materialCompleted', handleMaterialCompleted as EventListener);
     };
-    window.addEventListener('focus', handleFocus);
-    return () => window.removeEventListener('focus', handleFocus);
   }, [user, materialId, checkCompletionStatus]);
 
   // Определяем тему (светлая/темная)
