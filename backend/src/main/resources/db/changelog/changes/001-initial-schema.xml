@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="001-create-users-table" author="system">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="users"/>
+            </not>
+        </preConditions>
+        <comment>Создание таблицы users</comment>
+        <createTable tableName="users">
+            <column name="id" type="BIGSERIAL">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="email" type="VARCHAR(255)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="password" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="true"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="002-create-test-results-table" author="system">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="test_results"/>
+            </not>
+        </preConditions>
+        <comment>Создание таблицы test_results</comment>
+        <createTable tableName="test_results">
+            <column name="id" type="BIGSERIAL">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="user_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="test_type" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="topic" type="VARCHAR(255)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="correct_answers" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="total_questions" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="percentage" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="completed_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint
+                baseTableName="test_results"
+                baseColumnNames="user_id"
+                constraintName="fk_test_results_user"
+                referencedTableName="users"
+                referencedColumnNames="id"
+                onDelete="CASCADE"/>
+    </changeSet>
+
+    <changeSet id="003-create-user-activities-table" author="system">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="user_activities"/>
+            </not>
+        </preConditions>
+        <comment>Создание таблицы user_activities</comment>
+        <createTable tableName="user_activities">
+            <column name="id" type="BIGSERIAL">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="user_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="activity_date" type="DATE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="tasks_completed" type="INTEGER" defaultValue="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="true"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint
+                baseTableName="user_activities"
+                baseColumnNames="user_id"
+                constraintName="fk_user_activities_user"
+                referencedTableName="users"
+                referencedColumnNames="id"
+                onDelete="CASCADE"/>
+        <addUniqueConstraint
+                tableName="user_activities"
+                columnNames="user_id, activity_date"
+                constraintName="uk_user_activities_user_date"/>
+    </changeSet>
+
+    <changeSet id="004-create-material-progress-table" author="system">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="material_progress"/>
+            </not>
+        </preConditions>
+        <comment>Создание таблицы material_progress</comment>
+        <createTable tableName="material_progress">
+            <column name="id" type="BIGSERIAL">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="user_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="material_id" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="completed_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint
+                baseTableName="material_progress"
+                baseColumnNames="user_id"
+                constraintName="fk_material_progress_user"
+                referencedTableName="users"
+                referencedColumnNames="id"
+                onDelete="CASCADE"/>
+        <addUniqueConstraint
+                tableName="material_progress"
+                columnNames="user_id, material_id"
+                constraintName="uk_material_progress_user_material"/>
+    </changeSet>
+
+</databaseChangeLog>
+
