@@ -100,7 +100,14 @@ public class AuthController {
         }
 
         String createdAt = user.getCreatedAt() != null ? user.getCreatedAt().toString() : null;
-        AuthResponse.UserDto userDto = new AuthResponse.UserDto(user.getId(), user.getEmail(), user.getName(), createdAt);
+        AuthResponse.UserDto userDto = new AuthResponse.UserDto(
+            user.getId(), 
+            user.getEmail(), 
+            user.getName(), 
+            createdAt,
+            user.getIsAdmin(),
+            user.getIsBlocked()
+        );
         return ResponseEntity.ok(new AuthResponse(true, "Пользователь авторизован", userDto));
     }
 }

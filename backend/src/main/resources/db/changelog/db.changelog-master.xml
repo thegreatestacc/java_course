@@ -8,5 +8,8 @@
     <!-- Начальная миграция - создание всех таблиц -->
     <include file="db/changelog/changes/001-initial-schema.xml"/>
 
+    <!-- Добавление полей для админки -->
+    <include file="db/changelog/changes/002-add-admin-fields.xml"/>
+
 </databaseChangeLog>
 

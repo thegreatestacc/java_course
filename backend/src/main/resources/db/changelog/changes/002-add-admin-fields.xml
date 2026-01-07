@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <!-- Добавление полей is_admin и is_blocked в таблицу users -->
+    
+    <changeSet id="002-add-is-blocked-column" author="system">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="users" columnName="is_blocked"/>
+            </not>
+        </preConditions>
+        
+        <addColumn tableName="users">
+            <column name="is_blocked" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+        
+        <!-- Устанавливаем значение по умолчанию для существующих записей -->
+        <sql>
+            UPDATE users SET is_blocked = false WHERE is_blocked IS NULL;
+        </sql>
+    </changeSet>
+
+    <changeSet id="002-add-is-admin-column" author="system">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="users" columnName="is_admin"/>
+            </not>
+        </preConditions>
+        
+        <addColumn tableName="users">
+            <column name="is_admin" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+        
+        <!-- Устанавливаем значение по умолчанию для существующих записей -->
+        <sql>
+            UPDATE users SET is_admin = false WHERE is_admin IS NULL;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>
+

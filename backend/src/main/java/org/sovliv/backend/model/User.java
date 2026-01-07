@@ -25,10 +25,22 @@ public class User {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @Column(name = "is_blocked", nullable = false)
+    private Boolean isBlocked = false;
+
+    @Column(name = "is_admin", nullable = false)
+    private Boolean isAdmin = false;
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
+        if (isBlocked == null) {
+            isBlocked = false;
+        }
+        if (isAdmin == null) {
+            isAdmin = false;
+        }
     }
 
     @PreUpdate
@@ -83,6 +95,22 @@ public class User {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public Boolean getIsBlocked() {
+        return isBlocked != null ? isBlocked : false;
+    }
+
+    public void setIsBlocked(Boolean isBlocked) {
+        this.isBlocked = isBlocked;
+    }
+
+    public Boolean getIsAdmin() {
+        return isAdmin != null ? isAdmin : false;
+    }
+
+    public void setIsAdmin(Boolean isAdmin) {
+        this.isAdmin = isAdmin;
     }
 }
 

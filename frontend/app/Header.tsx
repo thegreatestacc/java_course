@@ -21,7 +21,7 @@ export function Header({ leftButton }: HeaderProps) {
   const [authMode, setAuthMode] = useState<"login" | "register">("login");
   const { user, setUser } = useAuth();
 
-  const handleAuthSuccess = (userData: { id: number; email: string; name: string }) => {
+  const handleAuthSuccess = (userData: { id: number; email: string; name: string; isAdmin?: boolean; isBlocked?: boolean }) => {
     setUser(userData);
   };
 
@@ -69,6 +69,17 @@ export function Header({ leftButton }: HeaderProps) {
           <div className="flex items-center gap-3">
             {user ? (
               <>
+                {user.isAdmin && (
+                  <Link
+                    href="/admin"
+                    className="rounded-xl border border-[var(--border-main)]
+                               bg-[var(--bg-card)]
+                               px-3 py-2 text-sm font-medium text-[var(--text-main)]
+                               hover:bg-[var(--bg-muted)] transition-colors"
+                  >
+                    Админка
+                  </Link>
+                )}
                 <Link
                   href="/profile"
                   className="rounded-xl border border-[var(--border-main)]

@@ -1,22 +1,19 @@
 package org.sovliv.backend.dto;
 
-public class AuthResponse {
+import java.util.List;
+
+public class UserListResponse {
     private boolean success;
     private String message;
-    private UserDto user;
+    private List<UserInfo> users;
 
-    public AuthResponse() {
+    public UserListResponse() {
     }
 
-    public AuthResponse(boolean success, String message) {
+    public UserListResponse(boolean success, String message, List<UserInfo> users) {
         this.success = success;
         this.message = message;
-    }
-
-    public AuthResponse(boolean success, String message, UserDto user) {
-        this.success = success;
-        this.message = message;
-        this.user = user;
+        this.users = users;
     }
 
     public boolean isSuccess() {
@@ -35,15 +32,15 @@ public class AuthResponse {
         this.message = message;
     }
 
-    public UserDto getUser() {
-        return user;
+    public List<UserInfo> getUsers() {
+        return users;
     }
 
-    public void setUser(UserDto user) {
-        this.user = user;
+    public void setUsers(List<UserInfo> users) {
+        this.users = users;
     }
 
-    public static class UserDto {
+    public static class UserInfo {
         private Long id;
         private String email;
         private String name;
@@ -51,23 +48,10 @@ public class AuthResponse {
         private Boolean isAdmin;
         private Boolean isBlocked;
 
-        public UserDto() {
+        public UserInfo() {
         }
 
-        public UserDto(Long id, String email, String name) {
-            this.id = id;
-            this.email = email;
-            this.name = name;
-        }
-
-        public UserDto(Long id, String email, String name, String createdAt) {
-            this.id = id;
-            this.email = email;
-            this.name = name;
-            this.createdAt = createdAt;
-        }
-
-        public UserDto(Long id, String email, String name, String createdAt, Boolean isAdmin, Boolean isBlocked) {
+        public UserInfo(Long id, String email, String name, String createdAt, Boolean isAdmin, Boolean isBlocked) {
             this.id = id;
             this.email = email;
             this.name = name;
