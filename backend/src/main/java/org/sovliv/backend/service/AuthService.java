@@ -6,6 +6,7 @@ import org.sovliv.backend.dto.RegisterRequest;
 import org.sovliv.backend.model.User;
 import org.sovliv.backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
@@ -16,6 +17,9 @@ import java.security.NoSuchAlgorithmException;
 public class AuthService {
 
     private final UserRepository userRepository;
+
+    @Value("${app.admin.email:admin@example.com}")
+    private String adminEmail;
 
     @Autowired
     public AuthService(UserRepository userRepository) {
@@ -41,14 +45,27 @@ public class AuthService {
 
         // Создание нового пользователя
         User user = new User();
-        user.setEmail(request.getEmail().trim().toLowerCase());
+        String email = request.getEmail().trim().toLowerCase();
+        user.setEmail(email);
         user.setPassword(hashPassword(request.getPassword()));
         user.setName(request.getName().trim());
+        
+        // Устанавливаем права администратора, если email совпадает с админским
+        if (email.equalsIgnoreCase(adminEmail)) {
+            user.setIsAdmin(true);
+        }
 
         try {
             user = userRepository.save(user);
             String createdAt = user.getCreatedAt() != null ? user.getCreatedAt().toString() : null;
-            AuthResponse.UserDto userDto = new AuthResponse.UserDto(user.getId(), user.getEmail(), user.getName(), createdAt);
+            AuthResponse.UserDto userDto = new AuthResponse.UserDto(
+                user.getId(), 
+                user.getEmail(), 
+                user.getName(), 
+                createdAt,
+                user.getIsAdmin(),
+                user.getIsBlocked()
+            );
             return new AuthResponse(true, "Регистрация успешна", userDto);
         } catch (Exception e) {
             return new AuthResponse(false, "Ошибка при регистрации: " + e.getMessage());
@@ -70,13 +87,25 @@ public class AuthService {
             return new AuthResponse(false, "Неверный email или пароль");
         }
 
+        // Проверка на блокировку
+        if (user.getIsBlocked()) {
+            return new AuthResponse(false, "Ваш аккаунт заблокирован. Обратитесь к администратору.");
+        }
+
         String hashedPassword = hashPassword(request.getPassword());
         if (!user.getPassword().equals(hashedPassword)) {
             return new AuthResponse(false, "Неверный email или пароль");
         }
 
         String createdAt = user.getCreatedAt() != null ? user.getCreatedAt().toString() : null;
-        AuthResponse.UserDto userDto = new AuthResponse.UserDto(user.getId(), user.getEmail(), user.getName(), createdAt);
+        AuthResponse.UserDto userDto = new AuthResponse.UserDto(
+            user.getId(), 
+            user.getEmail(), 
+            user.getName(), 
+            createdAt,
+            user.getIsAdmin(),
+            user.getIsBlocked()
+        );
         return new AuthResponse(true, "Вход выполнен успешно", userDto);
     }
 
