@@ -20,10 +20,13 @@
             </column>
         </addColumn>
         
-        <!-- Устанавливаем значение по умолчанию для существующих записей -->
+        <!-- Устанавливаем значение по умолчанию для существующих записей (если есть NULL значения) -->
         <sql>
             UPDATE users SET is_blocked = false WHERE is_blocked IS NULL;
         </sql>
+        <rollback>
+            ALTER TABLE users DROP COLUMN IF EXISTS is_blocked;
+        </rollback>
     </changeSet>
 
     <changeSet id="002-add-is-admin-column" author="system">
@@ -39,10 +42,13 @@
             </column>
         </addColumn>
         
-        <!-- Устанавливаем значение по умолчанию для существующих записей -->
+        <!-- Устанавливаем значение по умолчанию для существующих записей (если есть NULL значения) -->
         <sql>
             UPDATE users SET is_admin = false WHERE is_admin IS NULL;
         </sql>
+        <rollback>
+            ALTER TABLE users DROP COLUMN IF EXISTS is_admin;
+        </rollback>
     </changeSet>
 
 </databaseChangeLog>
