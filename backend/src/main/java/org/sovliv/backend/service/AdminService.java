@@ -23,18 +23,14 @@ public class AdminService {
         try {
             List<User> users = userRepository.findAll();
             List<UserListResponse.UserInfo> userInfos = users.stream()
-                    .map(user -> {
-                        UserListResponse.UserInfo userInfo = new UserListResponse.UserInfo(
-                                user.getId(),
-                                user.getEmail(),
-                                user.getName(),
-                                user.getCreatedAt() != null ? user.getCreatedAt().toString() : null,
-                                user.getIsAdmin(),
-                                user.getIsBlocked()
-                        );
-                        userInfo.setPassword(user.getPassword());
-                        return userInfo;
-                    })
+                    .map(user -> new UserListResponse.UserInfo(
+                            user.getId(),
+                            user.getEmail(),
+                            user.getName(),
+                            user.getCreatedAt() != null ? user.getCreatedAt().toString() : null,
+                            user.getIsAdmin(),
+                            user.getIsBlocked()
+                    ))
                     .collect(Collectors.toList());
             return new UserListResponse(true, "Список пользователей получен", userInfos);
         } catch (Exception e) {
