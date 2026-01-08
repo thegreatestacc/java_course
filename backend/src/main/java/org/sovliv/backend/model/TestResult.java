@@ -1,41 +1,16 @@
 package org.sovliv.backend.model;
 
-import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "test_results")
 public class TestResult {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
     private User user;
-
-    @Column(name = "test_type", nullable = false)
     private String testType; // "quiz" или "quiz-practical"
-
-    @Column(name = "topic")
     private String topic; // "git", "java-core" и т.д.
-
-    @Column(name = "correct_answers", nullable = false)
     private Integer correctAnswers;
-
-    @Column(name = "total_questions", nullable = false)
     private Integer totalQuestions;
-
-    @Column(name = "percentage", nullable = false)
     private Integer percentage;
-
-    @Column(name = "completed_at", nullable = false, updatable = false)
     private LocalDateTime completedAt;
-
-    @PrePersist
-    protected void onCreate() {
-        completedAt = LocalDateTime.now();
-    }
 
     // Getters and Setters
     public Long getId() {
@@ -102,4 +77,3 @@ public class TestResult {
         this.completedAt = completedAt;
     }
 }
-

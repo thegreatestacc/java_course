@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, memo } from "react";
 import Link from "next/link";
 import { LEVEL_MATERIALS, MaterialProgress } from "./utils/levelMaterials";
 import { useCompletedMaterials } from "./hooks/useCompletedMaterials";
@@ -11,7 +11,7 @@ interface CompletedMaterialsProps {
   userId?: number;
 }
 
-export function CompletedMaterials({ userId }: CompletedMaterialsProps) {
+function CompletedMaterialsComponent({ userId }: CompletedMaterialsProps) {
   const { materials, loading, error, reload } = useCompletedMaterials();
   const { timezone } = useTimezone();
   const [expandedLevels, setExpandedLevels] = useState<Set<string>>(
@@ -395,3 +395,5 @@ export function CompletedMaterials({ userId }: CompletedMaterialsProps) {
     </div>
   );
 }
+
+export const CompletedMaterials = memo(CompletedMaterialsComponent);

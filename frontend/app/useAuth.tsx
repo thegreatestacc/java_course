@@ -9,6 +9,7 @@ interface User {
   createdAt?: string;
   isAdmin?: boolean;
   isBlocked?: boolean;
+  tooltipsEnabled?: boolean;
 }
 
 interface AuthContextType {

@@ -205,3 +205,4 @@ sudo sshd -T | grep -E "port|listenaddress"
 3. Рассмотрите использование GitHub Self-hosted Runner на вашем сервере
 4. Используйте альтернативные методы развертывания (например, через webhook или CI/CD на сервере)
 
+

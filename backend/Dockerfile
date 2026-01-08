@@ -15,8 +15,8 @@ RUN apt-get update \
 WORKDIR /app
 COPY --from=build /app/target/*.jar /app/app.jar
 
-# Используем production профиль по умолчанию
-ENV SPRING_PROFILES_ACTIVE=prod
+# Используем production профиль по умолчанию (можно переопределить через переменную окружения)
+ENV SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-prod}
 
 EXPOSE 8080
 # Оптимизированные настройки JVM для ограниченных ресурсов

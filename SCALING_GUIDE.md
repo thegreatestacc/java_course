@@ -228,3 +228,4 @@ docker logs java-course-backend-2
    - Kubernetes с Horizontal Pod Autoscaler
    - Docker Swarm mode
 
+

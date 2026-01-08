@@ -7,6 +7,7 @@ import { AuthModal } from "./AuthModal";
 import { useAuth } from "./useAuth";
 import { useSnow } from "./SnowProvider";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 interface HeaderProps {
   leftButton?: {
@@ -20,8 +21,9 @@ export function Header({ leftButton }: HeaderProps) {
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState<"login" | "register">("login");
   const { user, setUser } = useAuth();
+  const pathname = usePathname();
 
-  const handleAuthSuccess = (userData: { id: number; email: string; name: string; isAdmin?: boolean; isBlocked?: boolean }) => {
+  const handleAuthSuccess = (userData: { id: number; email: string; name: string; isAdmin?: boolean; isBlocked?: boolean; tooltipsEnabled?: boolean }) => {
     setUser(userData);
   };
 

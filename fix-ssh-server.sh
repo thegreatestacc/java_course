@@ -39,3 +39,4 @@ echo "Если SSH слушает только на 127.0.0.1, нужно изм
 echo "Если iptables блокирует, нужно добавить правило: sudo iptables -A INPUT -p tcp --dport 22 -j ACCEPT"
 echo ""
 
+

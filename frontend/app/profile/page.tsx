@@ -7,8 +7,9 @@ import { ActivityTracker } from "../ActivityTracker";
 import { TestResults } from "../TestResults";
 import { CompletedMaterials } from "../CompletedMaterials";
 import { MotivationalQuotes } from "../MotivationalQuotes";
+import { ProfileTutorial } from "../components/ProfileTutorial";
 import Link from "next/link";
-import { useMemo } from "react";
+import { useMemo, useEffect, memo, useCallback, useRef, useState } from "react";
 import { useCompletedMaterials } from "../hooks/useCompletedMaterials";
 import { LEVEL_MATERIALS } from "../utils/levelMaterials";
 import { StarRating } from "../components/StarRating";
@@ -21,6 +22,90 @@ const mono = JetBrains_Mono({
 
 export default function ProfilePage() {
   const { user, loading } = useAuth();
+  const [showTutorial, setShowTutorial] = useState(false);
+  
+  // Refs для виджетов
+  const userInfoRef = useRef<HTMLDivElement>(null);
+  const activityTrackerRef = useRef<HTMLDivElement>(null);
+  const taskBoardRef = useRef<HTMLDivElement>(null);
+  const completedMaterialsRef = useRef<HTMLDivElement>(null);
+  const testResultsRef = useRef<HTMLDivElement>(null);
+
+  // Проверяем, нужно ли показывать туториал
+  useEffect(() => {
+    if (!user) return;
+    
+    const tutorialShown = localStorage.getItem(`profileTutorialShown_${user.id}`);
+    if (!tutorialShown) {
+      // Задержка для загрузки всех компонентов и их refs
+      const timer = setTimeout(() => {
+        // Проверяем, что основные refs готовы (taskBoardRef будет готов после ActivityTracker)
+        if (userInfoRef.current && activityTrackerRef.current && 
+            completedMaterialsRef.current && testResultsRef.current) {
+          // Дополнительная проверка для taskBoardRef (кнопка внутри ActivityTracker)
+          const checkTaskBoardRef = () => {
+            if (taskBoardRef.current) {
+              setShowTutorial(true);
+            } else {
+              setTimeout(checkTaskBoardRef, 200);
+            }
+          };
+          checkTaskBoardRef();
+        }
+      }, 1000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [user]);
+
+  const handleTutorialComplete = useCallback(() => {
+    if (user) {
+      localStorage.setItem(`profileTutorialShown_${user.id}`, "true");
+    }
+    setShowTutorial(false);
+  }, [user]);
+
+  const handleTutorialSkip = useCallback(() => {
+    if (user) {
+      localStorage.setItem(`profileTutorialShown_${user.id}`, "true");
+    }
+    setShowTutorial(false);
+  }, [user]);
+
+  const tutorialSteps = useMemo(() => {
+    return [
+      {
+        id: "user-info",
+        title: "Информация о пользователе",
+        description: "Здесь отображается ваша личная информация и прогресс по темам обучения. Вы можете видеть, сколько материалов вы уже изучили в каждой теме, а также процент выполнения.",
+        targetRef: userInfoRef,
+      },
+      {
+        id: "activity-tracker",
+        title: "Трекер активности",
+        description: "Этот виджет показывает вашу активность по дням. Вы можете видеть, в какие дни вы были наиболее активны, и отслеживать свой прогресс в течение года.",
+        targetRef: activityTrackerRef,
+      },
+      {
+        id: "task-board",
+        title: "Доска задач",
+        description: "Кнопка 'Доска задач' открывает инструмент для организации процесса обучения. Вы можете создавать задачи, перемещать их между колонками (К выполнению, В процессе, Выполнено) и отслеживать свой прогресс.",
+        targetRef: taskBoardRef,
+      },
+      {
+        id: "completed-materials",
+        title: "Прочитанные материалы",
+        description: "Здесь отображаются все материалы, которые вы уже изучили. Вы можете видеть дату завершения каждого материала и при необходимости отметить материал как непрочитанный.",
+        targetRef: completedMaterialsRef,
+      },
+      {
+        id: "test-results",
+        title: "Результаты тестирования",
+        description: "В этом разделе вы можете просмотреть результаты всех пройденных тестов. Отображаются лучшие результаты по каждому тесту, процент правильных ответов и дата прохождения.",
+        targetRef: testResultsRef,
+      },
+    ];
+  }, []);
 
   if (loading) {
     return (
@@ -106,25 +191,60 @@ export default function ProfilePage() {
         <MotivationalQuotes />
         <main className="mx-auto max-w-6xl px-5 py-20">
           <div className="space-y-6">
-            <div>
-              <h1 className="text-2xl font-semibold text-[var(--text-main)] mb-2">
-                Личный кабинет
-              </h1>
-              <p className="text-sm text-[var(--text-muted)]">
-                Добро пожаловать, {user.name}!
-              </p>
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-2xl font-semibold text-[var(--text-main)] mb-2">
+                  Личный кабинет
+                </h1>
+                <p className="text-sm text-[var(--text-muted)]">
+                  Добро пожаловать, {user.name}!
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  localStorage.removeItem(`profileTutorialShown_${user.id}`);
+                  setShowTutorial(true);
+                }}
+                className="px-4 py-2 text-sm font-medium text-[var(--text-main)] bg-[var(--bg-muted)] rounded-lg hover:bg-[var(--bg-secondary)] transition-colors"
+                title="Показать подсказки по виджетам"
+              >
+                💡 Подсказки
+              </button>
             </div>
 
-            <UserInfoWithTopics userId={user.id} userName={user.name} userEmail={user.email} />
+            <div ref={userInfoRef}>
+              <UserInfoWithTopics userId={user.id} userName={user.name} userEmail={user.email} />
+            </div>
 
-            <ActivityTracker userId={user.id} />
+            <div ref={activityTrackerRef}>
+              <ActivityTracker 
+                userId={user.id} 
+                taskBoardButtonWrapper={(button) => (
+                  <div ref={taskBoardRef}>
+                    {button}
+                  </div>
+                )}
+              />
+            </div>
 
-            <CompletedMaterials userId={user.id} />
+            <div ref={completedMaterialsRef}>
+              <CompletedMaterials userId={user.id} />
+            </div>
 
-            <TestResults userId={user.id} />
+            <div ref={testResultsRef}>
+              <TestResults userId={user.id} />
+            </div>
           </div>
         </main>
         <Footer />
+
+        {showTutorial && tutorialSteps.length > 0 && (
+          <ProfileTutorial
+            steps={tutorialSteps}
+            onComplete={handleTutorialComplete}
+            onSkip={handleTutorialSkip}
+          />
+        )}
       </div>
     </div>
   );
@@ -151,7 +271,8 @@ function Footer() {
   );
 }
 
-function UserInfoWithTopics({ userId, userName, userEmail }: { userId: number; userName: string; userEmail: string }) {
+
+const UserInfoWithTopics = memo(function UserInfoWithTopics({ userId, userName, userEmail }: { userId: number; userName: string; userEmail: string }) {
   const { materials, loading } = useCompletedMaterials();
 
   const levelStats = useMemo(() => {
@@ -231,5 +352,5 @@ function UserInfoWithTopics({ userId, userName, userEmail }: { userId: number; u
       </div>
     </div>
   );
-}
+});
 

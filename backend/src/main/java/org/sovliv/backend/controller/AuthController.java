@@ -3,6 +3,7 @@ package org.sovliv.backend.controller;
 import org.sovliv.backend.dto.AuthResponse;
 import org.sovliv.backend.dto.LoginRequest;
 import org.sovliv.backend.dto.RegisterRequest;
+import org.sovliv.backend.dto.UpdateTooltipsRequest;
 import org.sovliv.backend.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -10,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.HttpSession;
+import org.sovliv.backend.model.User;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -106,9 +108,51 @@ public class AuthController {
             user.getName(), 
             createdAt,
             user.getIsAdmin(),
-            user.getIsBlocked()
+            user.getIsBlocked(),
+            user.getTooltipsEnabled()
         );
         return ResponseEntity.ok(new AuthResponse(true, "Пользователь авторизован", userDto));
+    }
+
+    @PutMapping("/tooltips")
+    public ResponseEntity<AuthResponse> updateTooltipsEnabled(
+            @RequestBody UpdateTooltipsRequest request,
+            HttpSession session) {
+        Long userId = (Long) session.getAttribute("userId");
+        
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new AuthResponse(false, "Пользователь не авторизован"));
+        }
+
+        try {
+            User user = authService.getUserById(userId);
+            if (user == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(new AuthResponse(false, "Пользователь не найден"));
+            }
+
+            if (request.getTooltipsEnabled() != null) {
+                user.setTooltipsEnabled(request.getTooltipsEnabled());
+                user = authService.updateUser(user);
+            }
+
+            String createdAt = user.getCreatedAt() != null ? user.getCreatedAt().toString() : null;
+            AuthResponse.UserDto userDto = new AuthResponse.UserDto(
+                user.getId(), 
+                user.getEmail(), 
+                user.getName(), 
+                createdAt,
+                user.getIsAdmin(),
+                user.getIsBlocked(),
+                user.getTooltipsEnabled()
+            );
+            return ResponseEntity.ok(new AuthResponse(true, "Настройки подсказок обновлены", userDto));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new AuthResponse(false, "Ошибка при обновлении настроек: " + e.getMessage()));
+        }
     }
 }
 

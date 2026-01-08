@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo, useCallback } from "react";
 import { useTimezone } from "./hooks/useTimezone";
 import { formatDateWithTimezone } from "./utils/timezone";
 
@@ -24,35 +24,14 @@ interface BestResult {
   result: TestResult;
 }
 
-export function TestResults({ userId }: TestResultsProps) {
+function TestResultsComponent({ userId }: TestResultsProps) {
   const [testResults, setTestResults] = useState<TestResult[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAllResults, setShowAllResults] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
   const { timezone } = useTimezone();
 
-  useEffect(() => {
-    if (userId) {
-      loadTestResults();
-    } else {
-      setLoading(false);
-    }
-  }, [userId]);
-
-  useEffect(() => {
-    if (showAllResults) {
-      document.body.style.overflow = "hidden";
-      setTimeout(() => setIsAnimating(true), 10);
-    } else {
-      document.body.style.overflow = "unset";
-      setIsAnimating(false);
-    }
-    return () => {
-      document.body.style.overflow = "unset";
-    };
-  }, [showAllResults]);
-
-  const loadTestResults = async () => {
+  const loadTestResults = useCallback(async () => {
     try {
       const response = await fetch("/api/test-results/me", {
         credentials: "include",
@@ -74,7 +53,28 @@ export function TestResults({ userId }: TestResultsProps) {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (userId) {
+      loadTestResults();
+    } else {
+      setLoading(false);
+    }
+  }, [userId, loadTestResults]);
+
+  useEffect(() => {
+    if (showAllResults) {
+      document.body.style.overflow = "hidden";
+      setTimeout(() => setIsAnimating(true), 10);
+    } else {
+      document.body.style.overflow = "unset";
+      setIsAnimating(false);
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [showAllResults]);
 
   const getBestResults = (): BestResult[] => {
     const bestResultsMap = new Map<string, TestResult>();
@@ -338,4 +338,6 @@ export function TestResults({ userId }: TestResultsProps) {
     </>
   );
 }
+
+export const TestResults = memo(TestResultsComponent);
 

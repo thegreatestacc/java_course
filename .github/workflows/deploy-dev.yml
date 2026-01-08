@@ -1,0 +1,189 @@
+name: Build & Deploy to Dev
+
+on:
+  push:
+    branches: ["dev", "develop", "development"]
+  workflow_dispatch:  # Позволяет запускать вручную
+
+concurrency:
+  group: deploy-dev
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  REGISTRY: ghcr.io
+  OWNER: ${{ github.repository_owner }}
+  TAG: dev-${{ github.sha }}
+
+jobs:
+  build_and_deploy_dev:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Login to GHCR (push)
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build & push backend (dev)
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.OWNER }}/java-course-backend:${{ env.TAG }}
+            ${{ env.REGISTRY }}/${{ env.OWNER }}/java-course-backend:dev
+
+      - name: Build & push frontend (dev)
+        uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.OWNER }}/java-course-frontend:${{ env.TAG }}
+            ${{ env.REGISTRY }}/${{ env.OWNER }}/java-course-frontend:dev
+
+      - name: Build & push nginx (dev)
+        uses: docker/build-push-action@v6
+        with:
+          context: ./nginx
+          file: ./nginx/Dockerfile
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.OWNER }}/java-course-nginx:${{ env.TAG }}
+            ${{ env.REGISTRY }}/${{ env.OWNER }}/java-course-nginx:dev
+
+      - name: Test SSH connection (dev)
+        uses: appleboy/ssh-action@v1.0.3
+        id: ssh-test-dev
+        continue-on-error: true
+        timeout-minutes: 1
+        with:
+          host: ${{ secrets.DEPLOY_DEV_HOST || secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_DEV_USER || secrets.DEPLOY_USER }}
+          port: ${{ secrets.DEPLOY_DEV_PORT || secrets.DEPLOY_PORT }}
+          key: ${{ secrets.DEPLOY_DEV_SSH_KEY || secrets.DEPLOY_SSH_KEY }}
+          command_timeout: 10s
+          script: |
+            echo "✓ SSH connection test successful (dev)"
+            echo "Hostname: $(hostname)"
+            echo "Target path: ${{ secrets.DEPLOY_DEV_PATH || secrets.DEPLOY_PATH }}/dev"
+
+      - name: Check SSH test result (dev)
+        if: steps.ssh-test-dev.outcome == 'failure'
+        run: |
+          echo "::error::SSH connection test failed for dev environment!"
+          exit 1
+
+      - name: Install SSH tools (scp/rsync)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y openssh-client rsync
+
+      - name: Configure SSH key and known_hosts (dev)
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DEPLOY_DEV_SSH_KEY || secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -p "${{ secrets.DEPLOY_DEV_PORT || secrets.DEPLOY_PORT }}" "${{ secrets.DEPLOY_DEV_HOST || secrets.DEPLOY_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Ensure deploy directories exist (dev)
+        run: |
+          set -euo pipefail
+          DEPLOY_PATH="${{ secrets.DEPLOY_DEV_PATH || secrets.DEPLOY_PATH }}/dev"
+          ssh -p "${{ secrets.DEPLOY_DEV_PORT || secrets.DEPLOY_PORT }}" -i ~/.ssh/id_rsa \
+            "${{ secrets.DEPLOY_DEV_USER || secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_DEV_HOST || secrets.DEPLOY_HOST }}" \
+            "mkdir -p '$DEPLOY_PATH/nginx'"
+
+      - name: Copy docker-compose.dev.yml to server
+        run: |
+          set -euo pipefail
+          DEPLOY_PATH="${{ secrets.DEPLOY_DEV_PATH || secrets.DEPLOY_PATH }}/dev"
+          scp -P "${{ secrets.DEPLOY_DEV_PORT || secrets.DEPLOY_PORT }}" -i ~/.ssh/id_rsa \
+            docker-compose.dev.yml \
+            "${{ secrets.DEPLOY_DEV_USER || secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_DEV_HOST || secrets.DEPLOY_HOST }}:$DEPLOY_PATH/docker-compose.dev.yml"
+
+      - name: Copy nginx directory to server (dev)
+        run: |
+          set -euo pipefail
+          DEPLOY_PATH="${{ secrets.DEPLOY_DEV_PATH || secrets.DEPLOY_PATH }}/dev"
+          rsync -avz --delete -e "ssh -p ${{ secrets.DEPLOY_DEV_PORT || secrets.DEPLOY_PORT }} -i ~/.ssh/id_rsa" \
+            nginx/ \
+            "${{ secrets.DEPLOY_DEV_USER || secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_DEV_HOST || secrets.DEPLOY_HOST }}:$DEPLOY_PATH/nginx/"
+
+      - name: Deploy on server (dev)
+        uses: appleboy/ssh-action@v1.0.3
+        timeout-minutes: 10
+        with:
+          host: ${{ secrets.DEPLOY_DEV_HOST || secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_DEV_USER || secrets.DEPLOY_USER }}
+          port: ${{ secrets.DEPLOY_DEV_PORT || secrets.DEPLOY_PORT }}
+          key: ${{ secrets.DEPLOY_DEV_SSH_KEY || secrets.DEPLOY_SSH_KEY }}
+          command_timeout: 120s
+          script: |
+            set -euo pipefail
+            DEPLOY_PATH="${{ secrets.DEPLOY_DEV_PATH || secrets.DEPLOY_PATH }}/dev"
+            cd "$DEPLOY_PATH"
+
+            # Проверяем наличие docker-compose.dev.yml
+            if [ ! -f docker-compose.dev.yml ]; then
+              echo "ERROR: docker-compose.dev.yml not found!"
+              exit 1
+            fi
+            echo "✓ docker-compose.dev.yml found"
+
+            # Проверяем наличие nginx директории
+            if [ ! -d nginx ]; then
+              echo "WARNING: nginx directory not found, creating it..."
+              mkdir -p nginx/conf.d
+            fi
+
+            echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u "${{ github.repository_owner }}" --password-stdin
+
+            # Обновляем переменные окружения для dev
+            if [ -f .env ]; then
+              if grep -q '^TAG=' .env; then
+                sed -i "s/^TAG=.*/TAG=${{ env.TAG }}/" .env
+              else
+                echo "TAG=${{ env.TAG }}" >> .env
+              fi
+
+              if ! grep -q '^REGISTRY=' .env; then
+                echo "REGISTRY=${{ env.REGISTRY }}" >> .env
+              fi
+
+              if ! grep -q '^OWNER=' .env; then
+                echo "OWNER=${{ env.OWNER }}" >> .env
+              fi
+            else
+              echo "TAG=${{ env.TAG }}" > .env
+              echo "REGISTRY=${{ env.REGISTRY }}" >> .env
+              echo "OWNER=${{ env.OWNER }}" >> .env
+              echo "POSTGRES_DB_DEV=java_course_db_dev" >> .env
+              echo "POSTGRES_USER_DEV=java_course_user_dev" >> .env
+              echo "POSTGRES_PASSWORD_DEV=$(openssl rand -base64 32)" >> .env
+              echo "ADMIN_EMAIL=${{ secrets.ADMIN_EMAIL || 'admin@example.com' }}" >> .env
+            fi
+
+            # Скачиваем обновленные образы
+            docker compose -f docker-compose.dev.yml pull backend-dev frontend-dev nginx-dev
+
+            # Перезапускаем контейнеры
+            docker compose -f docker-compose.dev.yml up -d --remove-orphans
+
+            echo "✓ Dev environment deployed successfully"
+            echo "Backend: http://${{ secrets.DEPLOY_DEV_HOST || secrets.DEPLOY_HOST }}:8081"
+            echo "Frontend: http://${{ secrets.DEPLOY_DEV_HOST || secrets.DEPLOY_HOST }}:8080"
+
+

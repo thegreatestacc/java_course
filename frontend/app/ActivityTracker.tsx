@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, memo } from "react";
 import Link from "next/link";
 import { onActivityUpdate } from "@/app/utils/activityTracker";
 import { useAuth } from "@/app/useAuth";
@@ -15,9 +15,10 @@ interface ActivityData {
 interface ActivityTrackerProps {
   userId?: number;
   refreshTrigger?: number; // Триггер для обновления данных
+  taskBoardButtonWrapper?: (button: React.ReactNode) => React.ReactNode; // Обертка для кнопки доски задач
 }
 
-export function ActivityTracker({ userId, refreshTrigger }: ActivityTrackerProps) {
+function ActivityTrackerComponent({ userId, refreshTrigger, taskBoardButtonWrapper }: ActivityTrackerProps) {
   const { user } = useAuth();
   const { timezone } = useTimezone();
   const [activityData, setActivityData] = useState<ActivityData[]>([]);
@@ -383,14 +384,36 @@ export function ActivityTracker({ userId, refreshTrigger }: ActivityTrackerProps
         <p className="text-xs text-[var(--text-muted)]">
           Показывает выполнение заданий за {selectedYear} год
         </p>
-        <Link
-          href="/tasks"
-          className="rounded-xl bg-[var(--button-bg)] px-4 py-2 text-sm font-semibold text-[var(--button-text)] hover:bg-[var(--button-hover)] transition-colors"
-        >
-          Доска задач
-        </Link>
+        {taskBoardButtonWrapper ? (
+          taskBoardButtonWrapper(
+            <Link
+              href="/tasks"
+              className="rounded-xl bg-[var(--button-bg)] px-4 py-2 text-sm font-semibold text-[var(--button-text)] hover:bg-[var(--button-hover)] transition-colors"
+            >
+              Доска задач
+            </Link>
+          )
+        ) : (
+          <Link
+            href="/tasks"
+            className="rounded-xl bg-[var(--button-bg)] px-4 py-2 text-sm font-semibold text-[var(--button-text)] hover:bg-[var(--button-hover)] transition-colors"
+          >
+            Доска задач
+          </Link>
+        )}
       </div>
     </div>
   );
 }
+
+// Мемоизируем с кастомной функцией сравнения, чтобы не перерендеривать при изменении taskBoardButtonWrapper
+// если она функционально эквивалентна (создается заново, но делает то же самое)
+export const ActivityTracker = memo(ActivityTrackerComponent, (prevProps, nextProps) => {
+  // Сравниваем только важные пропсы, которые влияют на данные
+  return (
+    prevProps.userId === nextProps.userId &&
+    prevProps.refreshTrigger === nextProps.refreshTrigger
+    // taskBoardButtonWrapper может быть новой функцией, но это не должно вызывать перерендер
+  );
+});
 

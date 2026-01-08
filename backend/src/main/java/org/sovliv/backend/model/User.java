@@ -1,52 +1,17 @@
 package org.sovliv.backend.model;
 
-import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "users")
 public class User {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @Column(unique = true, nullable = false)
     private String email;
-
-    @Column(nullable = false)
     private String password;
-
-    @Column(nullable = false)
     private String name;
-
-    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
-
-    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-
-    @Column(name = "is_blocked", nullable = false)
     private Boolean isBlocked = false;
-
-    @Column(name = "is_admin", nullable = false)
     private Boolean isAdmin = false;
-
-    @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
-        if (isBlocked == null) {
-            isBlocked = false;
-        }
-        if (isAdmin == null) {
-            isAdmin = false;
-        }
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
-    }
+    private Boolean tooltipsEnabled = true;
 
     // Getters and Setters
     public Long getId() {
@@ -112,5 +77,12 @@ public class User {
     public void setIsAdmin(Boolean isAdmin) {
         this.isAdmin = isAdmin;
     }
-}
 
+    public Boolean getTooltipsEnabled() {
+        return tooltipsEnabled != null ? tooltipsEnabled : true;
+    }
+
+    public void setTooltipsEnabled(Boolean tooltipsEnabled) {
+        this.tooltipsEnabled = tooltipsEnabled;
+    }
+}

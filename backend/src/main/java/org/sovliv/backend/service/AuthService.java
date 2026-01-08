@@ -64,7 +64,8 @@ public class AuthService {
                 user.getName(), 
                 createdAt,
                 user.getIsAdmin(),
-                user.getIsBlocked()
+                user.getIsBlocked(),
+                user.getTooltipsEnabled()
             );
             return new AuthResponse(true, "Регистрация успешна", userDto);
         } catch (Exception e) {
@@ -104,13 +105,18 @@ public class AuthService {
             user.getName(), 
             createdAt,
             user.getIsAdmin(),
-            user.getIsBlocked()
+            user.getIsBlocked(),
+            user.getTooltipsEnabled()
         );
         return new AuthResponse(true, "Вход выполнен успешно", userDto);
     }
 
     public User getUserById(Long userId) {
         return userRepository.findById(userId).orElse(null);
+    }
+
+    public User updateUser(User user) {
+        return userRepository.save(user);
     }
 
     private String hashPassword(String password) {

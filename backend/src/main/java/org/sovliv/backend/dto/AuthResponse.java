@@ -50,6 +50,7 @@ public class AuthResponse {
         private String createdAt;
         private Boolean isAdmin;
         private Boolean isBlocked;
+        private Boolean tooltipsEnabled;
 
         public UserDto() {
         }
@@ -74,6 +75,16 @@ public class AuthResponse {
             this.createdAt = createdAt;
             this.isAdmin = isAdmin;
             this.isBlocked = isBlocked;
+        }
+
+        public UserDto(Long id, String email, String name, String createdAt, Boolean isAdmin, Boolean isBlocked, Boolean tooltipsEnabled) {
+            this.id = id;
+            this.email = email;
+            this.name = name;
+            this.createdAt = createdAt;
+            this.isAdmin = isAdmin;
+            this.isBlocked = isBlocked;
+            this.tooltipsEnabled = tooltipsEnabled;
         }
 
         public Long getId() {
@@ -122,6 +133,14 @@ public class AuthResponse {
 
         public void setIsBlocked(Boolean isBlocked) {
             this.isBlocked = isBlocked;
+        }
+
+        public Boolean getTooltipsEnabled() {
+            return tooltipsEnabled != null ? tooltipsEnabled : true;
+        }
+
+        public void setTooltipsEnabled(Boolean tooltipsEnabled) {
+            this.tooltipsEnabled = tooltipsEnabled;
         }
     }
 }

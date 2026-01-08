@@ -39,3 +39,4 @@ export function StarRating({ progressPercentage, className = "" }: StarRatingPro
   );
 }
 
+
