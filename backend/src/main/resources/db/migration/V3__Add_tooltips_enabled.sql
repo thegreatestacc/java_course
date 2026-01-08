@@ -7,3 +7,4 @@ UPDATE users
 SET tooltips_enabled = true 
 WHERE tooltips_enabled IS NULL;
 
+

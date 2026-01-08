@@ -43,3 +43,4 @@ CREATE TABLE IF NOT EXISTS material_progress (
     CONSTRAINT uk_material_progress_user_material UNIQUE (user_id, material_id)
 );
 
+

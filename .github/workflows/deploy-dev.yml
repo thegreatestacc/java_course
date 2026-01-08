@@ -187,3 +187,4 @@ jobs:
             echo "Frontend: http://${{ secrets.DEPLOY_DEV_HOST || secrets.DEPLOY_HOST }}:8080"
 
 
+
