@@ -12,6 +12,7 @@ interface UserInfo {
   createdAt: string;
   isAdmin: boolean;
   isBlocked: boolean;
+  password?: string;
 }
 
 export default function AdminPage() {
@@ -23,6 +24,7 @@ export default function AdminPage() {
   const [success, setSuccess] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<number | null>(null);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc" | null>(null);
+  const [visiblePasswords, setVisiblePasswords] = useState<Set<number>>(new Set());
   const [confirmModal, setConfirmModal] = useState<{
     isOpen: boolean;
     isAnimating: boolean;
@@ -222,6 +224,23 @@ export default function AdminPage() {
     setUsers(sortedUsers);
   };
 
+  const togglePasswordVisibility = (userId: number) => {
+    setVisiblePasswords(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(userId)) {
+        newSet.delete(userId);
+      } else {
+        newSet.add(userId);
+      }
+      return newSet;
+    });
+  };
+
+  const maskPassword = (password: string | undefined): string => {
+    if (!password) return "—";
+    return "•".repeat(Math.min(password.length, 64));
+  };
+
   const executeUnblockUser = async (userId: number) => {
     const userToUnblock = users.find(u => u.id === userId);
     if (!userToUnblock) return;
@@ -365,6 +384,9 @@ export default function AdminPage() {
                     Имя
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">
+                    Пароль
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">
                     Дата регистрации
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">
@@ -378,7 +400,7 @@ export default function AdminPage() {
               <tbody className="divide-y divide-[var(--border-main)]">
                 {users.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="px-6 py-8 text-center text-sm text-[var(--text-muted)]">
+                    <td colSpan={7} className="px-6 py-8 text-center text-sm text-[var(--text-muted)]">
                       Пользователи не найдены
                     </td>
                   </tr>
@@ -403,6 +425,32 @@ export default function AdminPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-[var(--text-main)]">
                         {userInfo.name}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono text-xs text-[var(--text-muted)]">
+                            {visiblePasswords.has(userInfo.id) 
+                              ? (userInfo.password || "—")
+                              : maskPassword(userInfo.password)
+                            }
+                          </span>
+                          <button
+                            onClick={() => togglePasswordVisibility(userInfo.id)}
+                            className="inline-flex items-center rounded px-2 py-1 text-xs font-medium text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--bg-muted)] transition-colors"
+                            title={visiblePasswords.has(userInfo.id) ? "Скрыть пароль" : "Показать пароль"}
+                          >
+                            {visiblePasswords.has(userInfo.id) ? (
+                              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.29 3.29m0 0L9.88 9.88m-3.59-3.59l3.29 3.29M14 12a2 2 0 11-4 0 2 2 0 014 0z" />
+                              </svg>
+                            ) : (
+                              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                              </svg>
+                            )}
+                          </button>
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-[var(--text-muted)]">
                         {userInfo.createdAt
