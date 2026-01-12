@@ -75,7 +75,7 @@ services:
           memory: 384M
 
   nginx:
-    image: nginx:alpine
+    image: ${REGISTRY:-ghcr.io}/${OWNER:-owner}/java-course-nginx:${TAG:-latest}
     container_name: java-course-nginx
     ports:
       - "80:80"

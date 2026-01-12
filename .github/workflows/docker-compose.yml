@@ -178,8 +178,18 @@ jobs:
               echo "OWNER=${{ env.OWNER }}" >> .env
             fi
 
-            # Скачиваем обновленные образы
-            docker compose -f docker-compose.prod.yml pull backend frontend nginx
+            # Скачиваем обновленные образы из GHCR (backend, frontend, nginx)
+            echo "Pulling images from GHCR..."
+            docker compose -f docker-compose.prod.yml pull backend frontend nginx || {
+              echo "WARNING: Failed to pull some images from GHCR, continuing..."
+            }
+            
+            # Пытаемся скачать базовые образы (postgres, redis) с обработкой ошибок лимита Docker Hub
+            echo "Pulling base images (postgres, redis)..."
+            docker compose -f docker-compose.prod.yml pull postgres redis 2>&1 || {
+              echo "WARNING: Could not pull postgres/redis (possibly rate limit), using existing images"
+            }
 
-            # Перезапускаем контейнеры
+            # Перезапускаем контейнеры (использует существующие образы, если pull не удался)
+            echo "Starting containers..."
             docker compose -f docker-compose.prod.yml up -d --remove-orphans
