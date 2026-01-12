@@ -5,12 +5,7 @@ import org.sovliv.backend.repository.rowmapper.UserActivityRowMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.support.GeneratedKeyHolder;
-import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
-
-import java.sql.PreparedStatement;
-import java.sql.Statement;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -67,20 +62,17 @@ public class UserActivityRepository {
         }
 
         String sql = "INSERT INTO user_activities (user_id, activity_date, tasks_completed, created_at, updated_at) " +
-                     "VALUES (?, ?, ?, ?, ?)";
+                     "VALUES (?, ?, ?, ?, ?) RETURNING id";
         
-        KeyHolder keyHolder = new GeneratedKeyHolder();
-        jdbcTemplate.update(connection -> {
-            PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-            ps.setLong(1, activity.getUser().getId());
-            ps.setDate(2, java.sql.Date.valueOf(activity.getActivityDate()));
-            ps.setInt(3, activity.getTasksCompleted());
-            ps.setTimestamp(4, java.sql.Timestamp.valueOf(activity.getCreatedAt()));
-            ps.setTimestamp(5, java.sql.Timestamp.valueOf(activity.getUpdatedAt()));
-            return ps;
-        }, keyHolder);
-
-        Long id = keyHolder.getKey() != null ? keyHolder.getKey().longValue() : null;
+        // Используем queryForObject с RETURNING для получения id напрямую
+        Long id = jdbcTemplate.queryForObject(sql, Long.class,
+            activity.getUser().getId(),
+            java.sql.Date.valueOf(activity.getActivityDate()),
+            activity.getTasksCompleted(),
+            java.sql.Timestamp.valueOf(activity.getCreatedAt()),
+            java.sql.Timestamp.valueOf(activity.getUpdatedAt())
+        );
+        
         activity.setId(id);
         return activity;
     }
