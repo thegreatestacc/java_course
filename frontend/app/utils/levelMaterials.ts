@@ -15,11 +15,13 @@ export const LEVEL_MATERIALS: Record<string, string[]> = {
     "learn/java-core/basics",
     "learn/java-core/variables",
     "learn/java-core/control-flow",
+    "learn/java-core/exceptions",
     "learn/java-oop",
     "learn/java-oop/equals-hashcode",
     "learn/java-collections/list",
     "learn/java-collections/set",
     "learn/java-collections/map",
+    "learn/java-collections/stream",
     "learn/junior"
   ],
   "Middle Java Developer": [
@@ -29,5 +31,8 @@ export const LEVEL_MATERIALS: Record<string, string[]> = {
     "learn/clean-architecture"
   ]
 };
+
+
+
 
 

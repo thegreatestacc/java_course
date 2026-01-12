@@ -118,12 +118,26 @@ export default function JavaCorePage() {
                     Условия и циклы
                   </span>
                 </Link>
+                <Link
+                  href="/learn/java-core/exceptions"
+                  className={`block px-3 py-1.5 rounded-lg text-sm transition-all duration-200 ${
+                    pathname === "/learn/java-core/exceptions"
+                      ? "bg-[var(--bg-muted)] text-[var(--text-main)] font-medium"
+                      : "text-[var(--text-muted)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-main)]"
+                  }`}
+                >
+                  <span className={`inline-block transition-opacity duration-200 ${
+                    pathname === "/learn/java-core/exceptions" ? "opacity-100" : "opacity-70"
+                  }`}>
+                    Исключения
+                  </span>
+                </Link>
               </div>
             </div>
           </div>
         </nav>
 
-        <Header leftButton={{ href: "/learn", text: "← К темам" }} />
+        <Header leftButton={{ href: "/learn/junior", text: "← К Junior Java Developer" }} />
         <MotivationalQuotes />
         <main>
           <section className="mx-auto max-w-6xl px-5 py-14 md:py-20">
@@ -174,6 +188,41 @@ export default function JavaCorePage() {
                     "Управление потоком выполнения"
                   ]}
                 />
+                <LessonCard
+                  materialId="learn/java-core/exceptions"
+                  title="Исключения"
+                  href="/learn/java-core/exceptions"
+                  topics={[
+                    "Что такое исключения",
+                    "Блок try-catch-finally",
+                    "Типы исключений (checked/unchecked)",
+                    "Создание собственных исключений"
+                  ]}
+                />
+              </div>
+            </div>
+            
+            {/* Блок тестирования */}
+            <div className="rounded-2xl border border-[var(--border-main)] bg-[var(--bg-card)] p-6 shadow-sm mt-8">
+              <h2 className="text-xl font-semibold tracking-tight text-[var(--text-main)] mb-4">
+                Тестирование по пройденному материалу
+              </h2>
+              <p className="text-sm leading-relaxed text-[var(--text-muted)] mb-6">
+                Проверь свои знания по пройденным темам материала. Доступны два типа тестирования: теоретическое (с вариантами ответов) и практическое (нужно вписать правильный ответ).
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Link
+                  href="/learn/java-core/quiz"
+                  className="inline-flex items-center justify-center rounded-xl bg-[var(--button-bg)] px-6 py-3 text-sm font-semibold text-[var(--button-text)] hover:bg-[var(--button-hover)] transition-colors"
+                >
+                  Теоретическое тестирование
+                </Link>
+                <Link
+                  href="/learn/java-core/quiz-practical"
+                  className="inline-flex items-center justify-center rounded-xl border border-[var(--border-main)] bg-[var(--bg-card)] px-6 py-3 text-sm font-semibold text-[var(--text-main)] hover:bg-[var(--bg-muted)] transition-colors"
+                >
+                  Практическое тестирование
+                </Link>
               </div>
             </div>
           </section>

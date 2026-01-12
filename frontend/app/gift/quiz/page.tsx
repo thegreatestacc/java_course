@@ -22,7 +22,35 @@ interface Question {
   theory: string;
 }
 
-const questions: Question[] = [
+// Функция для перемешивания массива (алгоритм Fisher-Yates)
+function shuffleArray<T>(array: T[]): T[] {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
+
+// Функция для перемешивания вариантов ответов в вопросе
+function shuffleQuestionOptions(question: Question): Question {
+  const optionsWithIndices = question.options.map((option, index) => ({
+    option,
+    originalIndex: index
+  }));
+  
+  const shuffled = shuffleArray(optionsWithIndices);
+  const newOptions = shuffled.map(item => item.option);
+  const newCorrectAnswer = shuffled.findIndex(item => item.originalIndex === question.correctAnswer);
+  
+  return {
+    ...question,
+    options: newOptions,
+    correctAnswer: newCorrectAnswer
+  };
+}
+
+const originalQuestions: Question[] = [
   {
     id: 1,
     question: "Что такое Git?",
@@ -146,13 +174,31 @@ const questions: Question[] = [
 ];
 
 export default function QuizPage() {
+  // Сохраняем исходные вопросы для отображения результатов
+  const [originalQuestionsOrder] = useState<Question[]>(originalQuestions);
+  
+  // Перемешиваем вопросы и варианты ответов только на клиенте после монтирования
+  const [shuffledQuestions, setShuffledQuestions] = useState<Question[]>(originalQuestions);
+  const [isShuffled, setIsShuffled] = useState(false);
+  
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [selectedAnswers, setSelectedAnswers] = useState<number[]>(new Array(questions.length).fill(-1));
+  const [selectedAnswers, setSelectedAnswers] = useState<number[]>(() => new Array(originalQuestions.length).fill(-1));
   const [showResults, setShowResults] = useState(false);
   const [showTheoryModal, setShowTheoryModal] = useState(false);
   const [theoryContent, setTheoryContent] = useState("");
   const { user } = useAuth();
   const activityRecorded = useRef(false);
+  
+  // Перемешиваем вопросы и варианты ответов только на клиенте
+  useEffect(() => {
+    if (!isShuffled) {
+      // Перемешиваем вопросы
+      const shuffled = shuffleArray(originalQuestions);
+      // Перемешиваем варианты ответов для каждого вопроса
+      setShuffledQuestions(shuffled.map(q => shuffleQuestionOptions(q)));
+      setIsShuffled(true);
+    }
+  }, [isShuffled]);
 
   const handleAnswerSelect = (answerIndex: number) => {
     const newAnswers = [...selectedAnswers];
@@ -161,7 +207,7 @@ export default function QuizPage() {
   };
 
   const handleNext = () => {
-    if (currentQuestionIndex < questions.length - 1) {
+    if (currentQuestionIndex < shuffledQuestions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
     } else {
       setShowResults(true);
@@ -178,7 +224,7 @@ export default function QuizPage() {
     let correct = 0;
     let incorrect = 0;
     
-    questions.forEach((question, index) => {
+    shuffledQuestions.forEach((question, index) => {
       if (selectedAnswers[index] === question.correctAnswer) {
         correct++;
       } else if (selectedAnswers[index] !== -1) {
@@ -186,19 +232,21 @@ export default function QuizPage() {
       }
     });
     
-    return { correct, incorrect, total: questions.length };
+    return { correct, incorrect, total: shuffledQuestions.length };
   };
 
   const handleRestart = () => {
-    setCurrentQuestionIndex(0);
-    setSelectedAnswers(new Array(questions.length).fill(-1));
-    setShowResults(false);
-    activityRecorded.current = false; // Сбрасываем флаг при перезапуске
+    // Перемешиваем вопросы и варианты ответов заново при перезапуске
+    window.location.reload(); // Перезагружаем страницу для нового перемешивания
   };
 
   const handleShowTheory = (questionIndex: number) => {
-    setTheoryContent(questions[questionIndex].theory);
-    setShowTheoryModal(true);
+    // Находим исходный вопрос по ID для отображения теории
+    const originalQuestion = originalQuestionsOrder.find(q => q.id === shuffledQuestions[questionIndex].id);
+    if (originalQuestion) {
+      setTheoryContent(originalQuestion.theory);
+      setShowTheoryModal(true);
+    }
   };
 
   const handleCloseTheory = () => {
@@ -276,9 +324,9 @@ export default function QuizPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showResults, user]);
 
-  const currentQuestion = questions[currentQuestionIndex];
+  const currentQuestion = shuffledQuestions[currentQuestionIndex];
   const isAnswered = selectedAnswers[currentQuestionIndex] !== -1;
-  const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
+  const progress = ((currentQuestionIndex + 1) / shuffledQuestions.length) * 100;
 
   if (showResults) {
     const results = calculateResults();
@@ -375,7 +423,7 @@ export default function QuizPage() {
                   <h2 className="text-lg font-semibold text-[var(--text-main)]">
                     Детальные результаты:
                   </h2>
-                  {questions.map((question, index) => {
+                  {shuffledQuestions.map((question, index) => {
                     const userAnswer = selectedAnswers[index];
                     const isCorrect = userAnswer === question.correctAnswer;
                     const isUnanswered = userAnswer === -1;
@@ -624,7 +672,7 @@ export default function QuizPage() {
             <div className="mb-6">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium text-[var(--text-main)]">
-                  Вопрос {currentQuestionIndex + 1} из {questions.length}
+                  Вопрос {currentQuestionIndex + 1} из {shuffledQuestions.length}
                 </span>
                 <span className="text-sm text-[var(--text-muted)]">
                   {Math.round(progress)}%
@@ -693,7 +741,7 @@ export default function QuizPage() {
                 disabled={!isAnswered}
                 className="rounded-xl bg-[var(--button-bg)] px-6 py-2 text-sm font-semibold text-[var(--button-text)] hover:bg-[var(--button-hover)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {currentQuestionIndex === questions.length - 1 ? "Завершить тест" : "Далее →"}
+                {currentQuestionIndex === shuffledQuestions.length - 1 ? "Завершить тест" : "Далее →"}
               </button>
             </div>
           </div>

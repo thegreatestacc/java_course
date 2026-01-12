@@ -197,12 +197,26 @@ export default function JavaCollectionsListPage() {
                     Map и его реализации
                   </span>
                 </Link>
+                <Link
+                  href="/learn/java-collections/stream"
+                  className={`block px-3 py-1.5 rounded-lg text-sm transition-all duration-200 ${
+                    pathname === "/learn/java-collections/stream"
+                      ? "bg-[var(--bg-muted)] text-[var(--text-main)] font-medium"
+                      : "text-[var(--text-muted)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-main)]"
+                  }`}
+                >
+                  <span className={`inline-block transition-opacity duration-200 ${
+                    pathname === "/learn/java-collections/stream" ? "opacity-100" : "opacity-70"
+                  }`}>
+                    Streams API
+                  </span>
+                </Link>
               </div>
             </div>
           </div>
         </nav>
 
-        <Header leftButton={{ href: "/learn/java-collections", text: "← Назад к Collections" }} />
+        <Header leftButton={{ href: "/learn/java-collections", text: "← К Java Collections" }} />
         <MotivationalQuotes />
         <main>
           <section className="mx-auto max-w-6xl px-5 py-14 md:py-20">

@@ -22,15 +22,15 @@ export function Header({ leftButton }: HeaderProps) {
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState<"login" | "register">("login");
   const [errorReporterOpen, setErrorReporterOpen] = useState(false);
-  const { user, setUser } = useAuth();
+  const { user, setUser, logout } = useAuth();
   const pathname = usePathname();
 
   const handleAuthSuccess = (userData: { id: number; email: string; name: string; isAdmin?: boolean; isBlocked?: boolean; tooltipsEnabled?: boolean }) => {
     setUser(userData);
   };
 
-  const handleLogout = () => {
-    setUser(null);
+  const handleLogout = async () => {
+    await logout();
   };
 
   const openLogin = () => {

@@ -501,6 +501,15 @@ export function DetailedLesson({
                                     code.includes("List<") || 
                                     code.includes("ArrayList<") || 
                                     code.includes("LinkedList<") ||
+                                    code.includes("Stream<") ||
+                                    code.includes("IntStream") ||
+                                    code.includes("LongStream") ||
+                                    code.includes("DoubleStream") ||
+                                    code.includes("Stream.") ||
+                                    code.includes(".stream()") ||
+                                    code.includes(".parallelStream()") ||
+                                    code.includes("Collectors.") ||
+                                    code.includes("Optional<") ||
                                     code.includes("import java") ||
                                     code.includes("Collections.") ||
                                     code.includes("Arrays.") ||
@@ -521,7 +530,14 @@ export function DetailedLesson({
                                     code.includes("return ") ||
                                     code.includes("public ") ||
                                     code.includes("private ") ||
-                                    code.includes("static ");
+                                    code.includes("static ") ||
+                                    code.includes("try {") ||
+                                    code.includes("catch (") ||
+                                    code.includes("} catch") ||
+                                    code.includes("finally {") ||
+                                    code.includes("} finally") ||
+                                    code.includes("throw ") ||
+                                    code.includes("throws ");
                       // Определяем язык более точно: если есть switch, case, default - точно Java
                       const hasSwitch = code.includes("switch") || code.includes("case") || code.includes("default:");
                       const language = (isJava || hasSwitch) ? "java" : "bash";

@@ -24,26 +24,33 @@ public class TestResultController {
 
     @PostMapping("/save")
     public ResponseEntity<?> saveTestResult(@RequestBody TestResultRequest request, HttpSession session) {
-        Long userId = (Long) session.getAttribute("userId");
-        
-        if (userId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Пользователь не авторизован");
-        }
+        try {
+            Long userId = (Long) session.getAttribute("userId");
+            
+            if (userId == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Пользователь не авторизован");
+            }
 
-        if (request.getTestType() == null || request.getTestType().isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Тип теста не указан");
-        }
+            if (request.getTestType() == null || request.getTestType().isEmpty()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Тип теста не указан");
+            }
 
-        if (request.getTopic() == null || request.getTopic().isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Тема теста не указана");
-        }
+            if (request.getTopic() == null || request.getTopic().isEmpty()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Тема теста не указана");
+            }
 
-        if (request.getCorrectAnswers() == null || request.getTotalQuestions() == null || request.getPercentage() == null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Неверные данные результата");
-        }
+            if (request.getCorrectAnswers() == null || request.getTotalQuestions() == null || request.getPercentage() == null) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Неверные данные результата");
+            }
 
-        testResultService.saveTestResult(userId, request);
-        return ResponseEntity.ok().build();
+            testResultService.saveTestResult(userId, request);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            System.err.println("Ошибка при сохранении результата теста: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Ошибка при сохранении результата теста: " + e.getMessage());
+        }
     }
 
     @GetMapping("/me")

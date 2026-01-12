@@ -12,8 +12,10 @@ import org.springframework.stereotype.Repository;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Repository
 public class UserRepository {
@@ -27,10 +29,44 @@ public class UserRepository {
     }
 
     public Optional<User> findByEmail(String email) {
-        String sql = "SELECT id, email, password, name, created_at, updated_at, is_blocked, is_admin, tooltips_enabled " +
-                     "FROM users WHERE email = ?";
+        // Проверяем наличие колонок в таблице
+        Set<String> availableColumns = getAvailableColumns("users");
+        
+        // Формируем список колонок для SELECT
+        StringBuilder columns = new StringBuilder("id, email, password, name");
+        
+        if (availableColumns.contains("created_at")) {
+            columns.append(", created_at");
+        }
+        if (availableColumns.contains("updated_at")) {
+            columns.append(", updated_at");
+        }
+        if (availableColumns.contains("is_blocked")) {
+            columns.append(", is_blocked");
+        }
+        if (availableColumns.contains("is_admin")) {
+            columns.append(", is_admin");
+        }
+        if (availableColumns.contains("tooltips_enabled")) {
+            columns.append(", tooltips_enabled");
+        }
+        
+        String sql = "SELECT " + columns.toString() + " FROM users WHERE email = ?";
         List<User> users = jdbcTemplate.query(sql, rowMapper, email);
         return users.isEmpty() ? Optional.empty() : Optional.of(users.get(0));
+    }
+    
+    private Set<String> getAvailableColumns(String tableName) {
+        Set<String> columns = new HashSet<>();
+        try {
+            String sql = "SELECT column_name FROM information_schema.columns WHERE table_name = ?";
+            List<String> columnNames = jdbcTemplate.query(sql, (rs, rowNum) -> rs.getString("column_name"), tableName);
+            columns.addAll(columnNames);
+        } catch (Exception e) {
+            // Если не удалось получить список колонок, возвращаем пустой набор
+            // RowMapper будет использовать значения по умолчанию
+        }
+        return columns;
     }
 
     public boolean existsByEmail(String email) {

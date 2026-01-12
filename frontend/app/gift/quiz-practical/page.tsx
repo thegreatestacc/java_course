@@ -21,7 +21,17 @@ interface PracticalQuestion {
   theory: string;
 }
 
-const questions: PracticalQuestion[] = [
+// Функция для перемешивания массива (алгоритм Fisher-Yates)
+function shuffleArray<T>(array: T[]): T[] {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
+
+const originalQuestions: PracticalQuestion[] = [
   {
     id: 1,
     question: "Какая команда инициализирует новый Git репозиторий?",
@@ -85,11 +95,26 @@ const questions: PracticalQuestion[] = [
 ];
 
 export default function PracticalQuizPage() {
+  // Сохраняем исходные вопросы для отображения теории
+  const [originalQuestionsOrder] = useState<PracticalQuestion[]>(originalQuestions);
+  
+  // Перемешиваем вопросы только на клиенте после монтирования
+  const [shuffledQuestions, setShuffledQuestions] = useState<PracticalQuestion[]>(originalQuestions);
+  const [isShuffled, setIsShuffled] = useState(false);
+  
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [answers, setAnswers] = useState<string[]>(new Array(questions.length).fill(""));
+  const [answers, setAnswers] = useState<string[]>(() => new Array(originalQuestions.length).fill(""));
   const [showResults, setShowResults] = useState(false);
   const { user } = useAuth();
   const activityRecorded = useRef(false);
+  
+  // Перемешиваем вопросы только на клиенте
+  useEffect(() => {
+    if (!isShuffled) {
+      setShuffledQuestions(shuffleArray(originalQuestions));
+      setIsShuffled(true);
+    }
+  }, [isShuffled]);
 
   const handleAnswerChange = (value: string) => {
     const newAnswers = [...answers];
@@ -98,7 +123,7 @@ export default function PracticalQuizPage() {
   };
 
   const handleNext = () => {
-    if (currentQuestionIndex < questions.length - 1) {
+    if (currentQuestionIndex < shuffledQuestions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
     } else {
       setShowResults(true);
@@ -119,7 +144,7 @@ export default function PracticalQuizPage() {
     let correct = 0;
     let incorrect = 0;
     
-    questions.forEach((question, index) => {
+    shuffledQuestions.forEach((question, index) => {
       const userAnswer = normalizeAnswer(answers[index]);
       const correctAnswer = normalizeAnswer(question.correctAnswer);
       
@@ -130,22 +155,24 @@ export default function PracticalQuizPage() {
       }
     });
     
-    return { correct, incorrect, total: questions.length };
+    return { correct, incorrect, total: shuffledQuestions.length };
   };
 
   const handleRestart = () => {
-    setCurrentQuestionIndex(0);
-    setAnswers(new Array(questions.length).fill(""));
-    setShowResults(false);
-    activityRecorded.current = false; // Сбрасываем флаг при перезапуске
+    // Перезагружаем страницу для нового перемешивания
+    window.location.reload();
   };
 
   const [showTheoryModal, setShowTheoryModal] = useState(false);
   const [theoryContent, setTheoryContent] = useState("");
 
   const handleShowTheory = (questionIndex: number) => {
-    setTheoryContent(questions[questionIndex].theory);
-    setShowTheoryModal(true);
+    // Находим исходный вопрос по ID для отображения теории
+    const originalQuestion = originalQuestionsOrder.find(q => q.id === shuffledQuestions[questionIndex].id);
+    if (originalQuestion) {
+      setTheoryContent(originalQuestion.theory);
+      setShowTheoryModal(true);
+    }
   };
 
   const handleCloseTheory = () => {
@@ -223,9 +250,9 @@ export default function PracticalQuizPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showResults, user]);
 
-  const currentQuestion = questions[currentQuestionIndex];
+  const currentQuestion = shuffledQuestions[currentQuestionIndex];
   const isAnswered = answers[currentQuestionIndex].trim() !== "";
-  const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
+  const progress = ((currentQuestionIndex + 1) / shuffledQuestions.length) * 100;
 
   if (showResults) {
     const results = calculateResults();
@@ -322,7 +349,7 @@ export default function PracticalQuizPage() {
                   <h2 className="text-lg font-semibold text-[var(--text-main)]">
                     Детальные результаты:
                   </h2>
-                  {questions.map((question, index) => {
+                  {shuffledQuestions.map((question, index) => {
                     const userAnswer = answers[index].trim();
                     const isCorrect = normalizeAnswer(userAnswer) === normalizeAnswer(question.correctAnswer);
                     const isUnanswered = userAnswer === "";
@@ -567,7 +594,7 @@ export default function PracticalQuizPage() {
             <div className="mb-6">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium text-[var(--text-main)]">
-                  Вопрос {currentQuestionIndex + 1} из {questions.length}
+                  Вопрос {currentQuestionIndex + 1} из {shuffledQuestions.length}
                 </span>
                 <span className="text-sm text-[var(--text-muted)]">
                   {Math.round(progress)}%
@@ -626,7 +653,7 @@ export default function PracticalQuizPage() {
                 disabled={!isAnswered}
                 className="rounded-xl bg-[var(--button-bg)] px-6 py-2 text-sm font-semibold text-[var(--button-text)] hover:bg-[var(--button-hover)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {currentQuestionIndex === questions.length - 1 ? "Завершить тест" : "Далее →"}
+                {currentQuestionIndex === shuffledQuestions.length - 1 ? "Завершить тест" : "Далее →"}
               </button>
             </div>
           </div>

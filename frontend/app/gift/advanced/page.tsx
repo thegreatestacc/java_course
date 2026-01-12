@@ -97,7 +97,7 @@ export default function AdvancedPage() {
         </nav>
 
         {/* Основной контент без изменений */}
-        <Header leftButton={{ href: "/gift", text: "← Назад к материалу" }} />
+        <Header leftButton={{ href: "/learn/junior", text: "← К Junior Java Developer" }} />
         <MotivationalQuotes />
         <main>
           <section className="mx-auto max-w-6xl px-5 py-14 md:py-20">

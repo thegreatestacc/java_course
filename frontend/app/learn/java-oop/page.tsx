@@ -130,7 +130,7 @@ export default function JavaOOPPage() {
           </div>
         </nav>
 
-        <Header leftButton={{ href: "/learn", text: "← К темам" }} />
+        <Header leftButton={{ href: "/learn/junior", text: "← К Junior Java Developer" }} />
         <MotivationalQuotes />
         <main>
           <section className="mx-auto max-w-6xl px-5 py-14 md:py-20">

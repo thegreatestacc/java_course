@@ -44,9 +44,16 @@ public class TestResultService {
         testResultRepository.save(testResult);
 
         // Автоматически записываем активность, если тест пройден успешно (>= 80%)
+        // Обрабатываем ошибки при записи активности, чтобы не прерывать сохранение результата теста
         if (request.getPercentage() != null && request.getPercentage() >= 80) {
-            LocalDate today = LocalDate.now();
-            activityService.recordActivity(userId, today, 1);
+            try {
+                LocalDate today = LocalDate.now();
+                activityService.recordActivity(userId, today, 1);
+            } catch (Exception e) {
+                System.err.println("Ошибка при записи активности после сохранения результата теста: " + e.getMessage());
+                e.printStackTrace();
+                // Не пробрасываем исключение, чтобы не прерывать сохранение результата теста
+            }
         }
     }
 

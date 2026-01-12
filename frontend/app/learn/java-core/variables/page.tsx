@@ -110,12 +110,26 @@ export default function JavaCoreVariablesPage() {
                     Условия и циклы
                   </span>
                 </Link>
+                <Link
+                  href="/learn/java-core/exceptions"
+                  className={`block px-3 py-1.5 rounded-lg text-sm transition-all duration-200 ${
+                    pathname === "/learn/java-core/exceptions"
+                      ? "bg-[var(--bg-muted)] text-[var(--text-main)] font-medium"
+                      : "text-[var(--text-muted)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-main)]"
+                  }`}
+                >
+                  <span className={`inline-block transition-opacity duration-200 ${
+                    pathname === "/learn/java-core/exceptions" ? "opacity-100" : "opacity-70"
+                  }`}>
+                    Исключения
+                  </span>
+                </Link>
               </div>
             </div>
           </div>
         </nav>
 
-        <Header leftButton={{ href: "/learn/java-core", text: "← Назад к Java Core" }} />
+        <Header leftButton={{ href: "/learn/java-core", text: "← К Java Core" }} />
         <MotivationalQuotes />
         <main>
           <section className="mx-auto max-w-6xl px-5 py-14 md:py-20">

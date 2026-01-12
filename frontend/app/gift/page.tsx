@@ -141,13 +141,11 @@ export default function GiftPage() {
         </nav>
 
         {/* Основной контент без изменений */}
-        <Header leftButton={{ href: "/", text: "На главную" }} />
+        <Header leftButton={{ href: "/learn/junior", text: "← К Junior Java Developer" }} />
         <MotivationalQuotes />
         <main>
           <Hero />
           <MaterialContent />
-          <Benefits />
-          <HowToGet />
         </main>
         <Footer />
       </div>
@@ -265,66 +263,6 @@ function MaterialContent() {
   );
 }
 
-function Benefits() {
-  return (
-    <section className="mx-auto max-w-6xl px-5 pb-14">
-      <div className="grid gap-6 md:grid-cols-3">
-        <BenefitCard
-          title="Практика с первого урока"
-          text="Каждая тема подкреплена практическими заданиями, которые можно выполнить прямо сейчас."
-        />
-        <BenefitCard
-          title="Реальные сценарии"
-          text="Разберем ситуации, с которыми ты столкнешься в реальной работе: конфликты, откаты, работа в команде."
-        />
-        <BenefitCard
-          title="Готовность к работе"
-          text="После изучения материала ты сможешь уверенно работать с Git в любом проекте."
-        />
-      </div>
-    </section>
-  );
-}
-
-function HowToGet() {
-  return (
-    <section className="mx-auto max-w-6xl px-5 pb-20">
-      <div className="rounded-2xl border border-[var(--border-main)] bg-[var(--bg-secondary)] p-6">
-        <div className="grid gap-6 md:grid-cols-[1.4fr_1fr] md:items-center">
-          <div className="space-y-2">
-            <h2 className="text-xl font-semibold tracking-tight text-[var(--text-main)]">
-              Получить доступ к материалу
-            </h2>
-            <p className="text-sm leading-relaxed text-[var(--text-muted)]">
-              Оставь свой email, и я пришлю тебе материалы и доступ к практическим заданиям.
-            </p>
-          </div>
-
-          <form className="grid gap-3" action="#" method="post">
-            <label className="grid gap-1">
-              <span className="text-xs font-medium text-[var(--text-muted)]">Email</span>
-              <input
-                type="email"
-                required
-                placeholder="you@example.com"
-                className="h-11 rounded-xl border border-[var(--border-secondary)] bg-[var(--bg-card)] px-3 text-sm text-[var(--text-main)] outline-none focus:ring-2 focus:ring-[var(--border-secondary)]"
-              />
-            </label>
-            <button
-              type="submit"
-              className="h-11 rounded-xl bg-[var(--button-bg)] text-sm font-semibold text-[var(--button-text)] hover:bg-[var(--button-hover)]"
-            >
-              Получить материал
-            </button>
-            <p className="text-[11px] text-[var(--text-muted)]">
-              Никакого спама. Только материалы.
-            </p>
-          </form>
-        </div>
-      </div>
-    </section>
-  );
-}
 
 function Footer() {
   return (
