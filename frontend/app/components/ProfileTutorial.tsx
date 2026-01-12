@@ -18,7 +18,12 @@ interface ProfileTutorialProps {
 export function ProfileTutorial({ steps, onComplete, onSkip }: ProfileTutorialProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [isVisible, setIsVisible] = useState(true);
-  const [highlightStyle, setHighlightStyle] = useState<React.CSSProperties>({});
+  const [highlightStyle, setHighlightStyle] = useState<React.CSSProperties>({
+    opacity: 0,
+  });
+  const [tooltipStyle, setTooltipStyle] = useState<React.CSSProperties>({
+    opacity: 0,
+  });
   const [overlayStyles, setOverlayStyles] = useState<{
     top: React.CSSProperties;
     bottom: React.CSSProperties;
@@ -34,20 +39,31 @@ export function ProfileTutorial({ steps, onComplete, onSkip }: ProfileTutorialPr
   const tooltipRef = useRef<HTMLDivElement>(null);
   const highlightRef = useRef<HTMLDivElement>(null);
 
-  // Обновление позиции подсветки и подсказки
+  // Обновление позиции подсветки и подсказки (только при смене шага)
   const updatePositions = () => {
     const currentTarget = steps[currentStep]?.targetRef.current;
     if (!currentTarget) return;
 
+    // Получаем позицию после завершения прокрутки
     const rect = currentTarget.getBoundingClientRect();
     
-    // Обновляем позицию подсветки
+    // Обновляем позицию подсветки (фиксированная позиция, не меняется при прокрутке)
     setHighlightStyle({
-      top: rect.top - 8,
-      left: rect.left - 8,
-      width: rect.width + 16,
-      height: rect.height + 16,
+      position: 'fixed',
+      top: `${rect.top - 8}px`,
+      left: `${rect.left - 8}px`,
+      width: `${rect.width + 16}px`,
+      height: `${rect.height + 16}px`,
+      opacity: 0, // Начинаем с прозрачности 0
     });
+
+    // Плавно показываем подсветку
+    setTimeout(() => {
+      setHighlightStyle(prev => ({
+        ...prev,
+        opacity: 1,
+      }));
+    }, 50);
 
     // Обновляем overlay - создаем 4 области затемнения вокруг блока
     const viewportWidth = window.innerWidth;
@@ -89,45 +105,59 @@ export function ProfileTutorial({ steps, onComplete, onSkip }: ProfileTutorialPr
       },
     });
 
-    // Обновляем позицию подсказки
-    if (tooltipRef.current) {
+    // Обновляем позицию подсказки (только один раз при смене шага)
+    // Используем requestAnimationFrame для получения актуальных размеров tooltip
+    requestAnimationFrame(() => {
+      if (!tooltipRef.current) return;
+      
       const tooltip = tooltipRef.current;
       const viewportWidth = window.innerWidth;
       const viewportHeight = window.innerHeight;
+      
+      // Получаем актуальные размеры tooltip
+      const tooltipWidth = tooltip.offsetWidth || 384; // max-w-sm = 384px
+      const tooltipHeight = tooltip.offsetHeight || 200; // примерная высота
 
-      // Определяем позицию подсказки (снизу или сверху)
-      const spaceBelow = viewportHeight - rect.bottom;
-      const spaceAbove = rect.top;
-      const showBelow = spaceBelow > spaceAbove;
-
-      // Определяем позицию по горизонтали (слева или справа)
+      // Определяем позицию по горизонтали (слева или справа от блока)
       const spaceRight = viewportWidth - rect.right;
       const spaceLeft = rect.left;
-      const showRight = spaceRight > spaceLeft;
+      const showRight = spaceRight > spaceLeft && spaceRight > tooltipWidth + 32;
 
       let top = 0;
       let left = 0;
 
-      if (showBelow) {
-        top = rect.bottom + 16;
-      } else {
-        top = rect.top - tooltip.offsetHeight - 16;
-      }
-
+      // Позиционируем подсказку рядом с блоком (справа или слева)
       if (showRight) {
-        left = rect.left;
+        // Справа от блока
+        left = rect.right + 16;
+        // Вертикально центрируем относительно блока
+        top = rect.top + (rect.height / 2) - (tooltipHeight / 2);
       } else {
-        left = rect.right - tooltip.offsetWidth;
+        // Слева от блока
+        left = rect.left - tooltipWidth - 16;
+        // Вертикально центрируем относительно блока
+        top = rect.top + (rect.height / 2) - (tooltipHeight / 2);
       }
 
       // Ограничиваем позицию границами экрана
-      top = Math.max(16, Math.min(top, viewportHeight - tooltip.offsetHeight - 16));
-      left = Math.max(16, Math.min(left, viewportWidth - tooltip.offsetWidth - 16));
+      top = Math.max(16, Math.min(top, viewportHeight - tooltipHeight - 16));
+      left = Math.max(16, Math.min(left, viewportWidth - tooltipWidth - 16));
 
-      tooltip.style.top = `${top}px`;
-      tooltip.style.left = `${left}px`;
-      tooltip.style.transform = "none";
-    }
+      // Устанавливаем позицию через state для плавной анимации
+      setTooltipStyle({
+        top: `${top}px`,
+        left: `${left}px`,
+        opacity: 0, // Начинаем с прозрачности 0
+      });
+
+      // Плавно показываем подсказку после небольшой задержки
+      setTimeout(() => {
+        setTooltipStyle(prev => ({
+          ...prev,
+          opacity: 1,
+        }));
+      }, 150);
+    });
   };
 
   useEffect(() => {
@@ -146,25 +176,23 @@ export function ProfileTutorial({ steps, onComplete, onSkip }: ProfileTutorialPr
       return () => clearTimeout(timer);
     }
 
+    // Сначала скрываем подсказку и подсветку
+    setTooltipStyle(prev => ({ ...prev, opacity: 0 }));
+    setHighlightStyle(prev => ({ ...prev, opacity: 0 }));
+
     // Прокручиваем к элементу
     currentTarget.scrollIntoView({
       behavior: "smooth",
       block: "center",
     });
 
-    // Небольшая задержка перед обновлением позиций после прокрутки
+    // Обновляем позиции после завершения прокрутки
     const scrollTimer = setTimeout(() => {
       updatePositions();
-    }, 300);
-
-    // Обновляем позиции при изменении размера окна или прокрутке
-    window.addEventListener("resize", updatePositions);
-    window.addEventListener("scroll", updatePositions, true);
+    }, 500); // Увеличиваем задержку для завершения прокрутки
 
     return () => {
       clearTimeout(scrollTimer);
-      window.removeEventListener("resize", updatePositions);
-      window.removeEventListener("scroll", updatePositions, true);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentStep, steps]);
@@ -225,10 +253,11 @@ export function ProfileTutorial({ steps, onComplete, onSkip }: ProfileTutorialPr
       {currentStepData.targetRef.current && (
         <div
           ref={highlightRef}
-          className="fixed z-50 pointer-events-none transition-all duration-300 tutorial-highlight"
+          className="fixed z-50 pointer-events-none tutorial-highlight"
           style={{
             ...highlightStyle,
             borderRadius: "0.5rem", // rounded-lg = 8px, меньше чем rounded-2xl
+            transition: 'opacity 0.3s ease-out', // Только плавное появление/исчезновение, без движения
           }}
         />
       )}
@@ -236,11 +265,10 @@ export function ProfileTutorial({ steps, onComplete, onSkip }: ProfileTutorialPr
       {/* Всплывающее окно с подсказкой */}
       <div
         ref={tooltipRef}
-        className="fixed z-50 bg-[var(--bg-card)] border border-[var(--border-main)] rounded-xl shadow-2xl p-6 max-w-sm pointer-events-auto transition-all duration-300"
+        className="fixed z-50 bg-[var(--bg-card)] border border-[var(--border-main)] rounded-xl shadow-2xl p-6 max-w-sm pointer-events-auto transition-all duration-500 ease-out"
         style={{
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
+          ...tooltipStyle,
+          transform: "none",
         }}
       >
         <div className="flex items-start justify-between mb-4">
