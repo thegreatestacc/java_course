@@ -4,6 +4,7 @@ import "./globals.css";
 import { AuthProviderWrapper } from "./AuthProviderWrapper";
 import { SnowProvider } from "./SnowProvider";
 import { SnowfallWrapper } from "./SnowfallWrapper";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,12 +35,14 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <AuthProviderWrapper>
-          <SnowProvider>
-            <SnowfallWrapper />
-            {children}
-          </SnowProvider>
-        </AuthProviderWrapper>
+        <ErrorBoundary>
+          <AuthProviderWrapper>
+            <SnowProvider>
+              <SnowfallWrapper />
+              {children}
+            </SnowProvider>
+          </AuthProviderWrapper>
+        </ErrorBoundary>
       </body>
     </html>
   );

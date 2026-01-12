@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ThemeToggle } from "./ThemeToggle";
 import { UserMenu } from "./UserMenu";
 import { AuthModal } from "./AuthModal";
+import { ErrorReporter } from "./components/ErrorReporter";
 import { useAuth } from "./useAuth";
 import { useSnow } from "./SnowProvider";
 import Link from "next/link";
@@ -20,6 +21,7 @@ export function Header({ leftButton }: HeaderProps) {
   const { isSnowActive, setIsSnowActive } = useSnow();
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState<"login" | "register">("login");
+  const [errorReporterOpen, setErrorReporterOpen] = useState(false);
   const { user, setUser } = useAuth();
   const pathname = usePathname();
 
@@ -123,6 +125,30 @@ export function Header({ leftButton }: HeaderProps) {
             >
               {isSnowActive ? "Выключить снег" : "Включить снег"}
             </button>
+            {user && (
+              <button
+                onClick={() => setErrorReporterOpen(true)}
+                className="rounded-xl border border-[var(--border-main)]
+                           bg-[var(--bg-card)]
+                           px-3 py-2 text-sm font-medium text-[var(--text-main)]
+                           hover:bg-[var(--bg-muted)] transition-colors"
+                title="Сообщить об ошибке"
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                  />
+                </svg>
+              </button>
+            )}
             <ThemeToggle />
           </div>
         </div>
@@ -132,6 +158,11 @@ export function Header({ leftButton }: HeaderProps) {
         onClose={() => setAuthModalOpen(false)}
         onAuthSuccess={handleAuthSuccess}
         mode={authMode}
+      />
+      <ErrorReporter
+        isOpen={errorReporterOpen}
+        onClose={() => setErrorReporterOpen(false)}
+        initialErrorMessage={null}
       />
     </>
   );

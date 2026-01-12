@@ -5,12 +5,8 @@ import org.sovliv.backend.repository.rowmapper.MaterialProgressRowMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.support.GeneratedKeyHolder;
-import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
-import java.sql.PreparedStatement;
-import java.sql.Statement;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -46,10 +42,22 @@ public class MaterialProgressRepository {
     }
 
     public MaterialProgress save(MaterialProgress progress) {
-        if (progress.getId() == null) {
-            return insert(progress);
+        // Проверяем, существует ли уже запись с таким user_id и material_id
+        Optional<MaterialProgress> existing = findByUserIdAndMaterialId(
+            progress.getUser().getId(), 
+            progress.getMaterialId()
+        );
+        
+        if (existing.isPresent()) {
+            // Если запись существует, обновляем её
+            MaterialProgress existingProgress = existing.get();
+            existingProgress.setCompletedAt(progress.getCompletedAt() != null 
+                ? progress.getCompletedAt() 
+                : LocalDateTime.now());
+            return update(existingProgress);
         } else {
-            return update(progress);
+            // Если записи нет, создаём новую
+            return insert(progress);
         }
     }
 
@@ -60,18 +68,15 @@ public class MaterialProgressRepository {
         }
 
         String sql = "INSERT INTO material_progress (user_id, material_id, completed_at) " +
-                     "VALUES (?, ?, ?)";
+                     "VALUES (?, ?, ?) RETURNING id";
         
-        KeyHolder keyHolder = new GeneratedKeyHolder();
-        jdbcTemplate.update(connection -> {
-            PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-            ps.setLong(1, progress.getUser().getId());
-            ps.setString(2, progress.getMaterialId());
-            ps.setTimestamp(3, java.sql.Timestamp.valueOf(progress.getCompletedAt()));
-            return ps;
-        }, keyHolder);
-
-        Long id = keyHolder.getKey() != null ? keyHolder.getKey().longValue() : null;
+        // Используем queryForObject с RETURNING для получения id напрямую
+        Long id = jdbcTemplate.queryForObject(sql, Long.class,
+            progress.getUser().getId(),
+            progress.getMaterialId(),
+            java.sql.Timestamp.valueOf(progress.getCompletedAt())
+        );
+        
         progress.setId(id);
         return progress;
     }

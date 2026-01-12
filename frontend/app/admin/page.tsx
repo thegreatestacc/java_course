@@ -14,6 +14,18 @@ interface UserInfo {
   isBlocked: boolean;
 }
 
+interface ErrorReport {
+  id: number;
+  userId: number | null;
+  userEmail: string | null;
+  userName: string | null;
+  errorMessage: string | null;
+  userDescription: string;
+  pageUrl: string | null;
+  userAgent: string | null;
+  createdAt: string;
+}
+
 export default function AdminPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
@@ -23,6 +35,9 @@ export default function AdminPage() {
   const [success, setSuccess] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<number | null>(null);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc" | null>(null);
+  const [errorReports, setErrorReports] = useState<ErrorReport[]>([]);
+  const [isLoadingErrors, setIsLoadingErrors] = useState(false);
+  const [expandedErrors, setExpandedErrors] = useState<Set<number>>(new Set());
   const [confirmModal, setConfirmModal] = useState<{
     isOpen: boolean;
     isAnimating: boolean;
@@ -50,6 +65,7 @@ export default function AdminPage() {
         return;
       }
       fetchUsers();
+      fetchErrorReports();
     }
   }, [user, loading, router]);
 
@@ -63,6 +79,44 @@ export default function AdminPage() {
       document.body.style.overflow = "unset";
     };
   }, [confirmModal.isOpen]);
+
+  const fetchErrorReports = async () => {
+    try {
+      setIsLoadingErrors(true);
+      const response = await fetch("/api/error-reports/admin/all", {
+        credentials: "include",
+      });
+
+      if (response.status === 403) {
+        return;
+      }
+
+      if (!response.ok) {
+        return;
+      }
+
+      const data = await response.json();
+      if (data.success && data.errorReports) {
+        setErrorReports(data.errorReports);
+      }
+    } catch (err) {
+      console.error("Ошибка при загрузке сообщений об ошибках:", err);
+    } finally {
+      setIsLoadingErrors(false);
+    }
+  };
+
+  const toggleErrorExpanded = (errorId: number) => {
+    setExpandedErrors((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(errorId)) {
+        newSet.delete(errorId);
+      } else {
+        newSet.add(errorId);
+      }
+      return newSet;
+    });
+  };
 
   const fetchUsers = async () => {
     try {
@@ -475,6 +529,161 @@ export default function AdminPage() {
           >
             Обновить список
           </button>
+        </div>
+
+        {/* Секция с сообщениями об ошибках */}
+        <div className="mt-8">
+          <div className="mb-4 flex items-center justify-between">
+            <div>
+              <h2 className="text-2xl font-bold text-[var(--text-main)] mb-2">
+                Сообщения об ошибках
+              </h2>
+              <p className="text-sm text-[var(--text-muted)]">
+                Всего сообщений: {errorReports.length}
+              </p>
+            </div>
+            <button
+              onClick={fetchErrorReports}
+              disabled={isLoadingErrors}
+              className="inline-flex items-center rounded-lg border border-[var(--border-secondary)] bg-[var(--bg-card)] px-4 py-2 text-sm font-medium text-[var(--text-main)] hover:bg-[var(--bg-muted)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {isLoadingErrors ? (
+                <>
+                  <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-[var(--text-main)] border-r-transparent mr-2"></span>
+                  Загрузка...
+                </>
+              ) : (
+                "Обновить"
+              )}
+            </button>
+          </div>
+
+          <div className="rounded-2xl border border-[var(--border-main)] bg-[var(--bg-card)] shadow-sm overflow-hidden">
+            {errorReports.length === 0 ? (
+              <div className="px-6 py-8 text-center text-sm text-[var(--text-muted)]">
+                Сообщений об ошибках нет
+              </div>
+            ) : (
+              <div className="divide-y divide-[var(--border-main)]">
+                {errorReports.map((errorReport) => {
+                  const isExpanded = expandedErrors.has(errorReport.id);
+                  return (
+                    <div
+                      key={errorReport.id}
+                      className="hover:bg-[var(--bg-secondary)] transition-colors"
+                    >
+                      <button
+                        onClick={() => toggleErrorExpanded(errorReport.id)}
+                        className="w-full px-6 py-4 flex items-center justify-between text-left"
+                      >
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-3 mb-1">
+                            <span className="text-sm font-medium text-[var(--text-main)]">
+                              #{errorReport.id}
+                            </span>
+                            {errorReport.userEmail && (
+                              <span className="text-sm text-[var(--text-muted)]">
+                                {errorReport.userEmail}
+                              </span>
+                            )}
+                            {!errorReport.userEmail && (
+                              <span className="text-sm text-[var(--text-tertiary)] italic">
+                                Анонимный пользователь
+                              </span>
+                            )}
+                            <span className="text-xs text-[var(--text-tertiary)]">
+                              {new Date(errorReport.createdAt).toLocaleString("ru-RU", {
+                                year: "numeric",
+                                month: "short",
+                                day: "numeric",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })}
+                            </span>
+                          </div>
+                          <p className="text-sm text-[var(--text-muted)] truncate">
+                            {errorReport.userDescription}
+                          </p>
+                        </div>
+                        <svg
+                          className={`w-5 h-5 text-[var(--text-muted)] transition-transform flex-shrink-0 ml-4 ${
+                            isExpanded ? "rotate-180" : ""
+                          }`}
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M19 9l-7 7-7-7"
+                          />
+                        </svg>
+                      </button>
+                      {isExpanded && (
+                        <div className="px-6 pb-4 space-y-3 border-t border-[var(--border-main)] pt-4">
+                          {errorReport.userName && (
+                            <div>
+                              <p className="text-xs font-medium text-[var(--text-muted)] mb-1">
+                                Пользователь:
+                              </p>
+                              <p className="text-sm text-[var(--text-main)]">
+                                {errorReport.userName}
+                              </p>
+                            </div>
+                          )}
+                          {errorReport.errorMessage && (
+                            <div>
+                              <p className="text-xs font-medium text-[var(--text-muted)] mb-1">
+                                Техническая ошибка:
+                              </p>
+                              <p className="text-sm text-[var(--text-main)] font-mono bg-[var(--bg-muted)] p-2 rounded break-all">
+                                {errorReport.errorMessage}
+                              </p>
+                            </div>
+                          )}
+                          <div>
+                            <p className="text-xs font-medium text-[var(--text-muted)] mb-1">
+                              Описание пользователя:
+                            </p>
+                            <p className="text-sm text-[var(--text-main)] whitespace-pre-wrap">
+                              {errorReport.userDescription}
+                            </p>
+                          </div>
+                          {errorReport.pageUrl && (
+                            <div>
+                              <p className="text-xs font-medium text-[var(--text-muted)] mb-1">
+                                Страница:
+                              </p>
+                              <a
+                                href={errorReport.pageUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-sm text-blue-400 hover:underline break-all"
+                              >
+                                {errorReport.pageUrl}
+                              </a>
+                            </div>
+                          )}
+                          {errorReport.userAgent && (
+                            <div>
+                              <p className="text-xs font-medium text-[var(--text-muted)] mb-1">
+                                User Agent:
+                              </p>
+                              <p className="text-xs text-[var(--text-secondary)] font-mono break-all">
+                                {errorReport.userAgent}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
