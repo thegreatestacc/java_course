@@ -172,7 +172,7 @@ export default function EqualsHashCodePage() {
           </div>
         </nav>
 
-        <Header leftButton={{ href: "/learn/junior", text: "← К Junior Java Developer" }} />
+        <Header leftButton={{ href: "/learn/java-oop", text: "← К Java OOP" }} />
         <MotivationalQuotes />
         <main>
           <section className="mx-auto max-w-6xl px-5 py-14 md:py-20">

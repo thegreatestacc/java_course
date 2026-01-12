@@ -1,9 +1,9 @@
 {
-  "/_not-found/page": "app/_not-found/page.js",
   "/tasks/page": "app/tasks/page.js",
-  "/learn/junior/page": "app/learn/junior/page.js",
+  "/profile/page": "app/profile/page.js",
   "/learn/java-oop/page": "app/learn/java-oop/page.js",
-  "/learn/java-oop/equals-hashcode/page": "app/learn/java-oop/equals-hashcode/page.js",
-  "/learn/java-collections/page": "app/learn/java-collections/page.js",
-  "/learn/java-collections/list/page": "app/learn/java-collections/list/page.js"
+  "/learn/java-oop/polymorphism/page": "app/learn/java-oop/polymorphism/page.js",
+  "/learn/junior/page": "app/learn/junior/page.js",
+  "/learn/java-core/page": "app/learn/java-core/page.js",
+  "/learn/java-collections/page": "app/learn/java-collections/page.js"
 }

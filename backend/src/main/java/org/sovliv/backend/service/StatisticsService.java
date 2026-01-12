@@ -37,6 +37,9 @@ public class StatisticsService {
         "learn/java-core/control-flow",
         "learn/java-core/exceptions",
         "learn/java-oop",
+        "learn/java-oop/classes",
+        "learn/java-oop/inheritance",
+        "learn/java-oop/polymorphism",
         "learn/java-oop/equals-hashcode",
         "learn/java-collections",
         "learn/java-collections/list",
@@ -106,6 +109,8 @@ public class StatisticsService {
 
     @CacheEvict(value = {"userStatistics", "materialStatus", "userActivity"}, allEntries = true)
     public void markMaterialAsCompleted(Long userId, String materialId) {
+        // Инвалидируем кэш для конкретного материала
+        // Это делается через allEntries = true, но также можно добавить явную инвалидацию
         System.out.println("markMaterialAsCompleted called: userId=" + userId + ", materialId=" + materialId);
         
         // Проверяем, что материал существует в списке

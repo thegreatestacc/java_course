@@ -149,7 +149,7 @@ export default function JavaOOPPage() {
               </h2>
               <div className="grid gap-4 md:grid-cols-2">
                 <LessonCard
-                  materialId="learn/java-oop"
+                  materialId="learn/java-oop/classes"
                   title="Классы и объекты"
                   href="/learn/java-oop/classes"
                   topics={[
@@ -160,7 +160,7 @@ export default function JavaOOPPage() {
                   ]}
                 />
                 <LessonCard
-                  materialId="learn/java-oop"
+                  materialId="learn/java-oop/inheritance"
                   title="Наследование"
                   href="/learn/java-oop/inheritance"
                   topics={[
@@ -171,7 +171,7 @@ export default function JavaOOPPage() {
                   ]}
                 />
                 <LessonCard
-                  materialId="learn/java-oop"
+                  materialId="learn/java-oop/polymorphism"
                   title="Полиморфизм"
                   href="/learn/java-oop/polymorphism"
                   topics={[
