@@ -3,6 +3,7 @@ services:
     image: postgres:15-alpine
     container_name: java-course-postgres
     environment:
+      TZ: Europe/Moscow
       POSTGRES_DB: ${POSTGRES_DB:-java_course_db}
       POSTGRES_USER: ${POSTGRES_USER:-java_course_user}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-java_course_password}
@@ -28,6 +29,8 @@ services:
   redis:
     image: redis:7-alpine
     container_name: java-course-redis
+    environment:
+      TZ: Europe/Moscow
     command: redis-server --maxmemory 128mb --maxmemory-policy allkeys-lru --save "" --appendonly no
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
@@ -50,6 +53,7 @@ services:
     image: ${REGISTRY:-ghcr.io}/${OWNER:-owner}/java-course-backend:${TAG:-latest}
     container_name: java-course-backend
     environment:
+      TZ: Europe/Moscow
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-java_course_db}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-java_course_user}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-java_course_password}
@@ -77,6 +81,8 @@ services:
   nginx:
     image: ${REGISTRY:-ghcr.io}/${OWNER:-owner}/java-course-nginx:${TAG:-latest}
     container_name: java-course-nginx
+    environment:
+      TZ: Europe/Moscow
     ports:
       - "80:80"
       - "443:443"
@@ -103,6 +109,8 @@ services:
   frontend:
     image: ${REGISTRY:-ghcr.io}/${OWNER:-owner}/java-course-frontend:${TAG:-latest}
     container_name: java-course-frontend
+    environment:
+      TZ: Europe/Moscow
     # Не экспортируем порты напрямую, используем Nginx
     depends_on:
       - backend

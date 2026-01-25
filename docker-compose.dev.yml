@@ -3,6 +3,7 @@ services:
     image: postgres:15-alpine
     container_name: java-course-postgres-dev
     environment:
+      TZ: Europe/Moscow
       POSTGRES_DB: ${POSTGRES_DB_DEV:-java_course_db_dev}
       POSTGRES_USER: ${POSTGRES_USER_DEV:-java_course_user_dev}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD_DEV:-java_course_password_dev}
@@ -30,6 +31,8 @@ services:
   redis-dev:
     image: redis:7-alpine
     container_name: java-course-redis-dev
+    environment:
+      TZ: Europe/Moscow
     command: redis-server --maxmemory 128mb --maxmemory-policy allkeys-lru --save "" --appendonly no
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
@@ -54,6 +57,7 @@ services:
     image: ${REGISTRY:-ghcr.io}/${OWNER:-owner}/java-course-backend:${TAG:-dev}
     container_name: java-course-backend-dev
     environment:
+      TZ: Europe/Moscow
       SPRING_PROFILES_ACTIVE: dev
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-dev:5432/${POSTGRES_DB_DEV:-java_course_db_dev}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER_DEV:-java_course_user_dev}
@@ -83,6 +87,8 @@ services:
   nginx-dev:
     image: nginx:alpine
     container_name: java-course-nginx-dev
+    environment:
+      TZ: Europe/Moscow
     ports:
       - "8080:80"  # Отдельный порт для dev nginx (HTTP)
       - "8443:443"  # Отдельный порт для dev nginx (HTTPS, если настроен)
@@ -108,6 +114,8 @@ services:
   frontend-dev:
     image: ${REGISTRY:-ghcr.io}/${OWNER:-owner}/java-course-frontend:${TAG:-dev}
     container_name: java-course-frontend-dev
+    environment:
+      TZ: Europe/Moscow
     depends_on:
       - backend-dev
     restart: unless-stopped
@@ -129,6 +137,7 @@ volumes:
 networks:
   java-course-dev-network:
     driver: bridge
+
 
 
 
