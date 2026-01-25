@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.HttpSession;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.format.DateTimeParseException;
 
 @RestController
@@ -60,7 +61,7 @@ public class ActivityController {
             if (request.getDate() != null && !request.getDate().isEmpty()) {
                 date = LocalDate.parse(request.getDate());
             } else {
-                date = LocalDate.now();
+                date = LocalDate.now(ZoneId.of("Europe/Moscow"));
             }
         } catch (DateTimeParseException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Неверный формат даты");

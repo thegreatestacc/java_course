@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -47,7 +48,7 @@ public class TestResultService {
         // Обрабатываем ошибки при записи активности, чтобы не прерывать сохранение результата теста
         if (request.getPercentage() != null && request.getPercentage() >= 80) {
             try {
-                LocalDate today = LocalDate.now();
+                LocalDate today = LocalDate.now(ZoneId.of("Europe/Moscow"));
                 activityService.recordActivity(userId, today, 1);
             } catch (Exception e) {
                 System.err.println("Ошибка при записи активности после сохранения результата теста: " + e.getMessage());

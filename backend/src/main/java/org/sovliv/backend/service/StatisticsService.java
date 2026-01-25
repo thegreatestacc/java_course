@@ -13,6 +13,8 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -144,7 +146,7 @@ public class StatisticsService {
             System.out.println("MaterialProgress успешно сохранен");
             
             // Записываем активность при завершении материала
-            activityService.recordActivity(userId, java.time.LocalDate.now(), 1);
+            activityService.recordActivity(userId, LocalDate.now(ZoneId.of("Europe/Moscow")), 1);
         } catch (Exception e) {
             System.err.println("Ошибка при сохранении MaterialProgress: " + e.getMessage());
             e.printStackTrace();

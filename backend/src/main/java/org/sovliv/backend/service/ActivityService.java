@@ -11,6 +11,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,7 +32,7 @@ public class ActivityService {
 
     @Cacheable(value = "userActivity", key = "#userId + ':current'")
     public ActivityResponse getUserActivity(Long userId) {
-        return getUserActivityByYear(userId, LocalDate.now().getYear());
+        return getUserActivityByYear(userId, LocalDate.now(ZoneId.of("Europe/Moscow")).getYear());
     }
 
     @Cacheable(value = "userActivity", key = "#userId + ':' + #year")
