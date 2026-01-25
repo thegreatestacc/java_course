@@ -29,7 +29,8 @@ public class AdminService {
                             user.getName(),
                             user.getCreatedAt() != null ? user.getCreatedAt().toString() : null,
                             user.getIsAdmin(),
-                            user.getIsBlocked()
+                            user.getIsBlocked(),
+                            user.getLastLoginAt() != null ? user.getLastLoginAt().toString() : null
                     ))
                     .collect(Collectors.toList());
             return new UserListResponse(true, "Список пользователей получен", userInfos);

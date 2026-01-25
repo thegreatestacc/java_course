@@ -47,17 +47,19 @@ public class UserListResponse {
         private String createdAt;
         private Boolean isAdmin;
         private Boolean isBlocked;
+        private String lastLoginAt;
 
         public UserInfo() {
         }
 
-        public UserInfo(Long id, String email, String name, String createdAt, Boolean isAdmin, Boolean isBlocked) {
+        public UserInfo(Long id, String email, String name, String createdAt, Boolean isAdmin, Boolean isBlocked, String lastLoginAt) {
             this.id = id;
             this.email = email;
             this.name = name;
             this.createdAt = createdAt;
             this.isAdmin = isAdmin;
             this.isBlocked = isBlocked;
+            this.lastLoginAt = lastLoginAt;
         }
 
         public Long getId() {
@@ -106,6 +108,14 @@ public class UserListResponse {
 
         public void setIsBlocked(Boolean isBlocked) {
             this.isBlocked = isBlocked;
+        }
+
+        public String getLastLoginAt() {
+            return lastLoginAt;
+        }
+
+        public void setLastLoginAt(String lastLoginAt) {
+            this.lastLoginAt = lastLoginAt;
         }
     }
 }

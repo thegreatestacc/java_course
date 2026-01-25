@@ -98,6 +98,9 @@ public class AuthService {
             return new AuthResponse(false, "Неверный email или пароль");
         }
 
+        // Обновляем дату последнего логина
+        userRepository.updateLastLogin(user.getId());
+
         String createdAt = user.getCreatedAt() != null ? user.getCreatedAt().toString() : null;
         AuthResponse.UserDto userDto = new AuthResponse.UserDto(
             user.getId(), 

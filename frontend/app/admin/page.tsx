@@ -12,6 +12,7 @@ interface UserInfo {
   createdAt: string;
   isAdmin: boolean;
   isBlocked: boolean;
+  lastLoginAt: string | null;
 }
 
 interface ErrorReport {
@@ -422,6 +423,9 @@ export default function AdminPage() {
                     Дата регистрации
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">
+                    Последний вход
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">
                     Статус
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">
@@ -432,7 +436,7 @@ export default function AdminPage() {
               <tbody className="divide-y divide-[var(--border-main)]">
                 {users.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="px-6 py-8 text-center text-sm text-[var(--text-muted)]">
+                    <td colSpan={7} className="px-6 py-8 text-center text-sm text-[var(--text-muted)]">
                       Пользователи не найдены
                     </td>
                   </tr>
@@ -461,6 +465,17 @@ export default function AdminPage() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-[var(--text-muted)]">
                         {userInfo.createdAt
                           ? new Date(userInfo.createdAt).toLocaleDateString("ru-RU", {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })
+                          : "—"}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-[var(--text-muted)]">
+                        {userInfo.lastLoginAt
+                          ? new Date(userInfo.lastLoginAt).toLocaleDateString("ru-RU", {
                               year: "numeric",
                               month: "long",
                               day: "numeric",

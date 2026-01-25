@@ -12,6 +12,7 @@ public class User {
     private Boolean isBlocked = false;
     private Boolean isAdmin = false;
     private Boolean tooltipsEnabled = true;
+    private LocalDateTime lastLoginAt;
 
     // Getters and Setters
     public Long getId() {
@@ -84,5 +85,13 @@ public class User {
 
     public void setTooltipsEnabled(Boolean tooltipsEnabled) {
         this.tooltipsEnabled = tooltipsEnabled;
+    }
+
+    public LocalDateTime getLastLoginAt() {
+        return lastLoginAt;
+    }
+
+    public void setLastLoginAt(LocalDateTime lastLoginAt) {
+        this.lastLoginAt = lastLoginAt;
     }
 }

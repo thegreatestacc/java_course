@@ -50,7 +50,10 @@ public class UserRepository {
         if (availableColumns.contains("tooltips_enabled")) {
             columns.append(", tooltips_enabled");
         }
-        
+        if (availableColumns.contains("last_login_at")) {
+            columns.append(", last_login_at");
+        }
+
         String sql = "SELECT " + columns.toString() + " FROM users WHERE email = ?";
         List<User> users = jdbcTemplate.query(sql, rowMapper, email);
         return users.isEmpty() ? Optional.empty() : Optional.of(users.get(0));
@@ -76,13 +79,13 @@ public class UserRepository {
     }
 
     public List<User> findAll() {
-        String sql = "SELECT id, email, password, name, created_at, updated_at, is_blocked, is_admin, tooltips_enabled " +
+        String sql = "SELECT id, email, password, name, created_at, updated_at, is_blocked, is_admin, tooltips_enabled, last_login_at " +
                      "FROM users ORDER BY id";
         return jdbcTemplate.query(sql, rowMapper);
     }
 
     public Optional<User> findById(Long id) {
-        String sql = "SELECT id, email, password, name, created_at, updated_at, is_blocked, is_admin, tooltips_enabled " +
+        String sql = "SELECT id, email, password, name, created_at, updated_at, is_blocked, is_admin, tooltips_enabled, last_login_at " +
                      "FROM users WHERE id = ?";
         List<User> users = jdbcTemplate.query(sql, rowMapper, id);
         return users.isEmpty() ? Optional.empty() : Optional.of(users.get(0));
@@ -154,5 +157,10 @@ public class UserRepository {
         );
         
         return user;
+    }
+
+    public void updateLastLogin(Long userId) {
+        String sql = "UPDATE users SET last_login_at = ? WHERE id = ?";
+        jdbcTemplate.update(sql, java.sql.Timestamp.valueOf(LocalDateTime.now()), userId);
     }
 }

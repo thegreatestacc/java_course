@@ -64,7 +64,15 @@ public class UserRowMapper implements RowMapper<User> {
         } else {
             user.setTooltipsEnabled(true);
         }
-        
+
+        // Обработка last_login_at с проверкой наличия колонки
+        if (availableColumns.contains("last_login_at")) {
+            java.sql.Timestamp lastLoginAt = rs.getTimestamp("last_login_at");
+            if (lastLoginAt != null) {
+                user.setLastLoginAt(lastLoginAt.toLocalDateTime());
+            }
+        }
+
         return user;
     }
 }
