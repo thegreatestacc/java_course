@@ -133,5 +133,3 @@ volumes:
 networks:
   java-course-network:
     driver: bridge
-
-
