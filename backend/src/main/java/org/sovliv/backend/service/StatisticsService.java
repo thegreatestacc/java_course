@@ -13,8 +13,6 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -39,9 +37,6 @@ public class StatisticsService {
         "learn/java-core/control-flow",
         "learn/java-core/exceptions",
         "learn/java-oop",
-        "learn/java-oop/classes",
-        "learn/java-oop/inheritance",
-        "learn/java-oop/polymorphism",
         "learn/java-oop/equals-hashcode",
         "learn/java-collections",
         "learn/java-collections/list",
@@ -111,8 +106,6 @@ public class StatisticsService {
 
     @CacheEvict(value = {"userStatistics", "materialStatus", "userActivity"}, allEntries = true)
     public void markMaterialAsCompleted(Long userId, String materialId) {
-        // Инвалидируем кэш для конкретного материала
-        // Это делается через allEntries = true, но также можно добавить явную инвалидацию
         System.out.println("markMaterialAsCompleted called: userId=" + userId + ", materialId=" + materialId);
         
         // Проверяем, что материал существует в списке
@@ -146,7 +139,7 @@ public class StatisticsService {
             System.out.println("MaterialProgress успешно сохранен");
             
             // Записываем активность при завершении материала
-            activityService.recordActivity(userId, LocalDate.now(ZoneId.of("Europe/Moscow")), 1);
+            activityService.recordActivity(userId, java.time.LocalDate.now(), 1);
         } catch (Exception e) {
             System.err.println("Ошибка при сохранении MaterialProgress: " + e.getMessage());
             e.printStackTrace();
@@ -174,6 +167,54 @@ public class StatisticsService {
     public void unmarkMaterialAsCompleted(Long userId, String materialId) {
         materialProgressRepository.findByUserIdAndMaterialId(userId, materialId)
                 .ifPresent(materialProgressRepository::delete);
+    }
+
+    // Методы для работы с практическими задачами
+    @CacheEvict(value = {"userStatistics", "materialStatus", "userActivity"}, allEntries = true)
+    public void markPracticeTaskAsSolved(Long userId, String taskId) {
+        String materialId = "practice/" + taskId;
+        
+        // Проверяем, не решена ли уже задача
+        if (materialProgressRepository.findByUserIdAndMaterialId(userId, materialId).isPresent()) {
+            System.out.println("Задача уже решена, пропускаем");
+            return;
+        }
+
+        // Получаем пользователя
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> {
+                System.err.println("User not found: " + userId);
+                return new RuntimeException("User not found");
+            });
+
+        try {
+            // Создаем новую запись о прогрессе
+            MaterialProgress progress = new MaterialProgress();
+            progress.setUser(user);
+            progress.setMaterialId(materialId);
+            System.out.println("Сохраняем решенную задачу: userId=" + userId + ", taskId=" + taskId);
+            materialProgressRepository.save(progress);
+            System.out.println("Решенная задача успешно сохранена");
+        } catch (Exception e) {
+            System.err.println("Ошибка при сохранении решенной задачи: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
+        }
+    }
+
+    @Cacheable(value = "materialStatus", key = "#userId + ':practice:' + #taskId")
+    public boolean isPracticeTaskSolved(Long userId, String taskId) {
+        String materialId = "practice/" + taskId;
+        return materialProgressRepository.findByUserIdAndMaterialId(userId, materialId).isPresent();
+    }
+
+    public Set<String> getSolvedPracticeTasks(Long userId) {
+        List<MaterialProgress> materialProgresses = materialProgressRepository.findByUserId(userId);
+        return materialProgresses.stream()
+                .map(MaterialProgress::getMaterialId)
+                .filter(materialId -> materialId.startsWith("practice/"))
+                .map(materialId -> materialId.substring("practice/".length()))
+                .collect(Collectors.toSet());
     }
 }
 

@@ -23,6 +23,23 @@ const mono = JetBrains_Mono({
 export default function Page() {
   const pathname = usePathname();
   const [activeSection, setActiveSection] = useState<string>("");
+  const [showSessionExpired, setShowSessionExpired] = useState(false);
+
+  // Проверяем, была ли истекшая сессия при загрузке страницы
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const sessionExpired = sessionStorage.getItem("sessionExpired");
+      if (sessionExpired === "true") {
+        setShowSessionExpired(true);
+        // Удаляем флаг после показа сообщения
+        sessionStorage.removeItem("sessionExpired");
+        // Автоматически скрываем сообщение через 5 секунд
+        setTimeout(() => {
+          setShowSessionExpired(false);
+        }, 5000);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     const sections = ["about", "for-who", "what-you-get", "program", "faq", "cta"];
@@ -148,6 +165,32 @@ export default function Page() {
         {/* Основной контент без изменений */}
         <Header />
         <MotivationalQuotes />
+        
+        {/* Сообщение об истекшей сессии */}
+        {showSessionExpired && (
+          <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 max-w-md w-full mx-4">
+            <div className="rounded-xl border border-yellow-500/30 bg-yellow-500/10 p-4 shadow-lg">
+              <div className="flex gap-3 items-start">
+                <span className="text-yellow-500 text-xl shrink-0">⚠️</span>
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-[var(--text-main)] mb-1">
+                    Сессия истекла
+                  </p>
+                  <p className="text-sm text-[var(--text-muted)]">
+                    Ваша сессия истекла. Пожалуйста, войдите в систему заново.
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowSessionExpired(false)}
+                  className="text-[var(--text-muted)] hover:text-[var(--text-main)] transition-colors shrink-0"
+                  aria-label="Закрыть"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
         <main>
           <Hero />
           <Proof />

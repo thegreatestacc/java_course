@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.HttpSession;
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/statistics")
@@ -108,6 +109,60 @@ public class StatisticsController {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Ошибка при откате материала: " + e.getMessage());
+        }
+    }
+
+    // Endpoints для практических задач
+    @PostMapping("/practice/solve")
+    public ResponseEntity<?> markPracticeTaskAsSolved(@RequestParam("taskId") String taskId, HttpSession session) {
+        Long userId = (Long) session.getAttribute("userId");
+        
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Пользователь не авторизован");
+        }
+
+        try {
+            statisticsService.markPracticeTaskAsSolved(userId, taskId);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            System.err.println("Exception: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Ошибка при сохранении решенной задачи: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/practice/status")
+    public ResponseEntity<Boolean> getPracticeTaskStatus(@RequestParam("taskId") String taskId, HttpSession session) {
+        Long userId = (Long) session.getAttribute("userId");
+        
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        try {
+            boolean isSolved = statisticsService.isPracticeTaskSolved(userId, taskId);
+            return ResponseEntity.ok(isSolved);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/practice/solved")
+    public ResponseEntity<Set<String>> getSolvedPracticeTasks(HttpSession session) {
+        Long userId = (Long) session.getAttribute("userId");
+        
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        try {
+            Set<String> solvedTasks = statisticsService.getSolvedPracticeTasks(userId);
+            return ResponseEntity.ok(solvedTasks);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 }

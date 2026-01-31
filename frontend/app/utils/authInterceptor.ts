@@ -47,6 +47,15 @@ if (typeof window !== "undefined") {
           }
         }
         
+        // Сохраняем сообщение в sessionStorage для отображения на главной странице
+        sessionStorage.setItem("sessionExpired", "true");
+        
+        // Перенаправляем на главную страницу, если мы не на ней уже
+        const currentPath = window.location.pathname;
+        if (currentPath !== "/") {
+          window.location.href = "/";
+        }
+        
         // Сбрасываем флаг через небольшую задержку
         setTimeout(() => {
           isHandling401 = false;
