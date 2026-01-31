@@ -38,6 +38,8 @@ jobs:
           context: ./backend
           file: ./backend/Dockerfile
           push: true
+          no-cache: false
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.OWNER }}/java-course-backend:latest
           tags: |
             ${{ env.REGISTRY }}/${{ env.OWNER }}/java-course-backend:${{ env.TAG }}
             ${{ env.REGISTRY }}/${{ env.OWNER }}/java-course-backend:latest
@@ -48,6 +50,8 @@ jobs:
           context: ./frontend
           file: ./frontend/Dockerfile
           push: true
+          no-cache: false
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.OWNER }}/java-course-frontend:latest
           tags: |
             ${{ env.REGISTRY }}/${{ env.OWNER }}/java-course-frontend:${{ env.TAG }}
             ${{ env.REGISTRY }}/${{ env.OWNER }}/java-course-frontend:latest
@@ -190,6 +194,12 @@ jobs:
               echo "WARNING: Could not pull postgres/redis (possibly rate limit), using existing images"
             }
 
-            # Перезапускаем контейнеры (использует существующие образы, если pull не удался)
-            echo "Starting containers..."
-            docker compose -f docker-compose.prod.yml up -d --remove-orphans
+            # Перезапускаем контейнеры с принудительной пересборкой (использует существующие образы, если pull не удался)
+            echo "Stopping existing containers..."
+            docker compose -f docker-compose.prod.yml down
+            
+            echo "Starting containers with new images..."
+            docker compose -f docker-compose.prod.yml up -d --remove-orphans --force-recreate
+            
+            echo "Cleaning up old/unused images..."
+            docker image prune -f
