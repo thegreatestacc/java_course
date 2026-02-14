@@ -132,6 +132,20 @@ export default function JavaCorePage() {
                     Исключения
                   </span>
                 </Link>
+                <Link
+                  href="/learn/java-core/practice"
+                  className={`block px-3 py-1.5 rounded-lg text-sm transition-all duration-200 ${
+                    pathname === "/learn/java-core/practice"
+                      ? "bg-[var(--bg-muted)] text-[var(--text-main)] font-medium"
+                      : "text-[var(--text-muted)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-main)]"
+                  }`}
+                >
+                  <span className={`inline-block transition-opacity duration-200 ${
+                    pathname === "/learn/java-core/practice" ? "opacity-100" : "opacity-70"
+                  }`}>
+                    Практические задачи
+                  </span>
+                </Link>
               </div>
             </div>
           </div>
@@ -224,6 +238,22 @@ export default function JavaCorePage() {
                   Практическое тестирование
                 </Link>
               </div>
+            </div>
+
+            {/* Блок практических задач */}
+            <div className="rounded-2xl border border-[var(--border-main)] bg-[var(--bg-card)] p-6 shadow-sm mt-8">
+              <h2 className="text-xl font-semibold tracking-tight text-[var(--text-main)] mb-4">
+                Практические задачи
+              </h2>
+              <p className="text-sm leading-relaxed text-[var(--text-muted)] mb-6">
+                Закрепи полученные знания на практике. Решай задачи разного уровня сложности: от простых упражнений на переменные и циклы до комплексных мини-проектов с обработкой исключений.
+              </p>
+              <Link
+                href="/learn/java-core/practice"
+                className="inline-flex items-center justify-center rounded-xl bg-[var(--button-bg)] px-6 py-3 text-sm font-semibold text-[var(--button-text)] hover:bg-[var(--button-hover)] transition-colors"
+              >
+                Начать
+              </Link>
             </div>
           </section>
         </main>
