@@ -161,25 +161,24 @@ jobs:
 
             echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u "${{ github.repository_owner }}" --password-stdin
 
+            # Очистка старых Docker образов перед деплоем
+            echo "Cleaning up old Docker resources..."
+            docker system prune -af --filter "until=24h" || true
+
             # Обновляем переменные окружения
             if [ -f .env ]; then
-              if grep -q '^TAG=' .env; then
-                sed -i "s/^TAG=.*/TAG=${{ env.TAG }}/" .env
-              else
-                echo "TAG=${{ env.TAG }}" >> .env
-              fi
-
-              if ! grep -q '^REGISTRY=' .env; then
-                echo "REGISTRY=${{ env.REGISTRY }}" >> .env
-              fi
-
-              if ! grep -q '^OWNER=' .env; then
-                echo "OWNER=${{ env.OWNER }}" >> .env
-              fi
+              sed -i "s/^TAG=.*/TAG=${{ env.TAG }}/" .env || echo "TAG=${{ env.TAG }}" >> .env
+              grep -q '^REGISTRY=' .env || echo "REGISTRY=${{ env.REGISTRY }}" >> .env
+              grep -q '^OWNER=' .env || echo "OWNER=${{ env.OWNER }}" >> .env
             else
-              echo "TAG=${{ env.TAG }}" > .env
-              echo "REGISTRY=${{ env.REGISTRY }}" >> .env
-              echo "OWNER=${{ env.OWNER }}" >> .env
+              cat > .env << ENVEOF
+            TAG=${{ env.TAG }}
+            REGISTRY=${{ env.REGISTRY }}
+            OWNER=${{ env.OWNER }}
+            POSTGRES_DB=java_course_db
+            POSTGRES_USER=java_course_user
+            POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+            ENVEOF
             fi
 
             # Скачиваем обновленные образы из GHCR (backend, frontend, nginx)
