@@ -4,17 +4,9 @@ const nextConfig: NextConfig = {
   // важно для Docker production (standalone сборка)
   output: "standalone",
 
-  // Отключаем ESLint и TypeScript проверки при сборке для ускорения
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
+  // TypeScript проверки при сборке
   typescript: {
     ignoreBuildErrors: false,
-  },
-
-  // Отключаем Turbopack для production build
-  experimental: {
-    turbo: undefined,
   },
 
   // Проксирование API запросов на backend
