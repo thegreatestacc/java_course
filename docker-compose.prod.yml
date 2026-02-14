@@ -285,6 +285,32 @@ services:
           cpus: '0.1'
           memory: 64M
 
+  postgres-exporter:
+    image: quay.io/prometheuscommunity/postgres-exporter:v0.15.0
+    container_name: java-course-postgres-exporter
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "2"
+    environment:
+      TZ: Europe/Moscow
+      DATA_SOURCE_NAME: "postgresql://${POSTGRES_USER:-java_course_user}:${POSTGRES_PASSWORD:-java_course_password}@postgres:5432/${POSTGRES_DB:-java_course_db}?sslmode=disable"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - java-course-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.1'
+          memory: 64M
+        reservations:
+          cpus: '0.05'
+          memory: 32M
+
 volumes:
   postgres_data:
     driver: local
