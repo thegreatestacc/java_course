@@ -4,11 +4,16 @@ import org.sovliv.backend.dto.CompileResponse;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Comparator;
 import java.util.concurrent.*;
+import java.util.stream.Stream;
 
 /**
  * @author Vladimir Solovyov
@@ -18,6 +23,7 @@ import java.util.concurrent.*;
 @Service
 public class JavaExecutionService {
 
+    private static final Logger log = LoggerFactory.getLogger(JavaExecutionService.class);
     private static final long TIMEOUT_SECONDS = 10;
     private static final String TEMP_DIR = System.getProperty("java.io.tmpdir");
     private static final int MAX_CODE_LENGTH = 10000;
@@ -292,18 +298,41 @@ public class JavaExecutionService {
     }
 
     private void deleteDirectory(File directory) {
-        if (directory.exists()) {
-            File[] files = directory.listFiles();
-            if (files != null) {
-                for (File file : files) {
-                    if (file.isDirectory()) {
-                        deleteDirectory(file);
-                    } else {
-                        file.delete();
+        Path dirPath = directory.toPath();
+        if (!Files.exists(dirPath)) {
+            return;
+        }
+
+        try (Stream<Path> walk = Files.walk(dirPath)) {
+            walk.sorted(Comparator.reverseOrder())
+                .forEach(path -> {
+                    try {
+                        Files.deleteIfExists(path);
+                    } catch (IOException e) {
+                        log.warn("Не удалось удалить временный файл: {} - {}", path, e.getMessage());
                     }
+                });
+        } catch (IOException e) {
+            log.error("Ошибка при очистке временной директории: {} - {}", dirPath, e.getMessage());
+        }
+
+        // Повторная проверка и попытка удаления с задержкой (для заблокированных файлов)
+        if (Files.exists(dirPath)) {
+            try {
+                Thread.sleep(100); // Даём время JVM освободить файлы
+                try (Stream<Path> walk = Files.walk(dirPath)) {
+                    walk.sorted(Comparator.reverseOrder())
+                        .forEach(path -> {
+                            try {
+                                Files.deleteIfExists(path);
+                            } catch (IOException e) {
+                                log.error("Не удалось удалить файл после повторной попытки: {}", path);
+                            }
+                        });
                 }
+            } catch (IOException | InterruptedException e) {
+                log.error("Ошибка при повторной очистке директории: {}", dirPath);
             }
-            directory.delete();
         }
     }
 }

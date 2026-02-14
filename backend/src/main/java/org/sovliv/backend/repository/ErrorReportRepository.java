@@ -30,6 +30,11 @@ public class ErrorReportRepository {
         return jdbcTemplate.query(sql, rowMapper);
     }
 
+    public int deleteOlderThan(LocalDateTime cutoffDate) {
+        String sql = "DELETE FROM error_reports WHERE created_at < ?";
+        return jdbcTemplate.update(sql, java.sql.Timestamp.valueOf(cutoffDate));
+    }
+
     public ErrorReport save(ErrorReport errorReport) {
         LocalDateTime now = LocalDateTime.now();
         if (errorReport.getCreatedAt() == null) {
