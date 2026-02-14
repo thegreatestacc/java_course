@@ -74,8 +74,9 @@ services:
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-java_course_password}
       SPRING_REDIS_HOST: redis
       SPRING_REDIS_PORT: 6379
-    ports:
-      - "8080:8080"
+    expose:
+      - "8080"
+    # SECURITY: порт 8080 доступен только внутри Docker network через nginx
     depends_on:
       postgres:
         condition: service_healthy
@@ -136,6 +137,12 @@ services:
         max-file: "3"
     environment:
       TZ: Europe/Moscow
+    # SECURITY: hardening против malware
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp:size=100M,mode=1777
     # Не экспортируем порты напрямую, используем Nginx
     depends_on:
       - backend
