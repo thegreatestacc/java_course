@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+/* Prevent horizontal scroll on mobile */
+html, body {
+  overflow-x: hidden;
+}
+
 /* =========================
    Цветовые переменные
    ========================= */
@@ -290,4 +295,80 @@ div[contenteditable="false"] > pre > code::first-line {
 .tutorial-highlight {
   animation: pulse-glow 4s ease-in-out infinite;
   box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.2), 0 0 20px rgba(0, 0, 0, 0.1);
+}
+
+/* =========================
+   Анимация раскрытия кода
+   ========================= */
+
+@keyframes codeReveal {
+  0% {
+    filter: blur(8px);
+    opacity: 0.5;
+    transform: scale(0.98);
+  }
+  30% {
+    filter: blur(4px);
+    opacity: 0.7;
+  }
+  60% {
+    filter: blur(2px);
+    opacity: 0.9;
+    transform: scale(0.995);
+  }
+  100% {
+    filter: blur(0);
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes overlayFadeOut {
+  0% {
+    opacity: 1;
+    backdrop-filter: blur(4px);
+  }
+  50% {
+    opacity: 0.5;
+    backdrop-filter: blur(2px);
+  }
+  100% {
+    opacity: 0;
+    backdrop-filter: blur(0);
+    pointer-events: none;
+  }
+}
+
+@keyframes buttonPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(var(--button-bg-rgb, 23, 23, 23), 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(var(--button-bg-rgb, 23, 23, 23), 0);
+  }
+}
+
+.code-revealed {
+  animation: codeReveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.code-blurred {
+  filter: blur(8px);
+  opacity: 0.6;
+  user-select: none;
+  transform: scale(0.98);
+}
+
+.overlay-fade-out {
+  animation: overlayFadeOut 0.5s ease-out forwards;
+}
+
+.reveal-button {
+  animation: buttonPulse 2s ease-in-out infinite;
+}
+
+.reveal-button:hover {
+  animation: none;
+  transform: scale(1.05);
+  transition: transform 0.2s ease;
 }

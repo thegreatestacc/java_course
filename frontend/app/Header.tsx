@@ -48,8 +48,8 @@ export function Header({ leftButton }: HeaderProps) {
 
   return (
     <>
-      <header className="sticky top-0 z-20 border-b border-[var(--border-main)]/70 bg-[var(--bg-card)]/80 backdrop-blur w-full relative overflow-x-hidden">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-2 px-3 py-3 md:gap-3 md:px-5 relative z-10">
+      <header className="sticky top-0 z-20 border-b border-[var(--border-main)]/70 bg-[var(--bg-card)]/80 backdrop-blur w-full relative">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-2 px-3 py-3 md:gap-3 md:px-5 relative z-10 min-w-0">
           <div className="flex items-center gap-2 min-w-0 shrink">
             {leftButton ? (
               <Link
@@ -160,7 +160,7 @@ export function Header({ leftButton }: HeaderProps) {
           {/* Mobile hamburger button */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden rounded-xl border border-[var(--border-main)]
+            className="md:hidden shrink-0 rounded-xl border border-[var(--border-main)]
                        bg-[var(--bg-card)]
                        p-2 text-[var(--text-main)]
                        hover:bg-[var(--bg-muted)] transition-colors"
