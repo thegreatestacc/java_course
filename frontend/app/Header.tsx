@@ -22,6 +22,7 @@ export function Header({ leftButton }: HeaderProps) {
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState<"login" | "register">("login");
   const [errorReporterOpen, setErrorReporterOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { user, setUser, logout } = useAuth();
   const pathname = usePathname();
 
@@ -36,11 +37,13 @@ export function Header({ leftButton }: HeaderProps) {
   const openLogin = () => {
     setAuthMode("login");
     setAuthModalOpen(true);
+    setMobileMenuOpen(false);
   };
 
   const openRegister = () => {
     setAuthMode("register");
     setAuthModalOpen(true);
+    setMobileMenuOpen(false);
   };
 
   return (
@@ -70,7 +73,9 @@ export function Header({ leftButton }: HeaderProps) {
               </a>
             )}
           </div>
-          <div className="flex items-center gap-3">
+
+          {/* Desktop buttons */}
+          <div className="hidden md:flex items-center gap-3">
             {user ? (
               <>
                 {user.isAdmin && (
@@ -151,7 +156,101 @@ export function Header({ leftButton }: HeaderProps) {
             )}
             <ThemeToggle />
           </div>
+
+          {/* Mobile hamburger button */}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="md:hidden rounded-xl border border-[var(--border-main)]
+                       bg-[var(--bg-card)]
+                       p-2 text-[var(--text-main)]
+                       hover:bg-[var(--bg-muted)] transition-colors"
+            aria-label="Меню"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              {mobileMenuOpen ? (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              ) : (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              )}
+            </svg>
+          </button>
         </div>
+
+        {/* Mobile dropdown menu */}
+        {mobileMenuOpen && (
+          <div className="md:hidden absolute top-full left-0 right-0 z-20 border-b border-[var(--border-main)] bg-[var(--bg-card)] shadow-lg">
+            <div className="flex flex-col gap-2 px-5 py-4">
+              {user ? (
+                <>
+                  <Link
+                    href="/profile"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="rounded-xl border border-[var(--border-main)]
+                               bg-[var(--bg-card)]
+                               px-3 py-2 text-sm font-medium text-[var(--text-main)]
+                               hover:bg-[var(--bg-muted)] transition-colors text-center"
+                  >
+                    Личный кабинет
+                  </Link>
+                  {user.isAdmin && (
+                    <Link
+                      href="/admin"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="rounded-xl border border-[var(--border-main)]
+                                 bg-[var(--bg-card)]
+                                 px-3 py-2 text-sm font-medium text-[var(--text-main)]
+                                 hover:bg-[var(--bg-muted)] transition-colors text-center"
+                    >
+                      Админка
+                    </Link>
+                  )}
+                  <button
+                    onClick={() => { setErrorReporterOpen(true); setMobileMenuOpen(false); }}
+                    className="rounded-xl border border-[var(--border-main)]
+                               bg-[var(--bg-card)]
+                               px-3 py-2 text-sm font-medium text-[var(--text-main)]
+                               hover:bg-[var(--bg-muted)] transition-colors"
+                  >
+                    Сообщить об ошибке
+                  </button>
+                  <UserMenu user={user} onLogout={handleLogout} />
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={openLogin}
+                    className="rounded-xl border border-[var(--border-main)]
+                               bg-[var(--bg-card)]
+                               px-3 py-2 text-sm font-medium text-[var(--text-main)]
+                               hover:bg-[var(--bg-muted)] transition-colors"
+                  >
+                    Войти
+                  </button>
+                  <button
+                    onClick={openRegister}
+                    className="rounded-xl bg-[var(--button-bg)]
+                               px-3 py-2 text-sm font-semibold text-[var(--button-text)]
+                               hover:bg-[var(--button-hover)] transition-colors"
+                  >
+                    Регистрация
+                  </button>
+                </>
+              )}
+              <button
+                onClick={() => { setIsSnowActive(!isSnowActive); setMobileMenuOpen(false); }}
+                className="rounded-xl border border-[var(--border-main)]
+                           bg-[var(--bg-card)]
+                           px-3 py-2 text-sm font-medium text-[var(--text-main)]
+                           hover:bg-[var(--bg-muted)] transition-colors"
+              >
+                {isSnowActive ? "Выключить снег" : "Включить снег"}
+              </button>
+              <div className="flex justify-center">
+                <ThemeToggle />
+              </div>
+            </div>
+          </div>
+        )}
       </header>
       <AuthModal
         isOpen={authModalOpen}
@@ -167,4 +266,3 @@ export function Header({ leftButton }: HeaderProps) {
     </>
   );
 }
-

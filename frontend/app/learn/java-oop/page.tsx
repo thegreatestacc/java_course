@@ -23,7 +23,7 @@ export default function JavaOOPPage() {
   return (
     <div className={mono.className}>
       <div className="min-h-dvh bg-[var(--bg-main)] text-[var(--text-main)]">
-        <nav className="fixed left-0 top-[20vh] w-56 h-[calc(100vh-20vh)] overflow-y-auto pl-8 pr-4 py-6 z-10">
+        <nav className="hidden lg:block fixed left-0 top-[20vh] w-56 h-[calc(100vh-20vh)] overflow-y-auto pl-8 pr-4 py-6 z-10">
           <div className="space-y-6">
             <div>
               <h3 className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-3 px-2">
@@ -149,7 +149,7 @@ export default function JavaOOPPage() {
               </h2>
               <div className="grid gap-4 md:grid-cols-2">
                 <LessonCard
-                  materialId="learn/java-oop/classes"
+                  materialId="learn/java-oop"
                   title="Классы и объекты"
                   href="/learn/java-oop/classes"
                   topics={[
@@ -160,7 +160,7 @@ export default function JavaOOPPage() {
                   ]}
                 />
                 <LessonCard
-                  materialId="learn/java-oop/inheritance"
+                  materialId="learn/java-oop"
                   title="Наследование"
                   href="/learn/java-oop/inheritance"
                   topics={[
@@ -171,7 +171,7 @@ export default function JavaOOPPage() {
                   ]}
                 />
                 <LessonCard
-                  materialId="learn/java-oop/polymorphism"
+                  materialId="learn/java-oop"
                   title="Полиморфизм"
                   href="/learn/java-oop/polymorphism"
                   topics={[

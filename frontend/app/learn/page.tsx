@@ -100,7 +100,7 @@ export default function LearnPage() {
     <div className={mono.className}>
       <div className="min-h-dvh bg-[var(--bg-main)] text-[var(--text-main)]">
         {/* Фиксированная навигация слева */}
-        <nav className="fixed left-0 top-[20vh] w-56 h-[calc(100vh-20vh)] overflow-y-auto pl-8 pr-4 py-6 z-10">
+        <nav className="hidden lg:block fixed left-0 top-[20vh] w-56 h-[calc(100vh-20vh)] overflow-y-auto pl-8 pr-4 py-6 z-10">
           <div className="space-y-6">
             {/* Основная навигация */}
             <div>

@@ -88,7 +88,7 @@ export default function Page() {
     <div className={mono.className}>
       <div className="min-h-dvh bg-[var(--bg-main)] text-[var(--text-main)]">
         {/* Фиксированная навигация слева */}
-        <nav className="fixed left-0 top-[20vh] w-56 h-[calc(100vh-20vh)] overflow-y-auto pl-8 pr-4 py-6 z-10">
+        <nav className="hidden lg:block fixed left-0 top-[20vh] w-56 h-[calc(100vh-20vh)] overflow-y-auto pl-8 pr-4 py-6 z-10">
           <div className="space-y-6">
             {/* Основная навигация */}
             <div>
@@ -210,7 +210,7 @@ export default function Page() {
 function Hero() {
   return (
     <section id="top" className="mx-auto max-w-6xl px-5 py-14 md:py-20">
-      <div className="grid gap-10 md:grid-cols-[1.1fr_1.5fr] md:items-center md:grid-cols-[1fr_630px]">
+      <div className="grid gap-10 lg:grid-cols-[1fr_1fr] lg:items-center">
         <div className="space-y-6">
           <p className="text-xs font-medium tracking-wide text-[var(--text-muted)]">
             обучающий материал для тех, кто только знакомится с программированием

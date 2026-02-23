@@ -247,7 +247,7 @@ export function CodeExample() {
   };
 
   return (
-    <div className="rounded-2xl border border-[var(--border-main)] bg-[var(--bg-secondary)] p-5 shadow-sm" style={{ width: '100%', minWidth: '630px', maxWidth: '630px' }}>
+    <div className="rounded-2xl border border-[var(--border-main)] bg-[var(--bg-secondary)] p-5 shadow-sm" style={{ width: '100%', maxWidth: '630px' }}>
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <span className="text-xs font-medium text-[var(--text-muted)]">Пример того, как будем учиться</span>

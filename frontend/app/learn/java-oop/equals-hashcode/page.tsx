@@ -107,7 +107,7 @@ export default function EqualsHashCodePage() {
   return (
     <div className={mono.className}>
       <div className="min-h-dvh bg-[var(--bg-main)] text-[var(--text-main)]">
-        <nav className="fixed left-0 top-[20vh] w-56 h-[calc(100vh-20vh)] overflow-y-auto pl-8 pr-4 py-6 z-10">
+        <nav className="hidden lg:block fixed left-0 top-[20vh] w-56 h-[calc(100vh-20vh)] overflow-y-auto pl-8 pr-4 py-6 z-10">
           <div className="space-y-6">
             <div>
               <h3 className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-3 px-2">
@@ -172,7 +172,7 @@ export default function EqualsHashCodePage() {
           </div>
         </nav>
 
-        <Header leftButton={{ href: "/learn/java-oop", text: "← К Java OOP" }} />
+        <Header leftButton={{ href: "/learn/junior", text: "← К Junior Java Developer" }} />
         <MotivationalQuotes />
         <main>
           <section className="mx-auto max-w-6xl px-5 py-14 md:py-20">
