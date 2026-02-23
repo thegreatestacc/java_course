@@ -116,7 +116,7 @@ export function MotivationalQuotes() {
   };
 
   return (
-    <div className="fixed right-8 top-[20vh] w-64 max-w-sm z-10" suppressHydrationWarning>
+    <div className="hidden lg:block fixed right-8 top-[20vh] w-64 max-w-sm z-10" suppressHydrationWarning>
       <div className="rounded-lg p-6">
         <div className="space-y-4">
           <div className="mb-2">
