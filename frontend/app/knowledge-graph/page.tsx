@@ -3,8 +3,10 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import dynamic from "next/dynamic";
 import { Header } from "../Header";
+import { MotivationalQuotes } from "../MotivationalQuotes";
 import { useAuth } from "../useAuth";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 // Р”РёРЅР°РјРёС‡РµСЃРєРёР№ РёРјРїРѕСЂС‚ РґР»СЏ РёР·Р±РµР¶Р°РЅРёСЏ SSR РїСЂРѕР±Р»РµРј
 const ForceGraph2D = dynamic(() => import("react-force-graph-2d"), {
@@ -103,6 +105,7 @@ const categoryColors: Record<string, string> = {
 };
 
 export default function KnowledgeGraphPage() {
+  const pathname = usePathname();
   const { user, loading, showMessage } = useAuth();
   const [isMounted, setIsMounted] = useState(false);
   const [completedTopics, setCompletedTopics] = useState<Set<string>>(new Set());
@@ -271,9 +274,36 @@ export default function KnowledgeGraphPage() {
 
   return (
     <div className="min-h-dvh bg-[var(--bg-main)] text-[var(--text-main)]">
+      <nav className="hidden lg:block fixed left-0 top-[20vh] w-56 h-[calc(100vh-20vh)] overflow-y-auto pl-8 pr-4 py-6 z-10">
+        <div className="space-y-6">
+          <div>
+            <h3 className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-3 px-2">
+              Навигация
+            </h3>
+            <div className="space-y-1">
+              <Link href="/" className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all duration-200 ${pathname === "/" ? "bg-[var(--bg-muted)] text-[var(--text-main)] font-medium" : "text-[var(--text-muted)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-main)]"}`}>
+                <span className="transition-opacity duration-200 opacity-100">Главная</span>
+              </Link>
+              <Link href="/learn" className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all duration-200 ${pathname === "/learn" ? "bg-[var(--bg-muted)] text-[var(--text-main)] font-medium" : "text-[var(--text-muted)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-main)]"}`}>
+                <span className="transition-opacity duration-200 opacity-70 hover:opacity-100">Начать учиться</span>
+              </Link>
+              <Link href="/compiler" className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all duration-200 ${pathname === "/compiler" ? "bg-[var(--bg-muted)] text-[var(--text-main)] font-medium" : "text-[var(--text-muted)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-main)]"}`}>
+                <span className="transition-opacity duration-200 opacity-70 hover:opacity-100">Компилятор</span>
+              </Link>
+              <Link href="/profile" className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all duration-200 ${pathname === "/profile" ? "bg-[var(--bg-muted)] text-[var(--text-main)] font-medium" : "text-[var(--text-muted)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-main)]"}`}>
+                <span className="transition-opacity duration-200 opacity-70 hover:opacity-100">Личный кабинет</span>
+              </Link>
+              <Link href="/knowledge-graph" className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all duration-200 ${pathname === "/knowledge-graph" ? "bg-[var(--bg-muted)] text-[var(--text-main)] font-medium" : "text-[var(--text-muted)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-main)]"}`}>
+                <span className="transition-opacity duration-200 opacity-100">Граф знаний</span>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </nav>
       <Header leftButton={{ href: "/", text: "← На главную" }} />
+      <MotivationalQuotes />
       
-      <main className="mx-auto max-w-7xl px-5 py-8">
+      <main className="px-5 py-8 lg:ml-80 lg:mr-88">
         <div className="mb-8">
           <h1 className="text-3xl font-semibold tracking-tight text-[var(--text-main)] mb-4">
             Граф знаний

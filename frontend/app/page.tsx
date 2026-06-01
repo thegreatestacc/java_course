@@ -233,6 +233,12 @@ function Hero() {
             >
               Начать учиться
             </a>
+            <Link
+              href="/knowledge-graph"
+              className="inline-flex items-center justify-center rounded-xl bg-[var(--button-bg)] px-4 py-2.5 text-sm font-semibold text-[var(--button-text)] hover:bg-[var(--button-hover)] transition-colors"
+            >
+              Граф знаний
+            </Link>
           </div>
 
           <div className="flex flex-wrap gap-2 pt-2 text-xs text-[var(--text-muted)]">

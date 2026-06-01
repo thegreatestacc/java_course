@@ -42,9 +42,6 @@ const getMaterialName = (materialId: string): string => {
     "learn/java-core/control-flow": "Java Core: Управляющие конструкции",
     "learn/java-core/exceptions": "Java Core: Исключения",
     "learn/java-oop": "Java OOP",
-    "learn/java-oop/classes": "Классы и объекты",
-    "learn/java-oop/inheritance": "Наследование",
-    "learn/java-oop/polymorphism": "Полиморфизм",
     "learn/java-oop/equals-hashcode": "equals() и hashCode()",
     "learn/java-collections/list": "Java Collections: List",
     "learn/java-collections/set": "Java Collections: Set",
@@ -90,11 +87,6 @@ export function TaskBoard({ userId }: TaskBoardProps) {
     // Проверяем подтемы clean-architecture
     if (taskId.startsWith("learn/clean-architecture/")) {
       return "Чистая архитектура сервисов";
-    }
-    
-    // Проверяем подтемы java-oop
-    if (taskId.startsWith("learn/java-oop/")) {
-      return "Junior Java Developer";
     }
     
     return "Другие";

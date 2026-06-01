@@ -111,12 +111,6 @@ export function DetailedLesson({
   const [loading, setLoading] = useState(false);
   const [checkingStatus, setCheckingStatus] = useState(true);
   const [isDark, setIsDark] = useState(false);
-  
-  // Принудительное обновление состояния completed
-  const forceUpdateCompleted = useCallback((value: boolean) => {
-    console.log('Force updating completed status for', materialId, 'to', value);
-    setCompleted(value);
-  }, [materialId]);
 
   const checkCompletionStatus = useCallback(async () => {
     if (!user || !materialId) {
@@ -135,13 +129,8 @@ export function DetailedLesson({
         const isCompleted = await response.json();
         console.log('Completion status checked for', materialId, ':', isCompleted);
         setCompleted(isCompleted);
-        // Если статус изменился на завершенный, логируем это
-        if (isCompleted) {
-          console.log('Material', materialId, 'is now marked as completed');
-        }
       } else {
         console.error('Failed to check completion status:', response.status, response.statusText);
-        // Если запрос не удался, не меняем статус
       }
     } catch (err) {
       console.error("Ошибка проверки статуса:", err);
@@ -164,27 +153,6 @@ export function DetailedLesson({
     }, 1000);
     
     return () => clearInterval(interval);
-  }, [user, materialId, checkCompletionStatus]);
-  
-  // Слушаем события обновления статуса материала
-  useEffect(() => {
-    if (!user || !materialId) return;
-    
-    const handleMaterialCompleted = (event: CustomEvent) => {
-      if (event.detail?.materialId === materialId) {
-        console.log('Received material completed event for', materialId);
-        setCompleted(true);
-        // Также проверяем статус на сервере для подтверждения
-        setTimeout(() => {
-          checkCompletionStatus();
-        }, 500);
-      }
-    };
-    
-    window.addEventListener('materialCompleted' as any, handleMaterialCompleted as EventListener);
-    return () => {
-      window.removeEventListener('materialCompleted' as any, handleMaterialCompleted as EventListener);
-    };
   }, [user, materialId, checkCompletionStatus]);
 
   // Перепроверяем статус при возврате на страницу (например, после отката материала)
@@ -382,11 +350,6 @@ export function DetailedLesson({
       return true;
     }
     
-    // Присваивания через точку (например, car1.brand = "Toyota";)
-    if (/\.\w+\s*=/.test(line)) {
-      return true;
-    }
-    
     return false;
   };
 
@@ -412,53 +375,11 @@ export function DetailedLesson({
 
       if (response.ok) {
         // Устанавливаем статус как завершенный
-        console.log("Материал успешно завершен, обновляем UI для", materialId);
+        console.log("Материал успешно завершен, обновляем UI");
         setCompleted(true);
         // Обновляем трекер активности
         triggerActivityUpdate();
         console.log("Статус completed установлен в:", true);
-        
-        // Отправляем событие для обновления других компонентов
-        window.dispatchEvent(new CustomEvent('materialCompleted', { 
-          detail: { materialId } 
-        }));
-        
-        // Принудительно обновляем состояние
-        forceUpdateCompleted(true);
-        
-        // Явно проверяем статус после завершения для синхронизации с сервером
-        // Делаем несколько проверок с задержкой для надежности
-        // Добавляем параметр для обхода кэша
-        const checkWithCacheBust = async () => {
-          const encodedMaterialId = encodeURIComponent(materialId);
-          const cacheBuster = `&_t=${Date.now()}`;
-          try {
-            const response = await fetch(`/api/statistics/materials/status?materialId=${encodedMaterialId}${cacheBuster}`, {
-              credentials: "include",
-              cache: 'no-cache',
-            });
-            if (response.ok) {
-              const isCompleted = await response.json();
-              console.log('Cache-busted status check for', materialId, ':', isCompleted);
-              setCompleted(isCompleted);
-            }
-          } catch (err) {
-            console.error("Ошибка проверки статуса с обходом кэша:", err);
-          }
-        };
-        
-        setTimeout(() => {
-          console.log("Проверка статуса через 300ms для", materialId);
-          checkWithCacheBust();
-        }, 300);
-        setTimeout(() => {
-          console.log("Проверка статуса через 1000ms для", materialId);
-          checkWithCacheBust();
-        }, 1000);
-        setTimeout(() => {
-          console.log("Проверка статуса через 2000ms для", materialId);
-          checkWithCacheBust();
-        }, 2000);
         
         // Обновляем статус задачи на доске задач (перемещаем в done)
         if (materialId) {
