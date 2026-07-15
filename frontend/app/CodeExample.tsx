@@ -247,9 +247,9 @@ export function CodeExample() {
   };
 
   return (
-    <div className="rounded-2xl border border-[var(--border-main)] bg-[var(--bg-secondary)] p-5 shadow-sm" style={{ width: '100%', maxWidth: '630px' }}>
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
+    <div className="h-[560px] w-full max-w-[630px] min-w-0 overflow-hidden rounded-2xl border border-[var(--border-main)] bg-[var(--bg-secondary)] p-5 shadow-sm">
+      <div className="flex h-full min-w-0 flex-col gap-3">
+        <div className="flex h-6 shrink-0 items-center justify-between">
           <span className="text-xs font-medium text-[var(--text-muted)]">Пример того, как будем учиться</span>
           <div className="flex items-center gap-2">
             <button
@@ -274,20 +274,20 @@ export function CodeExample() {
           </div>
         </div>
         
-        <div className="rounded-xl border border-[var(--border-main)] bg-[var(--bg-card)] p-4 w-full min-w-0">
-          <div className="mb-2">
+        <div className="h-[428px] w-full min-w-0 shrink-0 rounded-xl border border-[var(--border-main)] bg-[var(--bg-card)] p-4">
+          <div className="mb-2 h-4 min-w-0">
             <span 
-              className={`text-[11px] font-medium text-[var(--text-secondary)] transition-opacity duration-200 ${
+              className={`block truncate text-[11px] font-medium text-[var(--text-secondary)] transition-opacity duration-200 ${
                 isTransitioning ? "opacity-0" : "opacity-100"
               }`}
             >
               {example.title}
             </span>
           </div>
-          <div className="h-[380px] overflow-y-auto w-full min-w-0">
+          <div className="h-[374px] w-full min-w-0 overflow-auto">
             <div
               key={currentPage}
-              className={`transition-opacity duration-200 w-full ${
+              className={`w-full min-w-0 transition-opacity duration-200 ${
                 isTransitioning ? "opacity-0" : "opacity-100"
               }`}
             >
@@ -303,10 +303,15 @@ export function CodeExample() {
                   fontFamily: 'inherit',
                   width: '100%',
                   minWidth: 0,
+                  maxWidth: '100%',
+                  overflowX: 'auto',
+                  overflowY: 'visible',
                 }}
                 codeTagProps={{
                   style: {
                     fontFamily: 'inherit',
+                    display: 'block',
+                    minWidth: 'max-content',
                   },
                 }}
                 PreTag={({ children, ...props }) => {
@@ -320,7 +325,7 @@ export function CodeExample() {
         </div>
         
         <p 
-          className={`text-xs leading-relaxed text-[var(--text-muted)] transition-all duration-200 ${
+          className={`min-h-0 flex-1 overflow-y-auto text-xs leading-relaxed text-[var(--text-muted)] transition-all duration-200 ${
             isTransitioning ? "opacity-0" : "opacity-100"
           }`}
         >

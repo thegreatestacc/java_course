@@ -229,7 +229,7 @@ function Hero() {
             <RoadmapModal />
             <a
               href="/learn"
-              className="inline-flex items-center justify-center rounded-xl border border-[var(--border-secondary)] px-4 py-2.5 text-sm font-semibold text-[var(--text-main)] hover:bg-[var(--bg-muted)]"
+              className="inline-flex items-center justify-center rounded-xl bg-[var(--button-bg)] px-4 py-2.5 text-sm font-semibold text-[var(--button-text)] hover:bg-[var(--button-hover)]"
             >
               Начать учиться
             </a>
@@ -636,7 +636,7 @@ function RoadmapModal() {
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="inline-flex items-center justify-center rounded-xl bg-[var(--button-bg)] px-4 py-2.5 text-sm font-semibold text-[var(--button-text)] hover:bg-[var(--button-hover)]"
+        className="inline-flex items-center justify-center rounded-xl border border-[var(--border-secondary)] px-4 py-2.5 text-sm font-semibold text-[var(--text-main)] hover:bg-[var(--bg-muted)]"
       >
         Программа материала
       </button>
