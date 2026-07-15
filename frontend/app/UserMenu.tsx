@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface User {
   id: number;
@@ -15,6 +15,22 @@ interface UserMenuProps {
 
 export function UserMenu({ user, onLogout }: UserMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handlePointerDown = (event: PointerEvent) => {
+      if (!menuRef.current?.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+    };
+  }, [isOpen]);
 
   const handleLogout = async () => {
     try {
@@ -33,7 +49,7 @@ export function UserMenu({ user, onLogout }: UserMenuProps) {
   if (!user) return null;
 
   return (
-    <div className="relative">
+    <div className="relative" ref={menuRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-2 rounded-xl border border-[var(--border-main)] bg-[var(--bg-card)] px-3 py-2 text-sm font-medium text-[var(--text-main)] hover:bg-[var(--bg-muted)] transition-colors"
@@ -50,12 +66,7 @@ export function UserMenu({ user, onLogout }: UserMenuProps) {
       </button>
 
       {isOpen && (
-        <>
-          <div
-            className="fixed inset-0 z-10"
-            onClick={() => setIsOpen(false)}
-          />
-          <div className="absolute right-0 top-full mt-2 z-20 w-48 rounded-xl border border-[var(--border-main)] bg-[var(--bg-card)] shadow-lg overflow-hidden">
+        <div className="absolute right-0 top-full mt-2 z-20 w-48 rounded-xl border border-[var(--border-main)] bg-[var(--bg-card)] shadow-lg overflow-hidden">
             <div className="px-4 py-3 border-b border-[var(--border-main)]">
               <p className="text-sm font-medium text-[var(--text-main)]">{user.name}</p>
               <p className="text-xs text-[var(--text-muted)] mt-1">{user.email}</p>
@@ -67,7 +78,6 @@ export function UserMenu({ user, onLogout }: UserMenuProps) {
               Выйти
             </button>
           </div>
-        </>
       )}
     </div>
   );
